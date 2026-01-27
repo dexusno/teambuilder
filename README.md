@@ -20,21 +20,22 @@ Choose one of the two options below:
 
 Use this if you want to save the script locally or review it before running.
 
-**Step 1:** Open PowerShell (search "PowerShell" in Start menu)
+**Step 1:** Download the script: **[install.ps1](https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1)** (right-click → Save link as)
 
-**Step 2:** Navigate to where you want your project, for example:
+**Step 2:** Open PowerShell (search "PowerShell" in Start menu)
+
+**Step 3:** Navigate to where you saved the script:
 ```powershell
-cd C:\Projects
+cd C:\Downloads
 ```
 
-**Step 3:** Download the installer script:
+**Step 4:** Run the script:
 ```powershell
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 -OutFile install.ps1
-```
-
-**Step 4:** Run the script with your project name:
-```powershell
+# Create a new project folder:
 .\install.ps1 my-project
+
+# Or run without arguments to use current folder (if empty) or get prompted:
+.\install.ps1
 ```
 
 ### Option B: Run Directly from GitHub
@@ -57,26 +58,23 @@ Choose one of the two options below:
 
 Use this if you want to save the script locally or review it before running.
 
-**Step 1:** Open Terminal
+**Step 1:** Download the script: **[install.sh](https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh)** (right-click → Save link as)
 
-**Step 2:** Navigate to where you want your project, for example:
-```bash
-cd ~/Projects
-```
+**Step 2:** Open Terminal
 
-**Step 3:** Download the installer script:
+**Step 3:** Navigate to where you saved the script and make it executable:
 ```bash
-curl -O https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh
-```
-
-**Step 4:** Make it executable:
-```bash
+cd ~/Downloads
 chmod +x install.sh
 ```
 
-**Step 5:** Run the script with your project name:
+**Step 4:** Run the script:
 ```bash
+# Create a new project folder:
 ./install.sh my-project
+
+# Or run without arguments to use current folder (if empty) or get prompted:
+./install.sh
 ```
 
 ### Option B: Run Directly from GitHub
