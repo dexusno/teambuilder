@@ -183,6 +183,30 @@ TeamBuilder learns from 6 diverse patterns:
 5. **Creative/Content** - Creative process, brand-aware teams
 6. **Operations/Process** - Lean/Six Sigma, continuous improvement teams
 
+## Generated Team Structure
+
+When TeamBuilder creates a team, you get:
+
+```
+_bmad/teams/your-team/
+├── agents/              # Team specialists with distinct personas
+├── workflows/
+│   └── party-mode/      # Team-scoped group discussion
+├── docs/                # Team documentation (optional)
+└── config.yaml          # Team configuration
+```
+
+### Team Party-Mode
+
+Each generated team includes its own **party-mode** workflow:
+
+| Command | Scope |
+|---------|-------|
+| `/bmad:core:workflows:party-mode` | All installed BMAD agents |
+| `/bmad:teams:your-team:workflows:party-mode` | Only your team's agents |
+
+The team-scoped party-mode enables focused group discussions with just that team's specialists - no interference from other teams or BMAD core agents.
+
 ## MCP Servers
 
 Default configuration includes:
