@@ -121,47 +121,38 @@ Execute the refinement workflow:
 
 ## When User Selects "See example team patterns"
 
-Show pattern library overview:
+**Dynamically display available patterns:**
+
+1. Scan `_bmad/teambuilder/patterns/` directory for subdirectories
+2. For each pattern found, read `metadata.yaml` and `pattern-overview.md`
+3. Present a summary showing:
+   - Pattern name (from `pattern_name` in metadata)
+   - Team size (from `characteristics.team_size`)
+   - Best for (from `use_when` list)
+   - Key features (from `key_learnings`)
+
+**Format to display:**
 
 ```markdown
 ## TeamBuilder Pattern Library
 
 These patterns teach the generation engine composition principles. They're NOT templates - they're learning examples.
 
-### 1. ITIL/Domain Expert Pattern
-- **Type:** Large governance-focused team (12 agents)
-- **Best for:** ITIL practices, compliance, organizational governance
-- **Key features:** Dual-mandate representatives, formal workflows, policy development
-- **Example:** Configuration Management practice team for healthcare
+[For each pattern directory found, display:]
 
-### 2. Software Development Pattern
-- **Type:** Agile sprint-based team (6-8 agents)
-- **Best for:** Feature development, code projects, technical work
-- **Key features:** Scrum roles, sprint workflows, quality assurance
-- **Example:** Full-stack development team with PM, architect, dev, QA
+### [pattern_name from metadata.yaml]
+- **Type:** [characteristics.team_size] team ([characteristics.collaboration] collaboration)
+- **Best for:** [use_when items]
+- **Key features:** [key_learnings names]
 
-### 3. Research/Intelligence Pattern
-- **Type:** Iterative search and synthesis team (6-8 agents)
-- **Best for:** Market research, competitive intelligence, academic research
-- **Key features:** Query refinement, source evaluation, triangulation
-- **Example:** Market research team with search strategist, evaluator, synthesizer
-
-### 4. Planning/Strategy Pattern
-- **Type:** Consultative multi-perspective team (6-8 agents)
-- **Best for:** Strategic planning, business decisions, project design
-- **Key features:** Multiple perspectives, risk analysis, stakeholder management
-- **Example:** Business strategy team with visionary, planner, risk analyst
-
-### 5. Creative/Content Pattern
-- **Type:** Creative process team (6-7 agents)
-- **Best for:** Content creation, marketing, creative projects
-- **Key features:** Ideation, brand voice, SEO optimization, multi-stage workflow
-- **Example:** Content marketing team with strategist, writer, editor, SEO specialist
+[End for each]
 
 **Want to see detailed examples from a pattern?** Let me know which one interests you!
 
 **Ready to create your team?** Select option 1 to start the discovery process.
 ```
+
+**If user asks for details on a specific pattern:** Read and display that pattern's `example-agents.md` and `example-workflows.md` files.
 
 ## When User Selects "Learn how TeamBuilder works"
 
@@ -267,15 +258,11 @@ If you choose to refine:
 
 ### Pattern Library
 
-TeamBuilder learns from 5 diverse patterns:
+TeamBuilder learns from diverse patterns stored in `_bmad/teambuilder/patterns/`. Each pattern teaches different composition principles - from large governance-focused teams to agile development squads to creative collaborations.
 
-1. **ITIL/Domain Expert** - Large, formal, governance-focused
-2. **Software Development** - Agile, sprint-based, technical
-3. **Research/Intelligence** - Iterative, synthesis-focused
-4. **Planning/Strategy** - Consultative, multi-perspective
-5. **Creative/Content** - Creative process, brand-aware
+To see available patterns, select "See example team patterns" from the menu.
 
-**These are NOT templates!** They're learning examples that teach composition principles.
+**These are NOT templates!** They're learning examples that teach composition principles. Team Architect selects and combines learnings from multiple patterns based on your specific needs.
 
 ### What Makes a Great Generated Team?
 
