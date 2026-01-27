@@ -142,7 +142,7 @@ claude .
 - **Prerequisite checking** - Verifies Claude Code, Node.js, Git
 - **Auto-installation** - Installs missing prerequisites via winget (Windows) or apt/brew/dnf/pacman (Linux/Mac)
 - **Menu-driven** - Full install or custom component selection
-- **Smart folder handling** - Creates folder, uses current directory, or prompts if not empty
+- **Current folder install** - Installs in the folder you run the script from
 
 ## Project Structure
 
