@@ -48,10 +48,10 @@ function Write-Info {
 # Banner
 function Show-Banner {
     Write-Host ""
-    Write-Host "  ╔═══════════════════════════════════════════════════╗" -ForegroundColor Magenta
-    Write-Host "  ║        TeamBuilder Project Installer              ║" -ForegroundColor Magenta
-    Write-Host "  ║        github.com/dexusno/teambuilder             ║" -ForegroundColor Magenta
-    Write-Host "  ╚═══════════════════════════════════════════════════╝" -ForegroundColor Magenta
+    Write-Host "  +-------------------------------------------------+" -ForegroundColor Magenta
+    Write-Host "  |        TeamBuilder Project Installer            |" -ForegroundColor Magenta
+    Write-Host "  |        github.com/dexusno/teambuilder           |" -ForegroundColor Magenta
+    Write-Host "  +-------------------------------------------------+" -ForegroundColor Magenta
     Write-Host ""
 }
 
@@ -105,6 +105,9 @@ function Install-WithWinget {
 
 # Main installation flow
 function Main {
+    # Initialize variables
+    $installClaudeCode = $false
+
     Show-Banner
 
     # ===== STEP 1: Check Claude Code =====
@@ -115,16 +118,12 @@ function Main {
     } else {
         Write-Fail "Claude Code not found"
         Write-Host ""
-        Write-Host "  ╔═══════════════════════════════════════════════════╗" -ForegroundColor Yellow
-        Write-Host "  ║  Claude Code is REQUIRED for this project.        ║" -ForegroundColor Yellow
-        Write-Host "  ║                                                   ║" -ForegroundColor Yellow
-        Write-Host "  ║  It requires a paid Claude subscription:          ║" -ForegroundColor Yellow
-        Write-Host "  ║    - Pro: `$20/month                               ║" -ForegroundColor Yellow
-        Write-Host "  ║    - Max: `$100-200/month                          ║" -ForegroundColor Yellow
-        Write-Host "  ║    - Or API credits                               ║" -ForegroundColor Yellow
-        Write-Host "  ║                                                   ║" -ForegroundColor Yellow
-        Write-Host "  ║  More info: https://claude.ai/pricing             ║" -ForegroundColor Yellow
-        Write-Host "  ╚═══════════════════════════════════════════════════╝" -ForegroundColor Yellow
+        Write-Host "  +-------------------------------------------------+" -ForegroundColor Yellow
+        Write-Host "  |  Claude Code is REQUIRED for this project.      |" -ForegroundColor Yellow
+        Write-Host "  |                                                 |" -ForegroundColor Yellow
+        Write-Host "  |  It requires a paid Claude subscription.        |" -ForegroundColor Yellow
+        Write-Host "  |  See: https://claude.ai/pricing                 |" -ForegroundColor Yellow
+        Write-Host "  +-------------------------------------------------+" -ForegroundColor Yellow
         Write-Host ""
         Write-Host "  1. I have a Claude account - proceed with setup" -ForegroundColor White
         Write-Host "  2. I don't have a Claude account - exit" -ForegroundColor White
@@ -158,7 +157,7 @@ function Main {
     # Check/Install Node.js
     if (Test-Command "node") {
         $nodeVersion = Get-CommandVersion "node"
-        Write-Success "Node.js v$nodeVersion"
+        Write-Success "Node.js v${nodeVersion}"
     } else {
         Write-Fail "Node.js not found"
         Write-Host ""
@@ -176,7 +175,7 @@ function Main {
     # Check/Install Git
     if (Test-Command "git") {
         $gitVersion = Get-CommandVersion "git"
-        Write-Success "Git v$gitVersion"
+        Write-Success "Git v${gitVersion}"
     } else {
         Write-Fail "Git not found"
         Write-Host ""
@@ -213,7 +212,7 @@ function Main {
     $items = Get-ChildItem -Force | Where-Object { $_.Name -notmatch "^install\.(ps1|sh)$" }
 
     if ($items.Count -eq 0) {
-        Write-Success "Using current directory: $targetDir"
+        Write-Success "Using current directory: ${targetDir}"
     } else {
         Write-Info "Current directory is not empty."
         $continue = Read-Host "  Continue installation here? (y/N)"
@@ -221,7 +220,7 @@ function Main {
             Write-Info "Installation cancelled. Create a new folder for your project and run again."
             exit 0
         }
-        Write-Success "Using current directory: $targetDir"
+        Write-Success "Using current directory: ${targetDir}"
     }
 
     # ===== STEP 4: Main Menu =====
@@ -287,6 +286,12 @@ function Main {
         Write-Fail "Failed to install BMAD Method"
         exit 1
     }
+
+    # Verify BMAD installed
+    if (-not (Test-Path "_bmad")) {
+        Write-Fail "BMAD Method installation failed - _bmad folder not created"
+        exit 1
+    }
     Write-Success "BMAD Method installed"
 
     # Clone TeamBuilder module
@@ -297,11 +302,29 @@ function Main {
         Remove-Item -Recurse -Force $teambuilderDir
     }
 
-    git clone --depth 1 https://github.com/dexusno/teambuilder.git temp-teambuilder 2>$null
+    # Clone and check for errors
+    $cloneOutput = git clone --depth 1 https://github.com/dexusno/teambuilder.git temp-teambuilder 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Fail "Failed to clone TeamBuilder repository"
+        Write-Info "Error: ${cloneOutput}"
+        exit 1
+    }
+
+    # Verify and move
     if (Test-Path "temp-teambuilder\teambuilder") {
         Move-Item "temp-teambuilder\teambuilder" $teambuilderDir
+    } else {
+        Write-Fail "TeamBuilder module not found in cloned repository"
+        Remove-Item -Recurse -Force "temp-teambuilder" -ErrorAction SilentlyContinue
+        exit 1
     }
     Remove-Item -Recurse -Force "temp-teambuilder" -ErrorAction SilentlyContinue
+
+    # Verify TeamBuilder installed
+    if (-not (Test-Path $teambuilderDir)) {
+        Write-Fail "TeamBuilder installation failed"
+        exit 1
+    }
     Write-Success "TeamBuilder module installed"
 
     # Register TeamBuilder in manifests
@@ -309,10 +332,21 @@ function Main {
 
     $agentManifest = "_bmad\_config\agent-manifest.csv"
     $manifestEntries = "_bmad\teambuilder\agent-manifest-entries.csv"
-    if ((Test-Path $agentManifest) -and (Test-Path $manifestEntries)) {
-        $entries = Get-Content $manifestEntries
-        Add-Content -Path $agentManifest -Value $entries
+
+    if (-not (Test-Path $agentManifest)) {
+        Write-Fail "Agent manifest not found at ${agentManifest}"
+        Write-Info "BMAD may not have installed correctly"
+        exit 1
     }
+
+    if (-not (Test-Path $manifestEntries)) {
+        Write-Fail "TeamBuilder manifest entries not found"
+        Write-Info "TeamBuilder module may be incomplete"
+        exit 1
+    }
+
+    $entries = Get-Content $manifestEntries
+    Add-Content -Path $agentManifest -Value $entries
     Write-Success "TeamBuilder registered"
 
     # Create .mcp.json
@@ -373,16 +407,17 @@ Thumbs.db
     # ===== STEP 6: Complete =====
     Write-Header "Installation Complete!"
 
-    Write-Host "  ╔═══════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "  ║  Success! Your project is ready.                  ║" -ForegroundColor Green
-    Write-Host "  ║                                                   ║" -ForegroundColor Green
-    Write-Host "  ║  Next steps:                                      ║" -ForegroundColor Green
-    Write-Host "  ║    1. cd $(Split-Path $targetDir -Leaf)" -ForegroundColor Green
-    Write-Host "  ║    2. claude .                                    ║" -ForegroundColor Green
-    Write-Host "  ║    3. /bmad:teambuilder:agents:teambuilder-guide  ║" -ForegroundColor Green
-    Write-Host "  ║                                                   ║" -ForegroundColor Green
-    Write-Host "  ║  Happy team building!                             ║" -ForegroundColor Green
-    Write-Host "  ╚═══════════════════════════════════════════════════╝" -ForegroundColor Green
+    $folderName = Split-Path $targetDir -Leaf
+    Write-Host "  +-------------------------------------------------+" -ForegroundColor Green
+    Write-Host "  |  Success! Your project is ready.                |" -ForegroundColor Green
+    Write-Host "  |                                                 |" -ForegroundColor Green
+    Write-Host "  |  Next steps:                                    |" -ForegroundColor Green
+    Write-Host "  |    1. Open terminal in this folder              |" -ForegroundColor Green
+    Write-Host "  |    2. Run: claude .                             |" -ForegroundColor Green
+    Write-Host "  |    3. Type: /bmad:teambuilder:agents:teambuilder-guide" -ForegroundColor Green
+    Write-Host "  |                                                 |" -ForegroundColor Green
+    Write-Host "  |  Happy team building!                           |" -ForegroundColor Green
+    Write-Host "  +-------------------------------------------------+" -ForegroundColor Green
     Write-Host ""
 }
 

@@ -50,10 +50,10 @@ print_info() {
 # Banner
 show_banner() {
     echo ""
-    echo -e "${MAGENTA}  ╔═══════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}  ║        TeamBuilder Project Installer              ║${NC}"
-    echo -e "${MAGENTA}  ║        github.com/dexusno/teambuilder             ║${NC}"
-    echo -e "${MAGENTA}  ╚═══════════════════════════════════════════════════╝${NC}"
+    echo -e "${MAGENTA}  +-------------------------------------------------+${NC}"
+    echo -e "${MAGENTA}  |        TeamBuilder Project Installer            |${NC}"
+    echo -e "${MAGENTA}  |        github.com/dexusno/teambuilder           |${NC}"
+    echo -e "${MAGENTA}  +-------------------------------------------------+${NC}"
     echo ""
 }
 
@@ -148,16 +148,12 @@ main() {
     else
         print_fail "Claude Code not found"
         echo ""
-        echo -e "  ${YELLOW}╔═══════════════════════════════════════════════════╗${NC}"
-        echo -e "  ${YELLOW}║  Claude Code is REQUIRED for this project.        ║${NC}"
-        echo -e "  ${YELLOW}║                                                   ║${NC}"
-        echo -e "  ${YELLOW}║  It requires a paid Claude subscription:          ║${NC}"
-        echo -e "  ${YELLOW}║    - Pro: \$20/month                               ║${NC}"
-        echo -e "  ${YELLOW}║    - Max: \$100-200/month                          ║${NC}"
-        echo -e "  ${YELLOW}║    - Or API credits                               ║${NC}"
-        echo -e "  ${YELLOW}║                                                   ║${NC}"
-        echo -e "  ${YELLOW}║  More info: https://claude.ai/pricing             ║${NC}"
-        echo -e "  ${YELLOW}╚═══════════════════════════════════════════════════╝${NC}"
+        echo -e "  ${YELLOW}+-------------------------------------------------+${NC}"
+        echo -e "  ${YELLOW}|  Claude Code is REQUIRED for this project.      |${NC}"
+        echo -e "  ${YELLOW}|                                                 |${NC}"
+        echo -e "  ${YELLOW}|  It requires a paid Claude subscription.        |${NC}"
+        echo -e "  ${YELLOW}|  See: https://claude.ai/pricing                 |${NC}"
+        echo -e "  ${YELLOW}+-------------------------------------------------+${NC}"
         echo ""
         echo "  1. I have a Claude account - proceed with setup"
         echo "  2. I don't have a Claude account - exit"
@@ -317,6 +313,12 @@ main() {
         print_fail "Failed to install BMAD Method"
         exit 1
     fi
+
+    # Verify BMAD installed
+    if [ ! -d "_bmad" ]; then
+        print_fail "BMAD Method installation failed - _bmad folder not created"
+        exit 1
+    fi
     print_success "BMAD Method installed"
 
     # Clone TeamBuilder module
@@ -325,20 +327,47 @@ main() {
 
     [ -d "$teambuilder_dir" ] && rm -rf "$teambuilder_dir"
 
-    git clone --depth 1 https://github.com/dexusno/teambuilder.git temp-teambuilder 2>/dev/null
+    # Clone and check for errors
+    if ! git clone --depth 1 https://github.com/dexusno/teambuilder.git temp-teambuilder 2>&1; then
+        print_fail "Failed to clone TeamBuilder repository"
+        exit 1
+    fi
+
+    # Verify and move
     if [ -d "temp-teambuilder/teambuilder" ]; then
         mv temp-teambuilder/teambuilder "$teambuilder_dir"
+    else
+        print_fail "TeamBuilder module not found in cloned repository"
+        rm -rf temp-teambuilder 2>/dev/null
+        exit 1
     fi
-    rm -rf temp-teambuilder
+    rm -rf temp-teambuilder 2>/dev/null
+
+    # Verify TeamBuilder installed
+    if [ ! -d "$teambuilder_dir" ]; then
+        print_fail "TeamBuilder installation failed"
+        exit 1
+    fi
     print_success "TeamBuilder module installed"
 
     # Register TeamBuilder in manifests
     print_step "Registering TeamBuilder in BMAD manifests..."
     local agent_manifest="_bmad/_config/agent-manifest.csv"
     local manifest_entries="_bmad/teambuilder/agent-manifest-entries.csv"
-    if [ -f "$agent_manifest" ] && [ -f "$manifest_entries" ]; then
-        cat "$manifest_entries" >> "$agent_manifest"
+
+    if [ ! -f "$agent_manifest" ]; then
+        print_fail "Agent manifest not found at $agent_manifest"
+        print_info "BMAD may not have installed correctly"
+        exit 1
     fi
+
+    if [ ! -f "$manifest_entries" ]; then
+        print_fail "TeamBuilder manifest entries not found"
+        print_info "TeamBuilder module may be incomplete"
+        exit 1
+    fi
+
+    cat "$manifest_entries" >> "$agent_manifest"
     print_success "TeamBuilder registered"
 
     # Create .mcp.json
@@ -397,16 +426,16 @@ EOF
     print_header "Installation Complete!"
 
     local folder_name=$(basename "$target_dir")
-    echo -e "  ${GREEN}╔═══════════════════════════════════════════════════╗${NC}"
-    echo -e "  ${GREEN}║  Success! Your project is ready.                  ║${NC}"
-    echo -e "  ${GREEN}║                                                   ║${NC}"
-    echo -e "  ${GREEN}║  Next steps:                                      ║${NC}"
-    echo -e "  ${GREEN}║    1. cd $folder_name${NC}"
-    echo -e "  ${GREEN}║    2. claude .                                    ║${NC}"
-    echo -e "  ${GREEN}║    3. /bmad:teambuilder:agents:teambuilder-guide  ║${NC}"
-    echo -e "  ${GREEN}║                                                   ║${NC}"
-    echo -e "  ${GREEN}║  Happy team building!                             ║${NC}"
-    echo -e "  ${GREEN}╚═══════════════════════════════════════════════════╝${NC}"
+    echo -e "  ${GREEN}+-------------------------------------------------+${NC}"
+    echo -e "  ${GREEN}|  Success! Your project is ready.                |${NC}"
+    echo -e "  ${GREEN}|                                                 |${NC}"
+    echo -e "  ${GREEN}|  Next steps:                                    |${NC}"
+    echo -e "  ${GREEN}|    1. Open terminal in this folder              |${NC}"
+    echo -e "  ${GREEN}|    2. Run: claude .                             |${NC}"
+    echo -e "  ${GREEN}|    3. Type: /bmad:teambuilder:agents:teambuilder-guide${NC}"
+    echo -e "  ${GREEN}|                                                 |${NC}"
+    echo -e "  ${GREEN}|  Happy team building!                           |${NC}"
+    echo -e "  ${GREEN}+-------------------------------------------------+${NC}"
     echo ""
 }
 
