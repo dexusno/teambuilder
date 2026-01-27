@@ -358,6 +358,7 @@ function Main {
             "bmad:teambuilder:agents:team-architect,_bmad/teambuilder/agents/team-architect.md"
             "bmad:teambuilder:agents:agent-improver,_bmad/teambuilder/agents/agent-improver.md"
             "bmad:teambuilder:agents:quality-guardian,_bmad/teambuilder/agents/quality-guardian.md"
+            "bmad:teambuilder:agents:tool-scout,_bmad/teambuilder/agents/tool-scout.md"
         )
         Add-Content -Path $agentManifest -Value ($entries -join "`n")
     }

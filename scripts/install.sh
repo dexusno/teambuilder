@@ -378,6 +378,7 @@ bmad:teambuilder:agents:teambuilder-guide,_bmad/teambuilder/agents/teambuilder-g
 bmad:teambuilder:agents:team-architect,_bmad/teambuilder/agents/team-architect.md
 bmad:teambuilder:agents:agent-improver,_bmad/teambuilder/agents/agent-improver.md
 bmad:teambuilder:agents:quality-guardian,_bmad/teambuilder/agents/quality-guardian.md
+bmad:teambuilder:agents:tool-scout,_bmad/teambuilder/agents/tool-scout.md
 EOF
     fi
     print_success "TeamBuilder registered"
