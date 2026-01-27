@@ -2,10 +2,13 @@
 
 pattern_id: "research-intelligence"
 pattern_name: "Research & Intelligence Team"
-version: "1.0"
+version: "1.1"
 
 pattern_type: "research"
 primary_domain: "research-intelligence"
+secondary_domains:
+  - "analytics"
+  - "data-analysis"
 
 characteristics:
   team_size: "medium"  # 6-8 agents
@@ -18,6 +21,9 @@ use_when:
   - "Market research, competitive intelligence"
   - "Information gathering and synthesis"
   - "Academic or deep research"
+  - "Data analysis and business intelligence"
+  - "Analytics and insight generation"
+  - "Trend analysis and forecasting"
 
 key_learnings:
   - name: "Iterative Search Refinement"
@@ -26,27 +32,38 @@ key_learnings:
     description: "Multiple sources for validation"
   - name: "Synthesis Focus"
     description: "Connecting insights from diverse sources"
+  - name: "Hypothesis-Driven Analysis"
+    description: "Form hypothesis → Gather data → Test → Refine (for analytics)"
 
 agent_structure:
-  - "Research Strategist / Query Master"
-  - "Search Specialist(s)"
-  - "Source Evaluator / Librarian"
-  - "Synthesis Analyst / Weaver"
-  - "Fact Checker / Verifier"
-  - "Report Writer"
+  research_focus:
+    - "Research Strategist / Query Master"
+    - "Search Specialist(s)"
+    - "Source Evaluator / Librarian"
+    - "Synthesis Analyst / Weaver"
+    - "Fact Checker / Verifier"
+    - "Report Writer"
+  analytics_focus:
+    - "Analytics Lead / Question Framer"
+    - "Data Gatherer(s)"
+    - "Data Quality Specialist"
+    - "Insights Analyst"
+    - "Validation Specialist"
+    - "Insights Communicator"
 
 workflow_characteristics:
-  - "Query design and refinement"
-  - "Multi-source search"
-  - "Source credibility evaluation"
-  - "Insight synthesis"
-  - "Report generation"
+  - "Query/hypothesis design and refinement"
+  - "Multi-source search or data gathering"
+  - "Source/data credibility evaluation"
+  - "Insight synthesis and pattern recognition"
+  - "Report/dashboard generation"
 
 quality_indicators:
-  - "Search methodology expertise"
-  - "Source evaluation rigor"
-  - "Synthesis ability"
+  - "Search/analysis methodology expertise"
+  - "Source/data evaluation rigor"
+  - "Synthesis and insight ability"
   - "Iterative refinement mindset"
+  - "Clear communication of findings and limitations"
 
 tags:
   - "research"
@@ -54,3 +71,7 @@ tags:
   - "search"
   - "synthesis"
   - "investigation"
+  - "analytics"
+  - "data-analysis"
+  - "insights"
+  - "business-intelligence"

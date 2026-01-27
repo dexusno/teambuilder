@@ -72,8 +72,8 @@ Each pattern contains 6 files:
 ### 3. Research / Intelligence Pattern
 **Directory:** `research-intelligence/`
 **Type:** Iterative search and synthesis team (6-8 agents)
-**Best For:** Market research, competitive intelligence, academic research, investigation
-**Key Learning:** Query refinement, source evaluation, triangulation, synthesis
+**Best For:** Market research, competitive intelligence, academic research, investigation, data analysis, business intelligence
+**Key Learning:** Query refinement, source evaluation, triangulation, synthesis, hypothesis-driven analysis
 
 ### 4. Planning / Strategy Pattern
 **Directory:** `planning-strategy/`
@@ -86,6 +86,12 @@ Each pattern contains 6 files:
 **Type:** Creative process team (6-7 agents)
 **Best For:** Content creation, marketing, creative projects, brand work
 **Key Learning:** Creative stages (ideation → creation → review → optimization), brand voice, audience focus
+
+### 6. Operations / Process Excellence Pattern
+**Directory:** `operations-process/`
+**Type:** Structured improvement team (5-7 agents)
+**Best For:** Process improvement, operational efficiency, continuous improvement, quality management, Lean/Six Sigma, Kaizen
+**Key Learning:** DMAIC methodology, value stream mapping, root cause analysis, data-driven decisions, control for sustainability
 
 ## Using Patterns
 
@@ -219,12 +225,12 @@ When adding new patterns:
 
 ## Pattern Evolution
 
-**Current Version:** 2.0 (5 patterns)
+**Current Version:** 3.0 (6 patterns)
 
 **Future Enhancements:**
 - Additional domain patterns (legal, medical, financial)
 - Advanced collaboration models (distributed, asynchronous)
-- Specialized workflow patterns (compliance, audit, research)
+- Specialized workflow patterns (compliance, audit)
 - Pattern combinations (hybrid patterns)
 
 **Feedback:**
@@ -241,12 +247,13 @@ If generated teams consistently struggle with certain domains or if new patterns
 |---------|-----------|---------------|----------|--------------|
 | ITIL/Domain Expert | 12 | Formal | Governance, compliance | Dual-mandate reps, formal processes |
 | Software Development | 6-8 | Agile | Dev projects, code | Sprint workflows, scrum roles |
-| Research/Intelligence | 6-8 | Iterative | Research, analysis | Source evaluation, synthesis |
+| Research/Intelligence | 6-8 | Iterative | Research, analysis, data/BI | Source evaluation, synthesis |
 | Planning/Strategy | 6-8 | Consultative | Planning, decisions | Multi-perspective, risk analysis |
 | Creative/Content | 6-7 | Creative Process | Content, creative work | Brand voice, creative stages |
+| Operations/Process | 5-7 | Structured Improvement | Process improvement, Lean/Six Sigma | DMAIC, root cause, sustainability |
 
 ---
 
 **Remember:** Patterns are learning tools, not copying tools. The goal is to generate teams as high quality as these patterns, not to replicate these patterns.
 
-_Pattern Library v2.0 - 5 diverse patterns teaching composition principles_
+_Pattern Library v3.0 - 6 diverse patterns teaching composition principles_

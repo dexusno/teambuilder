@@ -1,0 +1,104 @@
+# Operations / Process Excellence Pattern Metadata
+
+pattern_id: "operations-process"
+pattern_name: "Operations & Process Excellence Team"
+version: "1.0"
+
+pattern_type: "operations"
+primary_domain: "operational-excellence"
+secondary_domains:
+  - "quality-improvement"
+  - "continuous-improvement"
+
+characteristics:
+  team_size: "medium"  # 5-7 agents
+  specialization: "moderate"
+  collaboration: "structured-improvement"
+  workflow_style: "dmaic-kaizen"
+  decision_making: "data-driven-consensus"
+  pace: "measured-systematic"
+
+use_when:
+  - "Process improvement initiatives"
+  - "Operational efficiency projects"
+  - "Continuous improvement (Kaizen)"
+  - "Quality management and defect reduction"
+  - "Waste elimination and lean transformation"
+  - "Service delivery optimization"
+  - "IT operations and incident management"
+  - "Manufacturing or logistics optimization"
+
+key_learnings:
+  - name: "DMAIC Methodology"
+    description: "Define-Measure-Analyze-Improve-Control structured improvement cycle"
+
+  - name: "Value Stream Mapping"
+    description: "Visualize current state, identify waste, design future state"
+
+  - name: "Root Cause Analysis"
+    description: "Go beyond symptoms to find true underlying causes"
+
+  - name: "Continuous Improvement Culture"
+    description: "Small incremental improvements compound over time"
+
+  - name: "Data-Driven Decision Making"
+    description: "Measure before and after, base decisions on evidence"
+
+agent_structure:
+  core_team:
+    - "Process Champion / Improvement Lead"
+    - "Process Analyst / Data Analyst"
+    - "Subject Matter Expert / Process Owner"
+    - "Quality Specialist / Six Sigma Practitioner"
+    - "Change Facilitator / Kaizen Coach"
+    - "Implementation Coordinator"
+    - "Metrics & Control Specialist (optional)"
+
+collaboration_model:
+  style: "structured-improvement"
+  decision_authority: "Process Champion (direction), Data Analyst (evidence), SME (feasibility)"
+  ceremonies: "Kaizen events, gemba walks, improvement reviews, control checkpoints"
+  pace: "Measured - improvement cycles vary from days to months"
+
+workflow_characteristics:
+  typical_workflows:
+    - "DMAIC Improvement Cycle"
+    - "Value Stream Mapping Workshop"
+    - "Kaizen Event / Rapid Improvement"
+    - "Root Cause Analysis (5 Whys, Fishbone)"
+    - "Control Chart Implementation"
+  iteration: "Improvement cycles with defined phases"
+
+quality_indicators:
+  - "Lean/Six Sigma terminology (DMAIC, Kaizen, gemba)"
+  - "Data-driven mindset (metrics, baselines, targets)"
+  - "Root cause focus (not just symptoms)"
+  - "Sustainability emphasis (control phase)"
+  - "Waste identification (8 wastes of Lean)"
+
+generation_guidance:
+  - "Use operational excellence terminology"
+  - "Include measurement and baseline steps"
+  - "Root cause analysis is critical, not optional"
+  - "Control/sustainability step prevents backsliding"
+  - "Cross-functional perspective (not just one department)"
+  - "Agents should understand waste types and value concepts"
+
+example_use_cases:
+  - "Manufacturing process optimization"
+  - "Service delivery improvement"
+  - "IT incident reduction (ITIL + Lean)"
+  - "Supply chain efficiency"
+  - "Healthcare process improvement"
+  - "Call center optimization"
+  - "Software deployment pipeline improvement"
+
+tags:
+  - "operations"
+  - "process-improvement"
+  - "lean"
+  - "six-sigma"
+  - "kaizen"
+  - "continuous-improvement"
+  - "quality"
+  - "dmaic"
