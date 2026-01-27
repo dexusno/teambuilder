@@ -2,7 +2,37 @@
 
 **One-command installer for BMAD + TeamBuilder projects.**
 
-Create custom AI agent teams tailored to your exact needs using the BMAD Method.
+---
+
+## What is This?
+
+### The BMAD Method
+
+[BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) is an open-source framework that lets you create **AI agent teams** using Claude Code. Instead of talking to one generic AI, you can build specialized agents - each with their own expertise, personality, and role - that work together on complex tasks.
+
+Think of it like assembling a team of experts: a project manager, a developer, a researcher, a quality reviewer - each with distinct skills and perspectives. BMAD provides the structure to define these agents and orchestrate how they collaborate.
+
+*Note: BMAD Method is created and maintained by [bmad-code-org](https://github.com/bmad-code-org). TeamBuilder is a community project that builds on top of it.*
+
+### What TeamBuilder Adds
+
+Creating agent teams from scratch requires writing detailed agent definitions, designing workflows, and understanding BMAD's structure. **TeamBuilder simplifies this.**
+
+With TeamBuilder, you get:
+
+- **Guided Team Creation** - Answer questions about what you need, and TeamBuilder generates a custom team for you
+- **Quality Assurance** - Built-in validation ensures your agents are distinct, well-defined, and work together effectively
+- **Pattern Library** - Learn from 5 proven team patterns (research teams, development teams, creative teams, and more)
+- **Tool Recommendations** - Get suggestions for MCP integrations that enhance your team's capabilities
+- **One-Command Setup** - This installer sets up everything: BMAD, TeamBuilder, and useful tools
+
+### Who Is This For?
+
+- **Beginners** who want to explore AI agent teams without learning BMAD internals
+- **Teams** who need specialized AI collaborators for specific domains (home automation, research, content creation, etc.)
+- **Developers** who want a fast way to bootstrap BMAD projects with best practices built in
+
+---
 
 ## Prerequisites
 
