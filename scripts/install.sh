@@ -364,6 +364,19 @@ main() {
     fi
 
     cat "$manifest_entries" >> "$agent_manifest"
+
+    # Add teambuilder to modules list in manifest.yaml
+    local main_manifest="_bmad/_config/manifest.yaml"
+    if [ -f "$main_manifest" ]; then
+        if ! grep -q "teambuilder" "$main_manifest"; then
+            # Portable: append after the last module entry
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' 's/^  - cis$/  - cis\n  - teambuilder/' "$main_manifest"
+            else
+                sed -i 's/^  - cis$/  - cis\n  - teambuilder/' "$main_manifest"
+            fi
+        fi
+    fi
     print_success "TeamBuilder registered"
 
     # Create .mcp.json

@@ -343,6 +343,16 @@ function Main {
 
     $entries = Get-Content $manifestEntries
     Add-Content -Path $agentManifest -Value $entries
+
+    # Add teambuilder to modules list in manifest.yaml
+    $mainManifest = "_bmad\_config\manifest.yaml"
+    if (Test-Path $mainManifest) {
+        $content = Get-Content $mainManifest -Raw
+        if ($content -notmatch "teambuilder") {
+            $content = $content -replace "(modules:\s*\n(?:  - \w+\n)+)", "`$1  - teambuilder`n"
+            Set-Content -Path $mainManifest -Value $content -NoNewline
+        }
+    }
     Write-Success "TeamBuilder registered"
 
     # Create .mcp.json
