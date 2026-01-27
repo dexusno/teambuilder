@@ -148,22 +148,18 @@ main() {
     else
         print_fail "Claude Code not found"
         echo ""
-        echo -e "  ${YELLOW}+-------------------------------------------------+${NC}"
-        echo -e "  ${YELLOW}|  Claude Code is REQUIRED for this project.      |${NC}"
-        echo -e "  ${YELLOW}|                                                 |${NC}"
-        echo -e "  ${YELLOW}|  It requires a paid Claude subscription.        |${NC}"
-        echo -e "  ${YELLOW}|  See: https://claude.ai/pricing                 |${NC}"
-        echo -e "  ${YELLOW}+-------------------------------------------------+${NC}"
+        echo -e "  ${YELLOW}Claude Code is required for this project.${NC}"
+        echo -e "  ${YELLOW}More info: https://claude.ai${NC}"
         echo ""
-        echo "  1. I have a Claude account - proceed with setup"
-        echo "  2. I don't have a Claude account - exit"
+        echo "  1. I have Claude Code - install it now"
+        echo "  2. Exit"
         echo ""
         read -p "  Select option (1-2): " choice
 
         if [ "$choice" != "1" ]; then
             echo ""
-            print_info "Visit https://claude.ai/pricing to sign up."
-            print_info "Run this installer again after subscribing."
+            print_info "Visit https://claude.ai to learn more."
+            print_info "Run this installer again when ready."
             echo ""
             exit 0
         fi

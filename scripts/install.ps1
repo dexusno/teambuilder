@@ -118,23 +118,19 @@ function Main {
     } else {
         Write-Fail "Claude Code not found"
         Write-Host ""
-        Write-Host "  +-------------------------------------------------+" -ForegroundColor Yellow
-        Write-Host "  |  Claude Code is REQUIRED for this project.      |" -ForegroundColor Yellow
-        Write-Host "  |                                                 |" -ForegroundColor Yellow
-        Write-Host "  |  It requires a paid Claude subscription.        |" -ForegroundColor Yellow
-        Write-Host "  |  See: https://claude.ai/pricing                 |" -ForegroundColor Yellow
-        Write-Host "  +-------------------------------------------------+" -ForegroundColor Yellow
+        Write-Host "  Claude Code is required for this project." -ForegroundColor Yellow
+        Write-Host "  More info: https://claude.ai" -ForegroundColor Yellow
         Write-Host ""
-        Write-Host "  1. I have a Claude account - proceed with setup" -ForegroundColor White
-        Write-Host "  2. I don't have a Claude account - exit" -ForegroundColor White
+        Write-Host "  1. I have Claude Code - install it now" -ForegroundColor White
+        Write-Host "  2. Exit" -ForegroundColor White
         Write-Host ""
 
         $choice = Read-Host "  Select option (1-2)"
 
         if ($choice -ne "1") {
             Write-Host ""
-            Write-Info "Visit https://claude.ai/pricing to sign up."
-            Write-Info "Run this installer again after subscribing."
+            Write-Info "Visit https://claude.ai to learn more."
+            Write-Info "Run this installer again when ready."
             Write-Host ""
             exit 0
         }

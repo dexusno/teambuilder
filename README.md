@@ -36,7 +36,7 @@ With TeamBuilder, you get:
 
 ## Prerequisites
 
-- **Claude Code** with a paid subscription ([Claude Pro, Max, or API](https://claude.ai))
+- **[Claude Code](https://claude.ai)** - Anthropic's CLI for Claude
 - **Node.js** (installed automatically if missing)
 - **Git** (installed automatically if missing)
 

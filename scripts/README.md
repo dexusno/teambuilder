@@ -34,7 +34,7 @@ chmod +x install.sh
 
 ## What the Scripts Do
 
-1. **Check Claude Code** - Required (paid subscription needed)
+1. **Check Claude Code** - Required for this project
 2. **Check/Install Prerequisites** - Node.js, Git
 3. **Handle Project Folder** - Create or use existing
 4. **Install BMAD Method** - Latest alpha via npx
