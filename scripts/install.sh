@@ -463,16 +463,16 @@ EOF
     print_header "Installation Complete!"
 
     local folder_name=$(basename "$target_dir")
-    echo -e "  ${GREEN}+-------------------------------------------------+${NC}"
-    echo -e "  ${GREEN}|  Success! Your project is ready.                |${NC}"
-    echo -e "  ${GREEN}|                                                 |${NC}"
-    echo -e "  ${GREEN}|  Next steps:                                    |${NC}"
-    echo -e "  ${GREEN}|    1. Open terminal in this folder              |${NC}"
-    echo -e "  ${GREEN}|    2. Run: claude .                             |${NC}"
-    echo -e "  ${GREEN}|    3. Type: /bmad:teambuilder:agents:teambuilder-guide${NC}"
-    echo -e "  ${GREEN}|                                                 |${NC}"
-    echo -e "  ${GREEN}|  Happy team building!                           |${NC}"
-    echo -e "  ${GREEN}+-------------------------------------------------+${NC}"
+    echo -e "  ${GREEN}+-------------------------------------------------------------+${NC}"
+    echo -e "  ${GREEN}|  Success! Your project is ready.                            |${NC}"
+    echo -e "  ${GREEN}|                                                             |${NC}"
+    echo -e "  ${GREEN}|  Next steps:                                                |${NC}"
+    echo -e "  ${GREEN}|    1. Open terminal in this folder                          |${NC}"
+    echo -e "  ${GREEN}|    2. Run: claude .                                         |${NC}"
+    echo -e "  ${GREEN}|    3. Type: /bmad:teambuilder:agents:teambuilder-guide      |${NC}"
+    echo -e "  ${GREEN}|                                                             |${NC}"
+    echo -e "  ${GREEN}|  Happy team building!                                       |${NC}"
+    echo -e "  ${GREEN}+-------------------------------------------------------------+${NC}"
     echo ""
 }
 

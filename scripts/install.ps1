@@ -444,16 +444,16 @@ Thumbs.db
     Write-Header "Installation Complete!"
 
     $folderName = Split-Path $targetDir -Leaf
-    Write-Host "  +-------------------------------------------------+" -ForegroundColor Green
-    Write-Host "  |  Success! Your project is ready.                |" -ForegroundColor Green
-    Write-Host "  |                                                 |" -ForegroundColor Green
-    Write-Host "  |  Next steps:                                    |" -ForegroundColor Green
-    Write-Host "  |    1. Open terminal in this folder              |" -ForegroundColor Green
-    Write-Host "  |    2. Run: claude .                             |" -ForegroundColor Green
-    Write-Host "  |    3. Type: /bmad:teambuilder:agents:teambuilder-guide" -ForegroundColor Green
-    Write-Host "  |                                                 |" -ForegroundColor Green
-    Write-Host "  |  Happy team building!                           |" -ForegroundColor Green
-    Write-Host "  +-------------------------------------------------+" -ForegroundColor Green
+    Write-Host "  +-------------------------------------------------------------+" -ForegroundColor Green
+    Write-Host "  |  Success! Your project is ready.                            |" -ForegroundColor Green
+    Write-Host "  |                                                             |" -ForegroundColor Green
+    Write-Host "  |  Next steps:                                                |" -ForegroundColor Green
+    Write-Host "  |    1. Open terminal in this folder                          |" -ForegroundColor Green
+    Write-Host "  |    2. Run: claude .                                         |" -ForegroundColor Green
+    Write-Host "  |    3. Type: /bmad:teambuilder:agents:teambuilder-guide      |" -ForegroundColor Green
+    Write-Host "  |                                                             |" -ForegroundColor Green
+    Write-Host "  |  Happy team building!                                       |" -ForegroundColor Green
+    Write-Host "  +-------------------------------------------------------------+" -ForegroundColor Green
     Write-Host ""
 }
 
