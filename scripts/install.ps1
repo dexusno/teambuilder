@@ -352,15 +352,10 @@ function Main {
     Write-Step "Registering TeamBuilder in BMAD manifests..."
 
     $agentManifest = "_bmad\_config\agent-manifest.csv"
-    if (Test-Path $agentManifest) {
-        $entries = @(
-            "bmad:teambuilder:agents:teambuilder-guide,_bmad/teambuilder/agents/teambuilder-guide.md"
-            "bmad:teambuilder:agents:team-architect,_bmad/teambuilder/agents/team-architect.md"
-            "bmad:teambuilder:agents:agent-improver,_bmad/teambuilder/agents/agent-improver.md"
-            "bmad:teambuilder:agents:quality-guardian,_bmad/teambuilder/agents/quality-guardian.md"
-            "bmad:teambuilder:agents:tool-scout,_bmad/teambuilder/agents/tool-scout.md"
-        )
-        Add-Content -Path $agentManifest -Value ($entries -join "`n")
+    $manifestEntries = "_bmad\teambuilder\agent-manifest-entries.csv"
+    if ((Test-Path $agentManifest) -and (Test-Path $manifestEntries)) {
+        $entries = Get-Content $manifestEntries
+        Add-Content -Path $agentManifest -Value $entries
     }
     Write-Success "TeamBuilder registered"
 

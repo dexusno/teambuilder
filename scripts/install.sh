@@ -372,14 +372,9 @@ main() {
     # Register TeamBuilder in manifests
     print_step "Registering TeamBuilder in BMAD manifests..."
     local agent_manifest="_bmad/_config/agent-manifest.csv"
-    if [ -f "$agent_manifest" ]; then
-        cat >> "$agent_manifest" << 'EOF'
-bmad:teambuilder:agents:teambuilder-guide,_bmad/teambuilder/agents/teambuilder-guide.md
-bmad:teambuilder:agents:team-architect,_bmad/teambuilder/agents/team-architect.md
-bmad:teambuilder:agents:agent-improver,_bmad/teambuilder/agents/agent-improver.md
-bmad:teambuilder:agents:quality-guardian,_bmad/teambuilder/agents/quality-guardian.md
-bmad:teambuilder:agents:tool-scout,_bmad/teambuilder/agents/tool-scout.md
-EOF
+    local manifest_entries="_bmad/teambuilder/agent-manifest-entries.csv"
+    if [ -f "$agent_manifest" ] && [ -f "$manifest_entries" ]; then
+        cat "$manifest_entries" >> "$agent_manifest"
     fi
     print_success "TeamBuilder registered"
 

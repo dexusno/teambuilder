@@ -19,6 +19,10 @@ agents:
     path: "{project-root}/_bmad/teambuilder/agents/quality-guardian.md"
     role: "Final quality validator, critical reviewer"
 
+  - id: "tool-scout"
+    path: "{project-root}/_bmad/teambuilder/agents/tool-scout.md"
+    role: "MCP and tool researcher, recommends integrations for generated teams"
+
 workflow:
   phases:
 
@@ -155,10 +159,49 @@ workflow:
             - _bmad/teams/{team-name}/config.yaml (team metadata)
             - _bmad/teams/{team-name}/TEAM_README.md (team overview)
 
+        - step: 5
+          action: "research_tools"
+          agent: "tool-scout"
+          description: "Tool Scout researches MCPs and tools that would benefit the team"
+          inputs:
+            - "Team domain and purpose"
+            - "Agent roles and responsibilities"
+            - "Workflow requirements"
+          outputs:
+            - "Tool recommendations"
+            - "_bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md"
+          instructions: |
+            Tool Scout analyzes the team and recommends integrations:
+
+            1. Analyze team domain:
+               - What external systems will they interact with?
+               - What data sources do they need?
+               - What automation would help?
+
+            2. Research available tools:
+               - Official MCP servers
+               - Community MCPs
+               - Relevant APIs
+               - CLI tools
+
+            3. Evaluate and prioritize:
+               - Essential (team can't function well without)
+               - Recommended (significantly enhances capability)
+               - Optional (nice to have)
+
+            4. Create recommendations document:
+               - Tool name and type
+               - Why this team needs it
+               - Installation instructions
+               - Configuration for .mcp.json
+
+            5. Present 2-5 essential/recommended tools (not exhaustive list)
+
       completion_criteria:
         - "All agent files created"
         - "Workflows created (if applicable)"
         - "Team config created"
+        - "Tool recommendations provided"
         - "Generation complete, ready for review"
 
     # PHASE 3: Critical Review (Quality Guardian leads)
