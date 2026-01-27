@@ -62,7 +62,7 @@ cd C:\Projects\my-project
 .\install.ps1
 ```
 
-### Option B: Run Directly from GitHub
+### Option B: One-Liner from GitHub
 
 **Step 1:** Create and navigate to your project folder:
 ```powershell
@@ -70,9 +70,9 @@ mkdir my-project
 cd my-project
 ```
 
-**Step 2:** Run the installer:
+**Step 2:** Download and run the installer:
 ```powershell
-irm https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 | iex
+iwr https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 -OutFile install.ps1; .\install.ps1
 ```
 
 ---
