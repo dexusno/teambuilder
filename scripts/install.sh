@@ -3,10 +3,11 @@
 # TeamBuilder Project Installer for Linux/macOS
 # Installs BMAD Method + TeamBuilder module with all prerequisites.
 # Creates a ready-to-use project for building AI agent teams.
+# Run this script from inside your project folder.
 #
 # Usage:
-#   ./install.sh [project-name]
-#   ./install.sh                  # Uses current directory if empty
+#   mkdir my-project && cd my-project
+#   ./install.sh
 #
 # https://github.com/dexusno/teambuilder
 
@@ -132,7 +133,6 @@ install_package() {
 
 # Main installation
 main() {
-    local project_name="$1"
     local install_claude_code=false
     local install_memory_mcp=true
     local install_playwright_mcp=true
@@ -246,57 +246,20 @@ main() {
     # ===== STEP 3: Project Folder =====
     print_header "Step 3: Project Folder"
 
-    local target_dir=""
+    local target_dir="$(pwd)"
+    local item_count=$(ls -A 2>/dev/null | grep -v "^install\.\(ps1\|sh\)$" | wc -l)
 
-    if [ -n "$project_name" ]; then
-        # Argument provided
-        target_dir="$(pwd)/$project_name"
-        if [ -d "$target_dir" ]; then
-            print_info "Folder '$project_name' already exists."
-            read -p "  Use existing folder? (Y/n): " use_existing
-            if [[ "$use_existing" =~ ^[Nn] ]]; then
-                exit 0
-            fi
-        else
-            mkdir -p "$target_dir"
-            print_success "Created folder: $project_name"
-        fi
+    if [ "$item_count" -eq 0 ]; then
+        print_success "Using current directory: $target_dir"
     else
-        # No argument - check current directory
-        local item_count=$(ls -A 2>/dev/null | grep -v "^install\.\(ps1\|sh\)$" | wc -l)
-
-        if [ "$item_count" -eq 0 ]; then
-            target_dir="$(pwd)"
-            print_success "Using current directory"
-        else
-            print_info "Current directory is not empty."
-            echo ""
-            echo "  1. Install here anyway"
-            echo "  2. Create subfolder (enter name)"
-            echo "  3. Cancel"
-            echo ""
-            read -p "  Select option (1-3): " folder_choice
-
-            case "$folder_choice" in
-                1)
-                    target_dir="$(pwd)"
-                    print_success "Using current directory"
-                    ;;
-                2)
-                    read -p "  Enter folder name: " folder_name
-                    target_dir="$(pwd)/$folder_name"
-                    mkdir -p "$target_dir"
-                    print_success "Created folder: $folder_name"
-                    ;;
-                *)
-                    print_info "Installation cancelled."
-                    exit 0
-                    ;;
-            esac
+        print_info "Current directory is not empty."
+        read -p "  Continue installation here? (y/N): " continue_install
+        if [[ ! "$continue_install" =~ ^[Yy] ]]; then
+            print_info "Installation cancelled. Create a new folder for your project and run again."
+            exit 0
         fi
+        print_success "Using current directory: $target_dir"
     fi
-
-    cd "$target_dir"
 
     # ===== STEP 4: Main Menu =====
     print_header "Step 4: Installation Options"
@@ -447,5 +410,5 @@ EOF
     echo ""
 }
 
-# Run main with all arguments
-main "$@"
+# Run main
+main

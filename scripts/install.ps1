@@ -4,20 +4,14 @@
 .DESCRIPTION
     Installs BMAD Method + TeamBuilder module with all prerequisites.
     Creates a ready-to-use project for building AI agent teams.
-.PARAMETER ProjectName
-    Optional. Name of the project folder to create. If not provided,
-    uses current directory (if empty) or prompts for name.
+    Run this script from inside your project folder.
 .EXAMPLE
-    .\install.ps1 my-project
+    mkdir my-project
+    cd my-project
     .\install.ps1
 .LINK
     https://github.com/dexusno/teambuilder
 #>
-
-param(
-    [Parameter(Position=0)]
-    [string]$ProjectName
-)
 
 $ErrorActionPreference = "Stop"
 
@@ -215,58 +209,20 @@ function Main {
     # ===== STEP 3: Project Folder =====
     Write-Header "Step 3: Project Folder"
 
-    if ($ProjectName) {
-        # Argument provided - create folder
-        $targetDir = Join-Path (Get-Location) $ProjectName
-        if (Test-Path $targetDir) {
-            Write-Info "Folder '$ProjectName' already exists."
-            $use = Read-Host "  Use existing folder? (Y/n)"
-            if ($use -match "^[Nn]") {
-                exit 0
-            }
-        } else {
-            New-Item -ItemType Directory -Path $targetDir | Out-Null
-            Write-Success "Created folder: $ProjectName"
-        }
+    $targetDir = Get-Location
+    $items = Get-ChildItem -Force | Where-Object { $_.Name -notmatch "^install\.(ps1|sh)$" }
+
+    if ($items.Count -eq 0) {
+        Write-Success "Using current directory: $targetDir"
     } else {
-        # No argument - check current directory
-        $items = Get-ChildItem -Force | Where-Object { $_.Name -notmatch "^install\.(ps1|sh)$" }
-
-        if ($items.Count -eq 0) {
-            # Current directory is empty
-            $targetDir = Get-Location
-            Write-Success "Using current directory"
-        } else {
-            # Current directory not empty
-            Write-Info "Current directory is not empty."
-            Write-Host ""
-            Write-Host "  1. Install here anyway" -ForegroundColor White
-            Write-Host "  2. Create subfolder (enter name)" -ForegroundColor White
-            Write-Host "  3. Cancel" -ForegroundColor White
-            Write-Host ""
-
-            $choice = Read-Host "  Select option (1-3)"
-
-            switch ($choice) {
-                "1" {
-                    $targetDir = Get-Location
-                    Write-Success "Using current directory"
-                }
-                "2" {
-                    $folderName = Read-Host "  Enter folder name"
-                    $targetDir = Join-Path (Get-Location) $folderName
-                    New-Item -ItemType Directory -Path $targetDir | Out-Null
-                    Write-Success "Created folder: $folderName"
-                }
-                default {
-                    Write-Info "Installation cancelled."
-                    exit 0
-                }
-            }
+        Write-Info "Current directory is not empty."
+        $continue = Read-Host "  Continue installation here? (y/N)"
+        if ($continue -notmatch "^[Yy]") {
+            Write-Info "Installation cancelled. Create a new folder for your project and run again."
+            exit 0
         }
+        Write-Success "Using current directory: $targetDir"
     }
-
-    Set-Location $targetDir
 
     # ===== STEP 4: Main Menu =====
     Write-Header "Step 4: Installation Options"

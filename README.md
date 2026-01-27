@@ -18,35 +18,32 @@ Choose one of the two options below:
 
 ### Option A: Download Script First
 
-Use this if you want to save the script locally or review it before running.
-
 **Step 1:** Download the script: **[install.ps1](https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1)** (right-click → Save link as)
 
-**Step 2:** Open PowerShell (search "PowerShell" in Start menu)
+**Step 2:** Create a folder for your project and move the script there
 
-**Step 3:** Navigate to where you saved the script:
+**Step 3:** Open PowerShell and navigate to your project folder:
 ```powershell
-cd C:\Downloads
+cd C:\Projects\my-project
 ```
 
 **Step 4:** Run the script:
 ```powershell
-# Create a new project folder:
-.\install.ps1 my-project
-
-# Or run without arguments to use current folder (if empty) or get prompted:
 .\install.ps1
 ```
 
 ### Option B: Run Directly from GitHub
 
-Use this for a quick one-command install. Copy and paste this into PowerShell:
+**Step 1:** Create and navigate to your project folder:
+```powershell
+mkdir my-project
+cd my-project
+```
 
+**Step 2:** Run the installer:
 ```powershell
 irm https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 | iex
 ```
-
-The script will prompt you for a project name.
 
 ---
 
@@ -56,36 +53,33 @@ Choose one of the two options below:
 
 ### Option A: Download Script First
 
-Use this if you want to save the script locally or review it before running.
-
 **Step 1:** Download the script: **[install.sh](https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh)** (right-click → Save link as)
 
-**Step 2:** Open Terminal
+**Step 2:** Create a folder for your project and move the script there
 
-**Step 3:** Navigate to where you saved the script and make it executable:
+**Step 3:** Open Terminal and navigate to your project folder:
 ```bash
-cd ~/Downloads
+cd ~/Projects/my-project
 chmod +x install.sh
 ```
 
 **Step 4:** Run the script:
 ```bash
-# Create a new project folder:
-./install.sh my-project
-
-# Or run without arguments to use current folder (if empty) or get prompted:
 ./install.sh
 ```
 
 ### Option B: Run Directly from GitHub
 
-Use this for a quick one-command install. Copy and paste this into Terminal:
+**Step 1:** Create and navigate to your project folder:
+```bash
+mkdir my-project
+cd my-project
+```
 
+**Step 2:** Run the installer:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh | bash
 ```
-
-The script will prompt you for a project name.
 
 ---
 
