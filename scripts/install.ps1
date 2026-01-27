@@ -353,6 +353,36 @@ function Main {
             Set-Content -Path $mainManifest -Value $content -NoNewline
         }
     }
+
+    # Create Claude Code command files for TeamBuilder agents
+    $commandsDir = ".claude\commands\bmad\teambuilder\agents"
+    if (-not (Test-Path $commandsDir)) {
+        New-Item -ItemType Directory -Path $commandsDir -Force | Out-Null
+    }
+
+    # Create command file for each agent
+    $agentFiles = Get-ChildItem "_bmad\teambuilder\agents\*.md" -ErrorAction SilentlyContinue
+    foreach ($agentFile in $agentFiles) {
+        $agentName = $agentFile.BaseName
+        $commandFile = "$commandsDir\$agentName.md"
+        $commandContent = @"
+---
+name: '$agentName'
+description: '$agentName agent'
+---
+
+You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
+
+<agent-activation CRITICAL="TRUE">
+1. LOAD the FULL agent file from @_bmad/teambuilder/agents/$agentName.md
+2. READ its entire contents - this contains the complete agent persona, menu, and instructions
+3. Execute ALL activation steps exactly as written in the agent file
+4. Follow the agent's persona and menu system precisely
+5. Stay in character throughout the session
+</agent-activation>
+"@
+        Set-Content -Path $commandFile -Value $commandContent
+    }
     Write-Success "TeamBuilder registered"
 
     # Create .mcp.json

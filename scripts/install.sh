@@ -377,6 +377,34 @@ main() {
             fi
         fi
     fi
+
+    # Create Claude Code command files for TeamBuilder agents
+    local commands_dir=".claude/commands/bmad/teambuilder/agents"
+    mkdir -p "$commands_dir"
+
+    # Create command file for each agent
+    for agent_file in _bmad/teambuilder/agents/*.md; do
+        if [ -f "$agent_file" ]; then
+            local agent_name=$(basename "$agent_file" .md)
+            local command_file="$commands_dir/$agent_name.md"
+            cat > "$command_file" << CMDEOF
+---
+name: '$agent_name'
+description: '$agent_name agent'
+---
+
+You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
+
+<agent-activation CRITICAL="TRUE">
+1. LOAD the FULL agent file from @_bmad/teambuilder/agents/$agent_name.md
+2. READ its entire contents - this contains the complete agent persona, menu, and instructions
+3. Execute ALL activation steps exactly as written in the agent file
+4. Follow the agent's persona and menu system precisely
+5. Stay in character throughout the session
+</agent-activation>
+CMDEOF
+        fi
+    done
     print_success "TeamBuilder registered"
 
     # Create .mcp.json
