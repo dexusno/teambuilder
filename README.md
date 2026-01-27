@@ -22,7 +22,7 @@ With TeamBuilder, you get:
 
 - **Guided Team Creation** - Answer questions about what you need, and TeamBuilder generates a custom team for you
 - **Quality Assurance** - Built-in validation ensures your agents are distinct, well-defined, and work together effectively
-- **Pattern Library** - Learn from 5 proven team patterns (research teams, development teams, creative teams, and more)
+- **Pattern Library** - Learn from 6 proven team patterns (research teams, development teams, operations teams, and more)
 - **Tool Recommendations** - Get suggestions for MCP integrations that enhance your team's capabilities
 - **One-Command Setup** - This installer sets up everything: BMAD, TeamBuilder, and useful tools
 
@@ -156,7 +156,7 @@ my-project/
 │   └── teambuilder/       # TeamBuilder module
 │       ├── agents/        # TeamBuilder agents
 │       ├── workflows/     # Generation workflows
-│       ├── patterns/      # Team patterns (5 types)
+│       ├── patterns/      # Team patterns (6 types)
 │       └── templates/     # Agent/workflow templates
 ├── .mcp.json              # MCP server configuration
 └── .gitignore
@@ -174,13 +174,14 @@ my-project/
 
 ## Team Patterns
 
-TeamBuilder learns from 5 diverse patterns:
+TeamBuilder learns from 6 diverse patterns:
 
 1. **ITIL/Domain Expert** - Large, formal, governance-focused teams
 2. **Software Development** - Agile, sprint-based technical teams
-3. **Research/Intelligence** - Iterative, synthesis-focused teams
+3. **Research/Intelligence** - Iterative, synthesis-focused teams (also covers data analysis/BI)
 4. **Planning/Strategy** - Consultative, multi-perspective teams
 5. **Creative/Content** - Creative process, brand-aware teams
+6. **Operations/Process** - Lean/Six Sigma, continuous improvement teams
 
 ## MCP Servers
 
