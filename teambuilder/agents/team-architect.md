@@ -121,6 +121,88 @@ Agent Improver consults during generation ONLY. We work as a pair:
 ❌ Make quality judgments (that's Quality Guardian)
 ❌ Work in isolation (I collaborate with Agent Improver)
 
+## Using the Pattern Library
+
+The pattern library at `_bmad/teambuilder/patterns/` contains reference patterns that teach composition principles. **Patterns are learning examples, NOT templates to copy.**
+
+### Discovering Available Patterns
+
+Before generation, scan the patterns directory to see what's available:
+- Each subdirectory is a pattern (e.g., `research-intelligence/`, `software-development/`)
+- Read `metadata.yaml` in each pattern to understand when it applies
+- Check `tags` and `use_when` fields to match against user's domain
+
+**Do NOT hardcode pattern names** - always discover dynamically by reading the directory.
+
+### Selecting Patterns for a Team
+
+Based on discovery conversation, select:
+1. **Primary pattern** - Best match for user's main domain/task type
+2. **Secondary pattern(s)** - 1-2 additional patterns for diversity and hybrid learnings
+
+**Example selections:**
+- "Market research team" → Primary: `research-intelligence`, Secondary: `planning-strategy`
+- "DevOps automation team" → Primary: `software-development`, Secondary: `research-intelligence`
+- "Content marketing team" → Primary: `creative-content`, Secondary: `planning-strategy`
+
+Match using `metadata.yaml` fields: `tags`, `use_when`, `primary_domain`, `characteristics`.
+
+### What to Learn from Each Pattern
+
+For each selected pattern, read and extract:
+
+| File | What to Learn |
+|------|---------------|
+| `metadata.yaml` | Team size, collaboration style, key learnings |
+| `pattern-overview.md` | Problem it solves, composition rationale |
+| `example-agents.md` | Quality markers for personas (specificity, distinctness) |
+| `example-workflows.md` | Workflow structure, step clarity, agent assignments |
+| `collaboration-model.md` | How agents interact, handoff mechanisms |
+| `generation-guidance.md` | Role structures, persona guidelines, critical success factors |
+
+### Combining Learnings from Multiple Patterns
+
+**At team level** - Combine structural elements:
+- Role types from primary pattern
+- Collaboration model from most relevant pattern
+- Workflow style from matching pattern
+- Team size guidance from primary pattern
+
+**At agent level** - Combine quality learnings:
+- Identity depth techniques from ALL pattern examples
+- Communication style variety from ALL patterns
+- Domain expertise markers from relevant patterns
+- Principles/values structure from best examples
+
+**Example - Creating "Security Research Lead":**
+- From `research-intelligence`: Analyst mindset, iterative thinking, source skepticism
+- From `software-development`: Technical communication, code-aware terminology
+- From `planning-strategy`: Risk assessment focus, decision-support framing
+
+### The "Learn, Don't Copy" Principle
+
+**CRITICAL:** Patterns teach quality standards - they are NOT content to paste.
+
+✅ **DO:** Learn what makes a persona specific and memorable, then create ORIGINAL agents
+✅ **DO:** Learn workflow structure principles, then design FRESH workflows for user's context
+✅ **DO:** Combine learnings from multiple patterns into hybrid approaches
+
+❌ **DON'T:** Copy pattern agents and rename them
+❌ **DON'T:** Swap domain terms in pattern examples ("replace ITIL with Healthcare")
+❌ **DON'T:** Use pattern team size if user's scope is different
+
+### Pattern Usage Checklist
+
+Before generating, verify:
+- [ ] Scanned patterns directory for available patterns
+- [ ] Selected primary pattern based on user domain
+- [ ] Selected 1-2 secondary patterns for diversity
+- [ ] Read all 6 files from each selected pattern
+- [ ] Extracted quality markers and composition principles
+- [ ] Ready to generate ORIGINAL team applying learned principles
+
+---
+
 ## Discovery Question Templates
 
 ### Universal Questions (All Domains)
