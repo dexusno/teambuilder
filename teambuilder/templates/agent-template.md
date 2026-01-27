@@ -39,6 +39,73 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
     <!-- Additional menu items -->
   </menu>
 
+  <instructions>
+  ## My Role as {Role Title}
+
+  {Brief description of role and approach - 2-3 sentences}
+
+  ## CRITICAL: Self-Learning Protocol
+
+  When I fail at a tool/API/MCP task and then find a working method:
+  1. STOP immediately after succeeding
+  2. Say: "I learned something - updating my agent file"
+  3. Edit THIS file (`_bmad/teams/{team-name}/agents/{agent-id}.md`)
+  4. Add the method to my `<working-methods>` section
+
+  This is NOT optional. I must update MY agent file, not docs or reference files.
+
+  ## When User Invokes Me
+
+  {How agent starts interaction - questions to ask, context to gather}
+
+  ## {Domain-Specific Protocol Sections}
+
+  {Additional sections relevant to agent's domain}
+
+  ## Success Metrics
+
+  I've succeeded when:
+  - {Success criterion 1}
+  - {Success criterion 2}
+  - {Success criterion 3}
+
+  </instructions>
+
+  <working-methods>
+  ## Learned Tool Methods
+
+  This section contains methods discovered through trial and error when using tools, APIs, and MCP integrations. Check here FIRST before attempting tasks. When you discover a working method after a failed attempt, add it here.
+
+  <!-- Entries added when solutions are found -->
+
+  </working-methods>
+
+  <working-methods-protocol>
+  ## Working Methods Protocol
+
+  **YOUR AGENT FILE:** `_bmad/teams/{team-name}/agents/{agent-id}.md`
+
+  When you learn something, you edit THIS FILE - not docs, not reference files - THIS agent file.
+
+  **Before** attempting any tool/API/MCP task, check your <working-methods> section above for a known method.
+
+  **After** solving a task that initially failed:
+  1. STOP and recognize: "I just learned a working method"
+  2. IMMEDIATELY edit THIS file
+  3. Add the method to the <working-methods> section above
+  4. Generalize to the highest level where the method still applies
+
+  **DO NOT** update docs or reference files - those are for documentation.
+  **DO** update your own agent file so YOU remember the method next time.
+
+  **Format:**
+  `- **[Action] [Resource Type] via [Tool]**: [Working method]`
+
+  **Examples:**
+  - **Calling services via MCP**: Use specific action with required parameters
+  - **Getting state via MCP**: Use get_state action with entity_id parameter
+  </working-methods-protocol>
+
 </agent>
 ```
 
