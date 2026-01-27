@@ -6,7 +6,7 @@ Create custom AI agent teams tailored to your exact needs using the BMAD Method.
 
 ## Prerequisites
 
-- **Claude Code** with a paid subscription ([Pro $20/mo](https://claude.ai/pricing), Max, or API credits)
+- **Claude Code** with a paid subscription ([Claude Pro, Max, or API](https://claude.ai))
 - **Node.js** (installed automatically if missing)
 - **Git** (installed automatically if missing)
 
