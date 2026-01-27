@@ -1,0 +1,100 @@
+# Discovery Workflow
+# Captures user requirements through guided questions
+
+name: "discover-team-needs"
+description: "Discover what kind of team the user needs through guided questions with domain-specific branching"
+
+# Variables captured during discovery
+variables:
+  # Basic need
+  primary_task: ""
+  primary_task_elaboration: ""
+
+  # Domain classification
+  domain: ""  # research-intelligence, planning-strategy, creative-content, technical-development, operations-support, domain-specific-expert
+  domain_context: ""
+
+  # Scope and scale
+  scope: ""  # one-time, ongoing, project, continuous
+  complexity: ""  # simple, moderate, complex
+  scale: ""  # small, medium, large
+
+  # Team preferences
+  team_size_preference: ""  # 4-6, 6-8, 8-12
+  collaboration_style: ""  # formal, agile, consultative, casual, flexible
+
+  # Key concerns (array)
+  key_concerns: []
+  key_concern_1: ""
+  key_concern_2: ""
+  key_concern_3: ""
+  key_concern_4: ""
+  key_concern_5: ""
+
+  # Domain-specific context (populated based on domain)
+  domain_specific_1: ""
+  domain_specific_2: ""
+  domain_specific_3: ""
+
+  # Expertise requirements
+  required_expertise: ""
+  missing_expertise: ""
+
+  # User preferences
+  workflow_preference: ""  # guided, flexible, structured
+  output_preference: ""  # documents, decisions, analysis, creative-work
+
+  # Summary
+  discovery_summary: ""
+  generation_guidance: ""
+
+# Metadata
+metadata:
+  version: "1.0"
+  author: "TeamBuilder"
+  created: "2025-12-02"
+  tags:
+    - "discovery"
+    - "team-generation"
+    - "requirements-gathering"
+
+# Output
+outputs:
+  - file: "team-requirements-{{timestamp}}.md"
+    description: "Comprehensive team requirements document"
+    template: "template.md"
+
+# Agent assignment
+agents:
+  primary: "teambuilder"
+
+# Workflow settings
+settings:
+  max_steps: 10
+  allow_back: true
+  require_confirmation: true
+  output_directory: "docs/team-requirements"
+
+# Execution flow
+execution_notes: |
+  This workflow follows a 10-step discovery process:
+
+  1. Initial Need Capture - Open-ended question
+  2. Domain Classification - Categorize the need
+  3. Scope & Scale Assessment - Size up the work
+  4. Team Size Preference - How big should team be
+  5. Key Concerns Identification - What challenges matter
+  6. Domain-Specific Questions - Branch based on domain
+  7. Collaboration Style - How should team work together
+  8. Workflow Preference - Guided vs flexible
+  9. Summary & Confirmation - Review and confirm
+  10. Generate Requirements Doc - Produce handoff document
+
+  Steps 6 branches based on domain classification to ask
+  domain-relevant questions.
+
+# Next workflow
+next_workflow:
+  path: "_bmad/teambuilder/workflows/2-generation/generate-team/workflow.yaml"
+  automatic: true
+  requires_user_confirmation: false

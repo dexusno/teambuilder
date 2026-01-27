@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Local settings
+.claude/settings.local.json
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Playwright artifacts
+.playwright-mcp/

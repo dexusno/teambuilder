@@ -1,0 +1,193 @@
+# ITIL / Domain Expert Pattern Metadata
+
+pattern_id: "itil-domain-expert"
+pattern_name: "ITIL Practice / Domain Expert Team"
+version: "1.0"
+created: "2025-12-02"
+
+# Pattern Classification
+pattern_type: "domain-specialist"
+primary_domain: "domain-specific-expert"
+secondary_domains:
+  - "operations-support"
+  - "planning-strategy"
+
+# Team Characteristics
+characteristics:
+  team_size: "large"  # 10-12 agents
+  specialization: "high"
+  collaboration: "formal"
+  workflow_style: "document-producing"
+  decision_making: "hierarchical-consultative"
+  pace: "measured"
+
+# When to Use This Pattern
+use_when:
+  - domain: "Specialized domain expertise required (ITIL, healthcare, legal, finance, compliance)"
+  - scope: "Governance, policy development, cross-functional coordination"
+  - complexity: "High - multiple stakeholders, regulatory requirements"
+  - formality: "Formal organizational context with established processes"
+  - deliverables: "Policy documents, governance frameworks, compliance artifacts"
+
+avoid_when:
+  - "Simple tactical tasks"
+  - "Fast-paced agile development"
+  - "Creative or exploratory work"
+  - "Small informal teams"
+
+# Key Learnings from This Pattern
+
+key_learnings:
+  - name: "Practice-as-Product Model"
+    description: "Treating organizational practice as product with internal customers, measurable deliverables"
+    application: "Apply to any domain where there are 'customers' (internal or external) and defined services"
+
+  - name: "Dual-Mandate Representatives"
+    description: "Agents who both demand requirements AND provide expert guidance to their practice"
+    application: "Use when team needs to interface with multiple other domains or functions"
+
+  - name: "Core Team + Specialists + Liaison Structure"
+    description: "Core practice team (owner, manager, analyst) + specialist representatives + platform liaison"
+    application: "Effective for governance teams that coordinate across multiple functions"
+
+  - name: "Formal Collaboration with Document Production"
+    description: "Structured workflows producing formal documents (policies, procedures, agreements)"
+    application: "Use when outputs need to be documented, approved, maintained"
+
+  - name: "Strategic vs Operational Split"
+    description: "Practice Owner (strategic) vs Manager (operational) role separation"
+    application: "Larger teams benefit from strategy/execution role separation"
+
+# Agent Structure
+agent_structure:
+  core_team:
+    count: 4
+    roles:
+      - "Practice Owner / Strategic Lead"
+      - "Manager / Operational Coordinator"
+      - "Analyst / Technical Expert"
+      - "Auditor / Quality Assurance Lead"
+    rationale: "Core team handles practice governance and internal operations"
+
+  specialist_representatives:
+    count: 7
+    pattern: "Dual-mandate (demand requirements + provide guidance)"
+    example_specialties:
+      - "Change Management"
+      - "Incident Management"
+      - "Problem Management"
+      - "Asset Management"
+      - "Service Catalogue"
+      - "Release Management"
+      - "Information Security"
+    rationale: "Representatives interface with consuming practices, understand both sides"
+
+  liaison_roles:
+    count: 1
+    role: "Platform / Technical Liaison"
+    rationale: "Bridges practice requirements and technical implementation"
+
+# Collaboration Model
+collaboration_model:
+  style: "formal"
+  decision_authority: "Practice Owner makes strategic decisions, Manager handles operational"
+  coordination: "Regular structured touchpoints, formal handoffs"
+  documentation: "Heavy - all major decisions documented"
+  pace: "Measured - quality and compliance over speed"
+
+# Workflow Characteristics
+workflow_characteristics:
+  typical_workflows:
+    - "Policy Framework Development"
+    - "Practice Interface Agreement Creation"
+    - "RACI Matrix Development"
+    - "Compliance Assessment"
+    - "Audit Preparation"
+
+  workflow_steps: "5-10 steps per workflow"
+  workflow_outputs: "Formal documents (policies, procedures, agreements, reports)"
+  iteration: "Structured review and approval cycles"
+
+# Quality Indicators
+quality_indicators:
+  agent_level:
+    - "Representatives authentically understand both their domain and CM practice"
+    - "Core team has clear role separation (strategy vs operations vs analysis vs quality)"
+    - "Formal communication styles with domain-appropriate professionalism"
+    - "Strong principles reflecting governance mindset"
+
+  workflow_level:
+    - "Clear approval and review steps"
+    - "Document templates specified"
+    - "Stakeholder involvement explicit"
+    - "Compliance checkpoints included"
+
+  team_level:
+    - "Complete coverage of consuming practices via representatives"
+    - "Clear escalation paths"
+    - "Formal decision-making authority defined"
+    - "Platform liaison prevents technical disconnect"
+
+# Generation Guidance Summary
+generation_guidance:
+  persona_creation:
+    - "Use formal, professional communication styles"
+    - "Representatives need authentic understanding of BOTH domains"
+    - "Core team needs governance/compliance mindset"
+    - "Show organizational awareness and political sensitivity"
+
+  workflow_design:
+    - "Include review and approval steps"
+    - "Specify document outputs with templates"
+    - "Show stakeholder coordination"
+    - "Build in compliance verification"
+
+  team_composition:
+    - "Core team (4) + Representatives (5-7) + Liaison (1)"
+    - "Ensure all consuming practices have representatives"
+    - "Clear coordinator (Practice Owner or Manager)"
+    - "Auditor/quality role for governance oversight"
+
+# Example Use Cases
+example_use_cases:
+  - "ITIL Configuration Management practice team for healthcare organization"
+  - "Legal compliance team for financial services company"
+  - "Data governance team for enterprise organization"
+  - "Healthcare compliance team (HIPAA, patient safety)"
+  - "Information security governance team"
+
+# Pattern Comparison
+similar_patterns:
+  - name: "operations-support"
+    difference: "ITIL pattern more governance-focused, operations pattern more execution-focused"
+
+  - name: "planning-strategy"
+    difference: "ITIL pattern more formal with representatives, strategy pattern more consultative"
+
+# Anti-Patterns to Avoid
+anti_patterns:
+  - pattern: "Making all representatives sound identical"
+    fix: "Each representative understands their specific practice deeply"
+
+  - pattern: "Core team too generic ('manager', 'analyst')"
+    fix: "Add domain context - 'CM Manager', 'CM Analyst' with specific expertise"
+
+  - pattern: "Workflows too informal for governance context"
+    fix: "Add approval steps, compliance checks, formal documentation"
+
+  - pattern: "Missing liaison role"
+    fix: "Technical platform liaison essential for implementation"
+
+# Metadata
+tags:
+  - "governance"
+  - "itil"
+  - "compliance"
+  - "domain-expert"
+  - "formal"
+  - "large-team"
+  - "policy"
+  - "cross-functional"
+
+difficulty: "advanced"  # Pattern complexity for generation
+priority: "high"  # How often this pattern type is needed

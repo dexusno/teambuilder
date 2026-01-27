@@ -1,0 +1,93 @@
+# Validate Team Workflow
+# Quality assessment of generated team
+
+name: "validate-team"
+description: "Validate generated team quality through automated checks and scoring"
+
+# Input from generation
+input_variables:
+  generated_agents: []
+  generated_workflows: []
+  team_name: ""
+  requirements_document: ""
+
+# Validation variables
+variables:
+  # Validation execution
+  validation_rules: ""
+  agent_checks_results: []
+  workflow_checks_results: []
+  team_checks_results: []
+
+  # Scoring
+  agent_checks_passed: 0
+  agent_checks_total: 0
+  workflow_checks_passed: 0
+  workflow_checks_total: 0
+  team_checks_passed: 0
+  team_checks_total: 0
+
+  base_score: 100
+  quality_score: 0
+  quality_rating: ""
+
+  # Issues
+  critical_issues: []
+  high_issues: []
+  medium_issues: []
+  low_issues: []
+
+  # Recommendations
+  fix_suggestions: []
+  refinement_priorities: []
+
+  # Decision guidance
+  recommended_action: ""
+
+# Metadata
+metadata:
+  version: "1.0"
+  author: "TeamBuilder"
+  created: "2025-12-02"
+  tags:
+    - "validation"
+    - "quality-assurance"
+
+# Outputs
+outputs:
+  - file: "validation-report-{{team_name}}-{{timestamp}}.md"
+    description: "Comprehensive validation report with quality score"
+    template: "template.md"
+
+# Agent assignment
+agents:
+  primary: "teambuilder"
+
+# Settings
+settings:
+  validation_rules_path: "_bmad/teambuilder/templates/validation-rules.yaml"
+  score_thresholds:
+    excellent: 95
+    good: 85
+    acceptable: 75
+    minimum: 60
+  output_directory: "docs/validation-reports"
+
+# Execution notes
+execution_notes: |
+  This workflow validates generated teams against 30+ quality rules.
+
+  Process:
+  1. Load validation rules from template
+  2. Run agent-level checks (role, persona, domain, distinctness)
+  3. Run workflow-level checks (completeness, actionability, references)
+  4. Run team-level checks (coverage, size, collaboration, alignment)
+  5. Calculate quality score with severity weighting
+  6. Generate detailed validation report
+  7. Provide install/refine recommendation
+
+# Next workflow (conditional)
+next_workflow:
+  path: "_bmad/teambuilder/workflows/3-refinement/refine-team/workflow.yaml"
+  automatic: false
+  condition: "quality_score < 75 OR user_requests_refinement"

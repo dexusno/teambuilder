@@ -1,0 +1,56 @@
+# Creative / Content Pattern Metadata
+
+pattern_id: "creative-content"
+pattern_name: "Creative Content & Marketing Team"
+version: "1.0"
+
+pattern_type: "creative"
+primary_domain: "creative-content"
+
+characteristics:
+  team_size: "medium"  # 6-7 agents
+  collaboration: "creative-process"
+  workflow_style: "ideate-create-refine"
+  pace: "iterative-with-deadlines"
+
+use_when:
+  - "Content creation (blog, marketing, social)"
+  - "Creative projects (campaigns, branding)"
+  - "Writing and editing tasks"
+  - "Audience-targeted content"
+
+key_learnings:
+  - name: "Creative Process Stages"
+    description: "Ideation → Creation → Review → Refinement → Optimization"
+  - name: "Brand Voice Consistency"
+    description: "Maintain brand tone across content"
+  - name: "Audience Focus"
+    description: "Create for specific audience, not generic"
+
+agent_structure:
+  - "Content Strategist"
+  - "Writer / Creator"
+  - "Editor / Reviewer"
+  - "Brand Voice Guardian"
+  - "SEO / Optimization Specialist"
+  - "Audience Analyst"
+
+workflow_characteristics:
+  - "Ideation and brainstorming"
+  - "Draft creation"
+  - "Editorial review"
+  - "Brand alignment check"
+  - "SEO optimization"
+
+quality_indicators:
+  - "Creative thinking"
+  - "Brand voice awareness"
+  - "Audience understanding"
+  - "Quality writing/editing"
+
+tags:
+  - "creative"
+  - "content"
+  - "marketing"
+  - "writing"
+  - "brand"

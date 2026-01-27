@@ -1,0 +1,345 @@
+# Collaborative Team Generation Workflow
+# Three-agent collaboration: Team Architect + Agent Improver + Quality Guardian
+# Efficient workflow: Paired generation + single critical review
+
+name: "Collaborative Team Generation"
+version: "1.0"
+description: "Three-agent collaboration workflow for high-quality team generation with paired generation and critical review"
+
+agents:
+  - id: "team-architect"
+    path: "{project-root}/_bmad/teambuilder/agents/team-architect.md"
+    role: "Discovery lead, structural designer, generation coordinator"
+
+  - id: "agent-improver"
+    path: "{project-root}/_bmad/teambuilder/agents/agent-improver.md"
+    role: "Persona quality specialist, real-time consultant during generation"
+
+  - id: "quality-guardian"
+    path: "{project-root}/_bmad/teambuilder/agents/quality-guardian.md"
+    role: "Final quality validator, critical reviewer"
+
+workflow:
+  phases:
+
+    # PHASE 1: Discovery (Team Architect leads)
+    - phase: "discovery"
+      name: "User Needs Discovery"
+      lead: "team-architect"
+      participants: ["team-architect"]
+
+      steps:
+        - step: 1
+          action: "conduct_discovery"
+          agent: "team-architect"
+          description: "Team Architect conducts discovery conversation with user"
+          inputs:
+            - "User responses to discovery questions"
+          outputs:
+            - "Team requirements document"
+            - "docs/team-requirements/{team-name}-requirements.md"
+          instructions: |
+            Team Architect leads discovery conversation:
+            1. Ask targeted questions about needs, domain, scope, challenges, preferences
+            2. Adapt questions based on domain type
+            3. Capture requirements clearly
+            4. Generate requirements document
+
+            Agent Improver and Quality Guardian are NOT involved in this phase.
+
+      completion_criteria:
+        - "Requirements document created"
+        - "User needs clearly captured"
+        - "Domain and scope identified"
+
+    # PHASE 2: Paired Generation (Team Architect + Agent Improver collaborate)
+    - phase: "paired_generation"
+      name: "Collaborative Team Generation"
+      lead: "team-architect"
+      participants: ["team-architect", "agent-improver"]
+
+      collaboration_mode: "real-time-paired"
+
+      steps:
+        - step: 1
+          action: "design_structure"
+          agent: "team-architect"
+          description: "Team Architect designs team structure"
+          inputs:
+            - "Requirements document"
+          outputs:
+            - "Team composition (roles, size, collaboration model)"
+          instructions: |
+            Team Architect determines:
+            - Number of agents needed
+            - Roles for each agent
+            - Collaboration model (agile, governance, research, etc.)
+            - Workflow structure
+
+            Agent Improver observes but doesn't participate yet.
+
+        - step: 2
+          action: "paired_agent_generation"
+          agents: ["team-architect", "agent-improver"]
+          description: "Team Architect generates agents with real-time Agent Improver feedback"
+          collaboration: "simultaneous"
+          inputs:
+            - "Team structure"
+            - "Requirements document"
+          outputs:
+            - "All agent files (_bmad/teams/{team-name}/agents/*.md)"
+          instructions: |
+            REAL-TIME PAIRED GENERATION:
+
+            For each agent:
+
+            1. Team Architect creates initial agent:
+               - Role definition
+               - Identity draft
+               - Communication style draft
+               - Principles draft
+
+            2. Agent Improver provides immediate feedback:
+               - "Too generic - add specific background"
+               - "Communication style could describe anyone - what's distinctive?"
+               - "Principles are bland - what do they really value?"
+               - "Add domain-specific credential"
+
+            3. Team Architect incorporates feedback immediately:
+               - Revises identity with specific details
+               - Adds distinctive communication patterns
+               - Sharpens principles with strong opinions
+               - Adds authentic domain markers
+
+            4. Agent Improver confirms improvement or requests further refinement
+
+            5. Move to next agent
+
+            EFFICIENCY KEYS:
+            - Quick feedback loops (2-3 exchanges per agent)
+            - Specific, actionable suggestions
+            - No lengthy discussions
+            - Focus on making each agent excellent
+
+            NO separate review pass after all agents done - quality built in during generation.
+
+        - step: 3
+          action: "generate_workflows"
+          agent: "team-architect"
+          description: "Team Architect creates team workflows"
+          inputs:
+            - "Team structure"
+            - "Agent definitions"
+          outputs:
+            - "Workflow files (_bmad/teams/{team-name}/workflows/*)"
+          instructions: |
+            Team Architect creates workflows appropriate for collaboration model:
+            - Clear steps
+            - Agent assignments
+            - Defined outputs
+            - Practical approach
+
+            Agent Improver observes but doesn't critique workflows (not their domain).
+
+        - step: 4
+          action: "create_team_config"
+          agent: "team-architect"
+          description: "Team Architect creates team configuration"
+          inputs:
+            - "All team files"
+          outputs:
+            - "config.yaml"
+            - "Team README"
+          instructions: |
+            Team Architect creates:
+            - _bmad/teams/{team-name}/config.yaml (team metadata)
+            - _bmad/teams/{team-name}/TEAM_README.md (team overview)
+
+      completion_criteria:
+        - "All agent files created"
+        - "Workflows created (if applicable)"
+        - "Team config created"
+        - "Generation complete, ready for review"
+
+    # PHASE 3: Critical Review (Quality Guardian leads)
+    - phase: "critical_review"
+      name: "Quality Validation & Scoring"
+      lead: "quality-guardian"
+      participants: ["quality-guardian"]
+
+      steps:
+        - step: 1
+          action: "comprehensive_review"
+          agent: "quality-guardian"
+          description: "Quality Guardian reviews finished team critically"
+          inputs:
+            - "All agent files"
+            - "All workflow files"
+            - "Team config"
+            - "Original requirements"
+          outputs:
+            - "Quality score (0-100%)"
+            - "Validation report"
+          instructions: |
+            Quality Guardian performs comprehensive review:
+
+            1. Score agent quality (40 points):
+               - Persona distinctness
+               - Background specificity
+               - Communication differentiation
+               - Domain expertise authenticity
+
+            2. Score workflow quality (30 points):
+               - Practicality
+               - Clarity
+               - Completeness
+
+            3. Score team coherence (30 points):
+               - Coverage
+               - No role overlap
+               - Appropriate size
+               - Key roles present
+
+            4. Calculate total score
+
+            5. Identify issues by severity:
+               - Critical (must fix)
+               - High priority (should fix)
+               - Medium priority (nice to fix)
+               - Low priority (optional polish)
+
+            6. Generate specific, actionable recommendations
+
+            7. Make final recommendation:
+               - 95-100%: Install immediately
+               - 85-94%: Ready to use
+               - 75-84%: Refinement recommended
+               - 60-74%: Refinement required
+               - <60%: Regenerate recommended
+
+        - step: 2
+          action: "generate_validation_report"
+          agent: "quality-guardian"
+          description: "Quality Guardian creates detailed validation report"
+          inputs:
+            - "Quality scores"
+            - "Issues identified"
+            - "Recommendations"
+          outputs:
+            - "_bmad/teams/{team-name}/VALIDATION_REPORT.md"
+          instructions: |
+            Quality Guardian creates comprehensive report:
+            - Overall score and rating
+            - Score breakdown by dimension
+            - Detailed assessment of strengths and issues
+            - Priority improvements (ranked by severity)
+            - Final recommendation (install/refine/regenerate)
+
+            Report is analytical, specific, and actionable.
+
+      completion_criteria:
+        - "Quality score calculated"
+        - "Validation report created"
+        - "Recommendation made"
+
+    # PHASE 4: User Decision (Present to user)
+    - phase: "user_decision"
+      name: "Present Results & Get Decision"
+      lead: "team-architect"
+      participants: ["team-architect", "quality-guardian"]
+
+      steps:
+        - step: 1
+          action: "present_results"
+          agents: ["team-architect", "quality-guardian"]
+          description: "Present team and quality assessment to user"
+          inputs:
+            - "Generated team"
+            - "Quality score"
+            - "Validation report"
+          outputs:
+            - "User decision"
+          instructions: |
+            Team Architect and Quality Guardian present together:
+
+            Team Architect presents:
+            - Team structure and composition
+            - Brief overview of each agent
+            - Workflows created
+            - How team addresses requirements
+
+            Quality Guardian presents:
+            - Quality score with breakdown
+            - Key strengths
+            - Issues found (if any)
+            - Specific improvement recommendations (if applicable)
+            - Final recommendation
+
+            Together, ask user:
+            1. Install now (if score 85%+)
+            2. Refine based on recommendations (if score 75-84%)
+            3. Regenerate with adjusted requirements (if score <75%)
+
+        - step: 2
+          action: "handle_decision"
+          description: "Execute based on user choice"
+          instructions: |
+            If INSTALL:
+            - Register team in manifests
+            - Inform user to restart Claude Code for discovery
+            - Provide instructions for using team
+
+            If REFINE:
+            - Route to refinement workflow
+            - Focus on priority improvements
+            - Re-validate after refinement
+
+            If REGENERATE:
+            - Ask what requirements should change
+            - Return to discovery phase
+
+      completion_criteria:
+        - "Results presented to user"
+        - "User decision captured"
+        - "Appropriate action taken"
+
+# Workflow Configuration
+
+settings:
+  # Collaboration efficiency
+  max_feedback_loops_per_agent: 3  # During paired generation
+  require_both_agents_consensus: false  # Agent Improver advises, Team Architect decides
+
+  # Quality thresholds
+  minimum_quality_score: 60  # Below this, recommend regeneration
+  recommended_quality_score: 85  # Above this, ready to install
+
+  # Output locations
+  teams_directory: "_bmad/teams"
+  requirements_directory: "docs/team-requirements"
+
+  # Validation
+  generate_validation_report: true
+  include_quality_score: true
+
+  # Installation
+  auto_register_manifests: true
+  create_team_readme: true
+
+# Success Metrics
+
+success_criteria:
+  - "Quality score 85% or higher"
+  - "All agents have distinct personas"
+  - "Workflows are practical"
+  - "User satisfied with team"
+  - "Team ready to use"
+
+# Efficiency Notes
+
+efficiency_principles:
+  - "Paired generation prevents issues early (better than fixing later)"
+  - "Real-time feedback faster than separate review cycles"
+  - "Single critical review sufficient when generation is high-quality"
+  - "Clear phases prevent rework"
+  - "User sees results once, not intermediate drafts"

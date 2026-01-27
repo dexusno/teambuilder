@@ -1,0 +1,475 @@
+# Validation Rules for Generated Teams
+# These rules ensure quality across agents, workflows, and team composition
+
+validation_rules:
+
+  # ============================================================================
+  # AGENT-LEVEL CHECKS
+  # ============================================================================
+
+  agent_checks:
+
+    # Role Clarity
+    role_clarity:
+      - rule: "Each agent has distinct, non-overlapping role"
+        check: "No two agents have >60% role description similarity"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Redefine overlapping agent roles to be more distinct"
+
+      - rule: "Role description is specific, not vague"
+        check: "Role contains specific capabilities, not generic phrases"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Replace generic descriptions with specific capabilities"
+
+    # Persona Quality
+    persona_quality:
+      - rule: "Identity has specific background"
+        check: "Identity includes concrete background, not 'experienced professional'"
+        severity: "high"
+        score_impact: 12
+        fix_suggestion: "Add specific background (e.g., 'Former X turned Y' with details)"
+
+      - rule: "Communication style is distinctive"
+        check: "Communication style is not generic 'professional and clear'"
+        severity: "medium"
+        score_impact: 8
+        fix_suggestion: "Create unique communication patterns (formal/casual/technical/creative)"
+
+      - rule: "Principles show clear values"
+        check: "Principles are not platitudes ('quality is important')"
+        severity: "medium"
+        score_impact: 7
+        fix_suggestion: "Express specific beliefs and priorities unique to this agent"
+
+      - rule: "Agent is memorable"
+        check: "Persona has personality markers that make agent memorable"
+        severity: "medium"
+        score_impact: 6
+        fix_suggestion: "Add personality through specific details, phrases, or behaviors"
+
+    # Domain Expertise
+    domain_expertise:
+      - rule: "Uses domain-specific terminology"
+        check: "Persona includes terminology from target domain"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Incorporate domain-specific terms from discovery"
+
+      - rule: "Shows domain understanding"
+        check: "Identity or principles demonstrate domain knowledge"
+        severity: "high"
+        score_impact: 9
+        fix_suggestion: "Reference domain-specific challenges, practices, or context"
+
+    # Distinctness
+    agent_distinctness:
+      - rule: "Agents don't sound the same"
+        check: "Communication styles vary significantly across team"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Vary tone, formality, style across agents"
+
+      - rule: "No duplicate personas"
+        check: "No two agents have >70% identity similarity"
+        severity: "critical"
+        score_impact: 20
+        fix_suggestion: "Rewrite similar agents to be truly distinct"
+
+    # Structural Requirements
+    agent_structure:
+      - rule: "All required fields present"
+        check: "Agent has role, identity, communication_style, principles"
+        severity: "critical"
+        score_impact: 25
+        fix_suggestion: "Add missing persona components"
+
+      - rule: "Valid XML structure"
+        check: "Agent file is well-formed XML"
+        severity: "critical"
+        score_impact: 30
+        fix_suggestion: "Fix XML syntax errors"
+
+      - rule: "Has at least one menu item"
+        check: "Agent has menu with at least one actionable item"
+        severity: "high"
+        score_impact: 8
+        fix_suggestion: "Add menu items with workflow references"
+
+    # Pattern Similarity Check
+    pattern_similarity:
+      - rule: "Not too similar to pattern examples"
+        check: "Agent is <50% similar to any pattern library agent"
+        severity: "high"
+        score_impact: 12
+        fix_suggestion: "Generated agent should be inspired by patterns, not copied"
+
+  # ============================================================================
+  # WORKFLOW-LEVEL CHECKS
+  # ============================================================================
+
+  workflow_checks:
+
+    # Completeness
+    workflow_completeness:
+      - rule: "Has all three required files"
+        check: "workflow.yaml, instructions.md, template.md all exist"
+        severity: "critical"
+        score_impact: 20
+        fix_suggestion: "Create missing workflow files"
+
+      - rule: "Variables are defined"
+        check: "workflow.yaml defines necessary variables"
+        severity: "high"
+        score_impact: 8
+        fix_suggestion: "Define all variables used in workflow"
+
+      - rule: "Output is specified"
+        check: "workflow.yaml specifies output files"
+        severity: "high"
+        score_impact: 7
+        fix_suggestion: "Define output files and formats"
+
+    # Actionability
+    workflow_actionability:
+      - rule: "Steps are specific, not vague"
+        check: "Instructions contain specific actions, not generic directives"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Replace 'gather information' with 'interview about X, Y, Z'"
+
+      - rule: "Agent assignments are clear"
+        check: "Each step specifies which agent performs it"
+        severity: "medium"
+        score_impact: 6
+        fix_suggestion: "Assign agents to workflow steps explicitly"
+
+      - rule: "Has measurable outputs"
+        check: "Workflow produces concrete artifacts (documents, decisions, etc.)"
+        severity: "medium"
+        score_impact: 6
+        fix_suggestion: "Define specific output documents or artifacts"
+
+    # Agent References
+    workflow_agent_references:
+      - rule: "References valid agent names"
+        check: "Workflow only references agents that exist in the team"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Update workflow to reference actual team agent names"
+
+      - rule: "Agent roles match capabilities"
+        check: "Workflow assigns tasks appropriate for agent roles"
+        severity: "medium"
+        score_impact: 7
+        fix_suggestion: "Align workflow tasks with agent capabilities"
+
+    # Coherence
+    workflow_coherence:
+      - rule: "Steps follow logical sequence"
+        check: "Workflow steps build on each other logically"
+        severity: "medium"
+        score_impact: 6
+        fix_suggestion: "Reorder steps for logical flow"
+
+      - rule: "Collaboration patterns are clear"
+        check: "Multi-agent steps explain how agents interact"
+        severity: "medium"
+        score_impact: 5
+        fix_suggestion: "Define agent interaction patterns (handoffs, reviews, etc.)"
+
+  # ============================================================================
+  # TEAM-LEVEL CHECKS
+  # ============================================================================
+
+  team_checks:
+
+    # Coverage
+    team_coverage:
+      - rule: "Has coordinator or decision-maker"
+        check: "At least one agent with coordination/leadership role"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Add coordinator or primary decision-maker agent"
+
+      - rule: "Has domain expert"
+        check: "At least one agent with deep domain expertise"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Add agent with specialized domain knowledge"
+
+      - rule: "Key concerns addressed"
+        check: "Team includes agents for each key concern from discovery"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Add specialist agents for unaddressed concerns"
+
+      - rule: "Complete functional coverage"
+        check: "Team has agents for analysis, execution, and quality/review"
+        severity: "medium"
+        score_impact: 7
+        fix_suggestion: "Add missing functional roles"
+
+    # Team Size
+    team_size:
+      - rule: "Team size is appropriate"
+        check: "Team size matches scope (4-6 simple, 6-8 medium, 8-12 complex)"
+        severity: "medium"
+        score_impact: 5
+        fix_suggestion: "Adjust team size based on scope"
+
+      - rule: "Not too small"
+        check: "Team has minimum 4 agents"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Add agents to reach minimum viable team size"
+
+      - rule: "Not too large"
+        check: "Team has maximum 12 agents"
+        severity: "medium"
+        score_impact: 6
+        fix_suggestion: "Consider splitting into multiple focused teams"
+
+    # Collaboration Model
+    collaboration_model:
+      - rule: "Clear collaboration structure"
+        check: "Team has defined collaboration pattern (formal/agile/consultative/etc.)"
+        severity: "medium"
+        score_impact: 6
+        fix_suggestion: "Define how agents work together"
+
+      - rule: "No isolated agents"
+        check: "Each agent has clear interaction points with team"
+        severity: "medium"
+        score_impact: 5
+        fix_suggestion: "Define how isolated agents integrate with team"
+
+    # Domain Alignment
+    domain_alignment:
+      - rule: "Aligned with discovered domain"
+        check: "Team composition matches domain classification from discovery"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Adjust team to better match domain requirements"
+
+      - rule: "Addresses user's specific context"
+        check: "Team reflects user's specific challenges and context"
+        severity: "high"
+        score_impact: 9
+        fix_suggestion: "Incorporate user's specific context into agent roles"
+
+    # Quality Indicators
+    team_quality:
+      - rule: "Has distinctive team character"
+        check: "Team feels cohesive yet distinct from generic teams"
+        severity: "medium"
+        score_impact: 5
+        fix_suggestion: "Enhance team identity through shared context or mission"
+
+      - rule: "Agents complement each other"
+        check: "Agent strengths and perspectives are complementary"
+        severity: "medium"
+        score_impact: 6
+        fix_suggestion: "Ensure agents bring different perspectives and skills"
+
+# ============================================================================
+# QUALITY SCORING
+# ============================================================================
+
+quality_scoring:
+
+  # Score calculation
+  calculation: |
+    base_score = 100
+
+    for each failed rule:
+      if severity == "critical":
+        deduction = score_impact * 1.5
+      elif severity == "high":
+        deduction = score_impact * 1.2
+      elif severity == "medium":
+        deduction = score_impact * 1.0
+      else:  # low
+        deduction = score_impact * 0.5
+
+      base_score -= deduction
+
+    quality_score = max(0, base_score)
+
+    # Bonus for exceptional quality
+    if has_standout_personas:
+      quality_score = min(100, quality_score + 5)
+
+  # Thresholds
+  thresholds:
+    excellent: 95    # Install immediately
+    good: 85         # Ready to use
+    acceptable: 75   # Refinement recommended
+    minimum: 60      # Refinement required
+
+  # Severity weights
+  severity_multipliers:
+    critical: 1.5
+    high: 1.2
+    medium: 1.0
+    low: 0.5
+
+# ============================================================================
+# VALIDATION REPORT FORMAT
+# ============================================================================
+
+validation_report:
+
+  sections:
+    - name: "Quality Score"
+      content: |
+        Overall Score: {{score}}/100
+        Rating: {{rating}}  # Excellent/Good/Acceptable/Needs Work
+
+    - name: "Agent Quality"
+      content: |
+        Checks passed: {{agent_checks_passed}}/{{agent_checks_total}}
+        Issues: {{agent_issues_summary}}
+
+    - name: "Workflow Quality"
+      content: |
+        Checks passed: {{workflow_checks_passed}}/{{workflow_checks_total}}
+        Issues: {{workflow_issues_summary}}
+
+    - name: "Team Quality"
+      content: |
+        Checks passed: {{team_checks_passed}}/{{team_checks_total}}
+        Issues: {{team_issues_summary}}
+
+    - name: "Critical Issues"
+      content: |
+        {{critical_issues_list}}
+        # All issues with severity="critical"
+
+    - name: "Recommendations"
+      content: |
+        {{fix_suggestions}}
+        # Prioritized list of improvements
+
+    - name: "Decision"
+      content: |
+        Based on quality score:
+        - 95+: Excellent! Install immediately.
+        - 85-94: Good quality. Install or make minor refinements.
+        - 75-84: Acceptable. Refinement recommended before installation.
+        - <75: Needs work. Refinement required.
+
+# ============================================================================
+# SPECIAL CHECKS
+# ============================================================================
+
+special_checks:
+
+  # Check for common anti-patterns
+  anti_patterns:
+    - pattern: "All agents have 'professional' communication style"
+      severity: "high"
+      fix: "Vary communication styles significantly"
+
+    - pattern: "Multiple agents with nearly identical principles"
+      severity: "high"
+      fix: "Create distinct value systems for each agent"
+
+    - pattern: "Agents lack specific domain terminology"
+      severity: "high"
+      fix: "Incorporate domain-specific language from discovery"
+
+    - pattern: "Generic workflow steps like 'gather info', 'analyze', 'decide'"
+      severity: "medium"
+      fix: "Make workflow steps specific and actionable"
+
+    - pattern: "No agent has clear coordinator role"
+      severity: "critical"
+      fix: "Designate primary coordinator or decision-maker"
+
+  # Bonus quality indicators
+  excellence_markers:
+    - marker: "Each agent has memorable personality trait"
+      bonus: 2
+
+    - marker: "Domain expertise clearly demonstrated"
+      bonus: 2
+
+    - marker: "Communication styles are dramatically varied"
+      bonus: 3
+
+    - marker: "Workflows are highly specific and actionable"
+      bonus: 2
+
+    - marker: "Team feels authentic to domain"
+      bonus: 3
+
+    - marker: "All agents would pass 'colleague test' (feel like real people)"
+      bonus: 3
+
+# ============================================================================
+# IMPLEMENTATION NOTES
+# ============================================================================
+
+implementation_notes: |
+  This validation system runs automatically after team generation.
+
+  Process:
+  1. Load generated team files
+  2. Run all applicable checks
+  3. Calculate quality score
+  4. Generate validation report
+  5. Provide refinement suggestions
+  6. Present to user with install/refine options
+
+  Critical checks MUST pass for installation.
+  High-severity checks strongly recommended.
+  Medium/low checks are improvements.
+
+  User can override and install any team, but validation report
+  provides transparency on quality issues.
+
+---
+
+# VALIDATION EXECUTION WORKFLOW
+
+When validate-team workflow runs:
+
+1. **Load team artifacts**
+   - All agent files
+   - All workflow files
+   - Team config
+
+2. **Run agent checks**
+   - For each agent in team
+   - Apply agent_checks rules
+   - Record pass/fail and issues
+
+3. **Run workflow checks**
+   - For each workflow in team
+   - Apply workflow_checks rules
+   - Record pass/fail and issues
+
+4. **Run team checks**
+   - Analyze team as whole
+   - Apply team_checks rules
+   - Record pass/fail and issues
+
+5. **Calculate score**
+   - Start with base_score = 100
+   - Deduct points for failed checks
+   - Apply severity multipliers
+   - Add bonuses for excellence markers
+   - Final score = max(0, min(100, score))
+
+6. **Generate report**
+   - Organize issues by severity
+   - Provide fix suggestions
+   - Calculate rating
+   - Present decision guidance
+
+7. **Return to user**
+   - Show quality score prominently
+   - List critical issues first
+   - Offer install or refine options

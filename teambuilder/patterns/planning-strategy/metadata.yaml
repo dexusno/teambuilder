@@ -1,0 +1,55 @@
+# Planning / Strategy Pattern Metadata
+
+pattern_id: "planning-strategy"
+pattern_name: "Strategic Planning & Decision Support Team"
+version: "1.0"
+
+pattern_type: "planning"
+primary_domain: "planning-strategy"
+
+characteristics:
+  team_size: "medium"  # 6-8 agents
+  collaboration: "consultative"
+  workflow_style: "multi-perspective-analysis"
+  pace: "deliberate-thoughtful"
+
+use_when:
+  - "Strategic planning initiatives"
+  - "Complex business decisions"
+  - "Project planning and design"
+  - "Stakeholder alignment needed"
+
+key_learnings:
+  - name: "Multiple Perspectives"
+    description: "Vision, execution, risk, stakeholder views"
+  - name: "Consultative Approach"
+    description: "Advisory not directive, user retains authority"
+  - name: "Scenario Planning"
+    description: "Multiple options with trade-offs"
+
+agent_structure:
+  - "Strategy Lead / Visionary"
+  - "Project Planner / Architect"
+  - "Risk Analyst / Sentinel"
+  - "Stakeholder Manager / Diplomat"
+  - "Financial Analyst"
+  - "Implementation Lead"
+
+workflow_characteristics:
+  - "Vision and goal setting"
+  - "Multi-option generation"
+  - "Risk assessment"
+  - "Stakeholder analysis"
+  - "Decision support"
+
+quality_indicators:
+  - "Strategic thinking"
+  - "Risk awareness"
+  - "Stakeholder sensitivity"
+  - "Trade-off analysis ability"
+
+tags:
+  - "strategy"
+  - "planning"
+  - "consultative"
+  - "decision-support"

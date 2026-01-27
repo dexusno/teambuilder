@@ -1,0 +1,86 @@
+# Software Development Pattern Metadata
+
+pattern_id: "software-development"
+pattern_name: "Agile Software Development Team"
+version: "1.0"
+created: "2025-12-02"
+
+pattern_type: "development"
+primary_domain: "technical-development"
+secondary_domains:
+  - "planning-strategy"
+
+characteristics:
+  team_size: "medium"  # 6-8 agents
+  specialization: "moderate"
+  collaboration: "agile"
+  workflow_style: "sprint-based"
+  decision_making: "collaborative-consensus"
+  pace: "fast-iterative"
+
+use_when:
+  - "Software/code development projects"
+  - "Feature implementation tasks"
+  - "Agile or iterative methodology"
+  - "Technical work with sprint cycles"
+  - "Quality and testing important"
+
+key_learnings:
+  - name: "Scrum Role Structure"
+    description: "Product Manager, Scrum Master, Developers, QA - clear agile roles"
+
+  - name: "Sprint Workflow Pattern"
+    description: "Planning → Development → Testing → Review → Retro cycle"
+
+  - name: "Velocity and Iteration Focus"
+    description: "Deliver working software regularly, measure progress by velocity"
+
+agent_structure:
+  core_team:
+    - "Product Manager"
+    - "Architect / Tech Lead"
+    - "Scrum Master / Agile Coach"
+    - "Developer (1-3)"
+    - "QA / Test Engineer"
+    - "DevOps Engineer (optional)"
+
+collaboration_model:
+  style: "agile"
+  decision_authority: "Product Manager (what), Architect (how)"
+  ceremonies: "Planning, Standup, Review, Retrospective"
+  pace: "Fast - 2-week sprints"
+
+workflow_characteristics:
+  typical_workflows:
+    - "Sprint Planning"
+    - "Feature Development"
+    - "Code Review"
+    - "Testing & QA"
+    - "Sprint Retrospective"
+  iteration: "2-week sprint cycles"
+
+quality_indicators:
+  - "Technical depth in developer personas"
+  - "Agile terminology (velocity, story points, sprint)"
+  - "Quality mindset (testing, code review)"
+  - "Collaborative decision-making"
+
+generation_guidance:
+  - "Use agile/scrum terminology"
+  - "Include sprint ceremony workflows"
+  - "Developer agents need technical credibility"
+  - "QA agent prevents 'code and ship' anti-pattern"
+  - "Architect provides technical direction without micromanaging"
+
+example_use_cases:
+  - "Web application feature development"
+  - "API service creation"
+  - "Mobile app development"
+  - "Internal tool building"
+
+tags:
+  - "agile"
+  - "scrum"
+  - "development"
+  - "technical"
+  - "sprint-based"

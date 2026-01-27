@@ -1,0 +1,89 @@
+# Refine Team Workflow
+# Targeted improvement of generated teams based on validation issues
+
+name: "refine-team"
+description: "Refine generated team through targeted improvements to increase quality score"
+
+# Input variables
+input_variables:
+  team_name: ""
+  current_team: []
+  validation_report: ""
+  quality_score: 0
+  issues: []
+
+# Refinement variables
+variables:
+  # Refinement scope
+  refinement_focus: ""  # what user wants to improve
+  refinement_type: ""  # improve_personas, add_expertise, enhance_workflows, adjust_size, change_collaboration
+
+  # Target issues
+  target_issues: []
+  agents_to_revise: []
+  workflows_to_revise: []
+
+  # Refinement output
+  revised_agents: []
+  revised_workflows: []
+  changes_summary: ""
+
+  # Re-validation
+  new_quality_score: 0
+  score_improvement: 0
+  remaining_issues: []
+
+# Metadata
+metadata:
+  version: "1.0"
+  author: "TeamBuilder"
+  created: "2025-12-02"
+  tags:
+    - "refinement"
+    - "quality-improvement"
+    - "iterative"
+
+# Outputs
+outputs:
+  - file: "refinement-report-{{team_name}}-{{timestamp}}.md"
+    description: "Summary of refinement changes and improvements"
+    template: "template.md"
+
+# Agent assignment
+agents:
+  primary: "teambuilder"
+
+# Settings
+settings:
+  targeted_refinement: true  # Focus on specific issues vs wholesale regeneration
+  preserve_good_agents: true  # Keep agents that passed validation
+  max_iterations: 3
+  re_validate_after_refinement: true
+
+# Execution notes
+execution_notes: |
+  This workflow performs targeted refinement to improve team quality.
+
+  Process:
+  1. Review validation report and current quality score
+  2. Identify what to refine (user input or automatic from issues)
+  3. Perform targeted improvements:
+     - Revise specific agent personas
+     - Enhance workflows
+     - Add missing specialists
+     - Adjust team size/structure
+  4. Preserve agents/workflows that passed validation
+  5. Re-validate improved team
+  6. Present new quality score and remaining issues
+  7. Offer to continue refining or install
+
+  Key principle: TARGETED refinement, not wholesale regeneration.
+
+# Next workflow
+next_workflow:
+  path: "_bmad/teambuilder/workflows/2-generation/validate-team/workflow.yaml"
+  automatic: true
+  pass_variables:
+    - revised_agents
+    - revised_workflows
+    - team_name

@@ -1,0 +1,316 @@
+# Workflow Template
+# Reference for BMAD workflow structure
+
+# Basic workflow configuration
+name: "workflow-name"
+description: "Brief description of what this workflow does"
+
+# Variables used throughout the workflow
+# These can be populated from user input or previous steps
+variables:
+  # Input variables
+  input_variable_1: ""
+  input_variable_2: ""
+
+  # Working variables (populated during execution)
+  working_variable_1: ""
+  working_variable_2: ""
+
+  # Output variables
+  output_variable_1: ""
+  output_variable_2: ""
+
+# Optional: Workflow metadata
+metadata:
+  version: "1.0"
+  author: "TeamBuilder"
+  created: "2025-12-02"
+  tags:
+    - "domain-specific"
+    - "workflow-type"
+
+# Optional: Prerequisites
+prerequisites:
+  - "Required context or setup"
+  - "Files or data needed"
+  - "Agent dependencies"
+
+# Optional: Expected outputs
+outputs:
+  - file: "output-filename.md"
+    description: "What this output contains"
+    template: "template.md"
+
+  - file: "optional-output-2.md"
+    description: "Additional output if needed"
+
+# Optional: Agent assignments
+agents:
+  primary: "agent-name"           # Main agent orchestrating workflow
+  supporting:                      # Additional agents involved
+    - "agent-name-2"
+    - "agent-name-3"
+
+# Optional: Workflow settings
+settings:
+  # Execution settings
+  max_steps: 10
+  allow_iteration: true
+  require_confirmation: false
+
+  # Output settings
+  save_intermediate_outputs: false
+  output_directory: "docs"
+
+  # Collaboration settings
+  enable_party_mode: false
+  agents_collaborate: true
+
+# Notes for workflow execution
+# These are implementation guidance, not executed
+execution_notes: |
+  This workflow follows a standard pattern:
+  1. Gather inputs and context
+  2. Process through defined steps
+  3. Generate outputs
+  4. Validate and deliver
+
+  The instructions.md file contains detailed step-by-step execution logic.
+  The template.md file defines the output format.
+
+---
+
+# WORKFLOW STRUCTURE EXPLANATION
+
+## Required Files
+
+Every workflow requires THREE files:
+
+### 1. workflow.yaml (this file)
+- Configuration and metadata
+- Variable definitions
+- Output specifications
+- Agent assignments
+
+### 2. instructions.md
+- Step-by-step execution logic
+- Agent interactions
+- Decision points and branching
+- Quality checks
+- Handoffs between agents
+
+### 3. template.md
+- Output document structure
+- Format specifications
+- Variable placeholders
+- Final deliverable format
+
+## Variable Usage
+
+Variables flow through the workflow:
+
+```yaml
+variables:
+  # User provides during workflow invocation
+  user_input: ""
+
+  # Populated during step execution
+  intermediate_result: ""
+
+  # Used in template for final output
+  final_output: ""
+```
+
+Access in instructions: `{{variable_name}}`
+Access in template: `{{variable_name}}`
+
+## Example Workflow Structure
+
+```
+_bmad/teams/research-team/workflows/market-research/
+├── workflow.yaml          # Configuration (this file format)
+├── instructions.md        # Execution steps
+└── template.md           # Output format
+```
+
+## Common Workflow Patterns
+
+### Pattern 1: Linear Process
+```yaml
+# Steps execute sequentially
+# Step 1 → Step 2 → Step 3 → Output
+```
+Best for: Straightforward processes with clear progression
+
+### Pattern 2: Iterative Refinement
+```yaml
+settings:
+  allow_iteration: true
+
+# Step 1 → Step 2 → Step 3 → Validation
+#              ↑_______________|  (if fails, loop back)
+```
+Best for: Research, creative work, quality-focused processes
+
+### Pattern 3: Multi-Agent Collaboration
+```yaml
+agents:
+  primary: "coordinator"
+  supporting:
+    - "analyst"
+    - "specialist"
+    - "reviewer"
+
+# Multiple agents work together on different aspects
+```
+Best for: Complex tasks requiring diverse expertise
+
+### Pattern 4: Decision Tree
+```yaml
+# Step 1 → Step 2 (classify)
+#              ↓
+#         ┌────┴────┐
+#    Path A      Path B
+#         ↓         ↓
+#    Step 3a    Step 3b
+#         └────┬────┘
+#              ↓
+#          Step 4
+```
+Best for: Domain-specific workflows with branching logic
+
+## Workflow Quality Markers
+
+✅ **Clear Purpose**
+- Workflow name explains what it does
+- Description is specific, not vague
+- User knows what they'll get
+
+✅ **Defined Steps**
+- Instructions.md has clear step-by-step process
+- Each step has specific goal
+- Agent assignments are explicit
+
+✅ **Actionable Instructions**
+- Not "gather information" but "interview user about X, Y, Z"
+- Not "analyze data" but "calculate metrics A, B, C and compare to baseline"
+- Specific actions, not vague directives
+
+✅ **Clear Outputs**
+- Output files defined
+- Template specifies format
+- User knows what artifact they'll receive
+
+✅ **Agent Collaboration**
+- Clear handoffs between agents
+- Collaboration patterns defined
+- No confusion about who does what
+
+## Common Pitfalls
+
+❌ **Vague Steps**
+```markdown
+Step 1: Understand requirements
+Step 2: Do research
+Step 3: Create output
+```
+Problem: Not actionable, no specifics
+
+❌ **Missing Agent Assignments**
+```markdown
+Step 1: Analyze data
+Step 2: Review findings
+```
+Problem: Who does what? Which agent?
+
+❌ **No Output Specification**
+```yaml
+outputs: []
+```
+Problem: User doesn't know what they're getting
+
+❌ **Generic Variables**
+```yaml
+variables:
+  input: ""
+  output: ""
+```
+Problem: Not descriptive, unclear purpose
+
+## Validation Checklist
+
+- [ ] Workflow name is clear and specific
+- [ ] Description explains purpose
+- [ ] All required variables defined
+- [ ] Output files specified
+- [ ] Agent assignments clear
+- [ ] Instructions.md will exist with step-by-step logic
+- [ ] Template.md will define output format
+- [ ] Workflow pattern appropriate for task
+- [ ] No vague or generic steps planned
+
+## Integration with Agent Menu
+
+Agents reference workflows in their menu:
+
+```xml
+<agent>
+  <menu>
+    <item cmd="*research" workflow="{project-root}/_bmad/teams/research-team/workflows/market-research/workflow.yaml">
+      Conduct comprehensive market research with source validation
+    </item>
+  </menu>
+</agent>
+```
+
+When user selects menu item:
+1. Workflow.yaml is loaded (configuration)
+2. Instructions.md is executed (process)
+3. Template.md is used (output format)
+4. Variables are populated
+5. Output is generated
+
+## Advanced Features
+
+### Checkpoints
+```yaml
+settings:
+  checkpoints:
+    - after_step: 3
+      save_state: true
+      allow_restart: true
+```
+
+### Conditional Execution
+```yaml
+# In instructions.md
+<step n="5" if="{{domain}} == 'healthcare'">
+  <action>Apply healthcare-specific validation</action>
+</step>
+```
+
+### Party Mode Integration
+```yaml
+settings:
+  enable_party_mode: true
+
+agents:
+  primary: "coordinator"
+  supporting:
+    - "expert-1"
+    - "expert-2"
+    - "expert-3"
+
+# Multiple agents can join collaborative discussion
+```
+
+## Examples from Pattern Library
+
+See pattern library for complete workflow examples:
+- `_bmad/teambuilder/patterns/*/example-workflows.md`
+
+Study these examples to understand actionable workflow design.
+
+---
+
+**Note:** This template is for REFERENCE only. Generated workflows should be tailored to specific team needs, not generic fill-in-the-blank.

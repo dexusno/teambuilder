@@ -1,0 +1,148 @@
+# Generate Team Workflow
+# Creates custom AI agent team based on discovery requirements
+
+name: "generate-team"
+description: "Generate custom team with distinct personas and workflows based on user requirements"
+
+# Input from discovery
+input_variables:
+  requirements_document: ""
+  primary_task: ""
+  domain: ""
+  team_size_preference: ""
+  key_concerns: []
+  collaboration_style: ""
+  required_expertise: ""
+  domain_context: ""
+
+# Working variables during generation
+variables:
+  # Pattern library
+  loaded_patterns: []
+  primary_pattern: ""
+  pattern_learnings: ""
+
+  # Agent generation
+  agent_roles: []
+  agent_count: 0
+  generated_agents: []
+
+  # Workflow generation
+  workflow_count: 0
+  generated_workflows: []
+
+  # Team composition
+  team_name: ""
+  team_description: ""
+  team_structure: ""
+  collaboration_model: ""
+
+  # Generation output
+  generation_summary: ""
+  installation_package: ""
+
+# Metadata
+metadata:
+  version: "1.0"
+  author: "TeamBuilder"
+  created: "2025-12-02"
+  tags:
+    - "generation"
+    - "team-creation"
+    - "ai-generation"
+
+# Outputs
+outputs:
+  - file: "generated-team-{{team_name}}/GENERATION_SUMMARY.md"
+    description: "Summary of generated team"
+    template: "template.md"
+
+  - files: "generated-team-{{team_name}}/agents/*.md"
+    description: "Individual agent files"
+    count: "{{agent_count}}"
+
+  - files: "generated-team-{{team_name}}/workflows/*"
+    description: "Generated workflow files"
+    count: "{{workflow_count}}"
+
+  - file: "generated-team-{{team_name}}/config.yaml"
+    description: "Team configuration"
+
+# Agent assignment
+agents:
+  primary: "teambuilder"
+
+# Settings
+settings:
+  max_agents: 12
+  min_agents: 4
+  require_coordinator: true
+  require_domain_expert: true
+  generate_workflows: true
+  load_pattern_limit: 3
+  output_directory: "_bmad/teams"
+
+# Execution notes
+execution_notes: |
+  This workflow is the heart of TeamBuilder's generation engine.
+
+  Process:
+  1. Load requirements from discovery
+  2. Load relevant patterns from pattern library
+  3. Learn composition principles (NOT copy patterns)
+  4. Define agent roles based on requirements
+  5. Generate distinct personas for each agent
+  6. Design workflows appropriate for domain
+  7. Create collaboration model
+  8. Package team for installation
+  9. Register team in BMAD manifests (CRITICAL for discoverability)
+  10. Create Claude Code command stubs (CRITICAL for invocation)
+  11. Trigger validation workflow
+
+  CRITICAL: Generation uses LLM with pattern library as learning
+  context. Patterns are NOT templates - they teach principles.
+
+  CRITICAL: Teams MUST be registered in manifests for Claude Code
+  to discover them. Registration adds agents to agent-manifest.csv
+  and team to manifest.yaml.
+
+  CRITICAL: Claude Code command stubs MUST be created in
+  .claude/commands/bmad/teams/{team-name}/agents/ for each agent.
+  Without these stubs, users cannot invoke team agents via slash commands.
+
+# Manifest registration settings
+manifest_registration:
+  enabled: true
+  agent_manifest_path: "_bmad/_config/agent-manifest.csv"
+  main_manifest_path: "_bmad/_config/manifest.yaml"
+  module_prefix: "teams"  # Agents registered as "teams:{team-name}"
+
+# Claude Code command stub settings
+claude_code_stubs:
+  enabled: true
+  base_path: ".claude/commands/bmad/teams"
+  stub_template: |
+    ---
+    name: '{{agent-id}}'
+    description: '{{title}} - {{role_summary}}'
+    ---
+
+    You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
+
+    <agent-activation CRITICAL="TRUE">
+    1. LOAD the FULL agent file from @_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
+    2. READ its entire contents - this contains the complete agent persona, menu, and instructions
+    3. Execute ALL activation steps exactly as written in the agent file
+    4. Follow the agent's persona and menu system precisely
+    5. Stay in character throughout the session
+    </agent-activation>
+
+# Next workflow
+next_workflow:
+  path: "_bmad/teambuilder/workflows/2-generation/validate-team/workflow.yaml"
+  automatic: true
+  pass_variables:
+    - generated_agents
+    - generated_workflows
+    - team_name
+    - requirements_document

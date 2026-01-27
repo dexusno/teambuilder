@@ -1,0 +1,186 @@
+# TeamBuilder Configuration
+# Dynamic AI Agent Team Generator v2.0
+
+teambuilder:
+  version: "2.0"
+  description: "Dynamic AI agent team generator for any domain or task type"
+
+  # Directory paths (relative to project root)
+  paths:
+    teams_directory: "_bmad/teams"
+    docs_directory: "docs"
+    patterns_directory: "_bmad/teambuilder/patterns"
+    templates_directory: "_bmad/teambuilder/templates"
+    # Manifest paths for agent registration
+    config_directory: "_bmad/_config"
+    agent_manifest: "_bmad/_config/agent-manifest.csv"
+    main_manifest: "_bmad/_config/manifest.yaml"
+
+  # Quality thresholds for validation scoring
+  quality_thresholds:
+    excellent: 95    # Exceptional quality, standout personas
+    good: 85         # Ready to use, minor improvements possible
+    acceptable: 75   # Usable but refinement recommended
+    minimum: 60      # Below this requires refinement
+
+  # Generation settings
+  generation:
+    default_team_size: "6-8"
+    min_agents: 4
+    max_agents: 12
+
+    # Pattern matching
+    use_pattern_matching: true
+    max_patterns_loaded: 3  # Load most relevant patterns to optimize context
+
+    # Agent generation
+    require_coordinator: true
+    require_domain_expert: true
+    persona_distinctness_threshold: 0.6  # Similarity threshold (0-1)
+
+    # Workflow generation
+    generate_workflows: true
+    min_workflow_steps: 3
+    max_workflow_steps: 10
+
+  # Validation settings
+  validation:
+    # Enable/disable validation layers
+    run_agent_checks: true
+    run_workflow_checks: true
+    run_team_checks: true
+
+    # Scoring weights
+    agent_check_weight: 0.4
+    workflow_check_weight: 0.3
+    team_check_weight: 0.3
+
+    # Auto-refinement
+    auto_suggest_refinements: true
+    max_refinement_iterations: 3
+
+  # Discovery workflow settings
+  discovery:
+    # Domain classifications
+    supported_domains:
+      - "research-intelligence"
+      - "planning-strategy"
+      - "creative-content"
+      - "technical-development"
+      - "operations-support"
+      - "domain-specific-expert"
+
+    # Question depth
+    min_questions: 5
+    max_questions: 10
+    enable_domain_branching: true
+
+    # Output format
+    generate_requirements_doc: true
+    requirements_template: "discover-team-needs/template.md"
+
+  # Pattern library settings
+  patterns:
+    # Available patterns
+    pattern_list:
+      - name: "itil-domain-expert"
+        type: "domain-specialist"
+        characteristics: ["large", "formal", "governance"]
+
+      - name: "software-development"
+        type: "development"
+        characteristics: ["agile", "sprint-based", "technical"]
+
+      - name: "research-intelligence"
+        type: "research"
+        characteristics: ["iterative", "synthesis", "verification"]
+
+      - name: "planning-strategy"
+        type: "planning"
+        characteristics: ["consultative", "multi-perspective", "risk-aware"]
+
+      - name: "creative-content"
+        type: "creative"
+        characteristics: ["creative-process", "brand-aware", "optimization"]
+
+    # Pattern loading
+    load_full_patterns: false  # Load summaries vs full content (for context optimization)
+    cache_patterns: true       # Cache loaded patterns (future enhancement)
+
+  # Installation settings
+  installation:
+    create_team_readme: true
+    include_validation_report: true
+    backup_existing: true
+
+    # Team structure
+    create_agents_directory: true
+    create_workflows_directory: true
+    create_config_file: true
+
+  # Manifest registration settings (CRITICAL for discoverability)
+  manifest_registration:
+    enabled: true
+    auto_register: true  # Automatically register teams after generation
+    module_prefix: "teams"  # Agents registered as "teams:{team-name}"
+    update_main_manifest: true  # Add team to manifest.yaml teams list
+    update_agent_manifest: true  # Add agents to agent-manifest.csv
+
+  # Refinement settings
+  refinement:
+    targeted_refinement: true  # Focus on specific issues vs full regeneration
+    preserve_good_agents: true  # Keep high-quality agents during refinement
+    max_iterations: 3
+
+    # Refinement types
+    supported_refinements:
+      - "improve_personas"
+      - "add_missing_expertise"
+      - "enhance_workflows"
+      - "adjust_team_size"
+      - "change_collaboration_model"
+
+# User preferences (can be customized per project)
+user_preferences:
+  # Default team preferences
+  default_collaboration_style: "balanced"  # formal, agile, casual, balanced
+  default_workflow_style: "guided"         # guided, flexible, structured
+
+  # Output preferences
+  verbose_output: true
+  include_examples: true
+  show_validation_details: true
+
+  # Installation preferences
+  auto_install_high_quality: false  # Auto-install teams scoring 95+
+  prompt_before_refinement: true
+
+# Feature flags (for development and testing)
+feature_flags:
+  enable_pattern_learning: true
+  enable_validation: true
+  enable_refinement: true
+  enable_domain_branching: true
+
+  # Experimental features
+  experimental_multi_pattern_blend: false
+  experimental_adaptive_questions: false
+  experimental_quality_prediction: false
+
+# Logging and debugging
+logging:
+  log_level: "info"  # debug, info, warning, error
+  log_discovery_inputs: true
+  log_generation_process: false  # Set true for debugging
+  log_validation_details: true
+  log_file: null  # Set path to enable file logging
+
+# Version history
+version_history:
+  - version: "2.0"
+    date: "2025-12-02"
+    changes: "Dynamic generation architecture with pattern library"
+
+  - version: "1.0"
+    date: "2025-11-29"
+    changes: "Initial pre-built ITIL Configuration Management team"

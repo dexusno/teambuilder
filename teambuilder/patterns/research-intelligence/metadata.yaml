@@ -1,0 +1,56 @@
+# Research / Intelligence Pattern Metadata
+
+pattern_id: "research-intelligence"
+pattern_name: "Research & Intelligence Team"
+version: "1.0"
+
+pattern_type: "research"
+primary_domain: "research-intelligence"
+
+characteristics:
+  team_size: "medium"  # 6-8 agents
+  collaboration: "iterative"
+  workflow_style: "search-synthesize-report"
+  pace: "thorough-over-fast"
+
+use_when:
+  - "Research and investigation tasks"
+  - "Market research, competitive intelligence"
+  - "Information gathering and synthesis"
+  - "Academic or deep research"
+
+key_learnings:
+  - name: "Iterative Search Refinement"
+    description: "Query → Search → Evaluate → Refine query → Repeat"
+  - name: "Source Triangulation"
+    description: "Multiple sources for validation"
+  - name: "Synthesis Focus"
+    description: "Connecting insights from diverse sources"
+
+agent_structure:
+  - "Research Strategist / Query Master"
+  - "Search Specialist(s)"
+  - "Source Evaluator / Librarian"
+  - "Synthesis Analyst / Weaver"
+  - "Fact Checker / Verifier"
+  - "Report Writer"
+
+workflow_characteristics:
+  - "Query design and refinement"
+  - "Multi-source search"
+  - "Source credibility evaluation"
+  - "Insight synthesis"
+  - "Report generation"
+
+quality_indicators:
+  - "Search methodology expertise"
+  - "Source evaluation rigor"
+  - "Synthesis ability"
+  - "Iterative refinement mindset"
+
+tags:
+  - "research"
+  - "intelligence"
+  - "search"
+  - "synthesis"
+  - "investigation"
