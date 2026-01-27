@@ -101,6 +101,7 @@ my-project/
 | **Team Architect** | Designs team structure and composition |
 | **Agent Improver** | Ensures persona quality and distinctness |
 | **Quality Guardian** | Validates and scores generated teams |
+| **Tool Scout** | Researches MCPs and tools that benefit teams |
 
 ## Team Patterns
 
