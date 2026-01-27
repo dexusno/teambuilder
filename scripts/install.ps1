@@ -98,7 +98,7 @@ function Install-WithWinget {
             return $false
         }
     } catch {
-        Write-Fail "Error installing $DisplayName: $_"
+        Write-Fail "Error installing ${DisplayName}: $_"
         return $false
     }
 }
