@@ -10,39 +10,86 @@ Create custom AI agent teams tailored to your exact needs using the BMAD Method.
 - **Node.js** (installed automatically if missing)
 - **Git** (installed automatically if missing)
 
-## Quick Start
+---
 
-### Windows (PowerShell)
+## Quick Start - Windows
+
+Choose one of the two options below:
+
+### Option A: Download Script First
+
+Use this if you want to save the script locally or review it before running.
+
+**Step 1:** Open PowerShell (search "PowerShell" in Start menu)
+
+**Step 2:** Navigate to where you want your project, for example:
+```powershell
+cd C:\Projects
+```
+
+**Step 3:** Download the installer script:
+```powershell
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 -OutFile install.ps1
+```
+
+**Step 4:** Run the script with your project name:
+```powershell
+.\install.ps1 my-project
+```
+
+### Option B: Run Directly from GitHub
+
+Use this for a quick one-command install. Copy and paste this into PowerShell:
 
 ```powershell
-# Option 1: Download and run
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 -OutFile install.ps1
-.\install.ps1 my-project
-
-# Option 2: One-liner
 irm https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 | iex
 ```
 
-### Linux / macOS
+The script will prompt you for a project name.
+
+---
+
+## Quick Start - Linux / macOS
+
+Choose one of the two options below:
+
+### Option A: Download Script First
+
+Use this if you want to save the script locally or review it before running.
+
+**Step 1:** Open Terminal
+
+**Step 2:** Navigate to where you want your project, for example:
+```bash
+cd ~/Projects
+```
+
+**Step 3:** Download the installer script:
+```bash
+curl -O https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh
+```
+
+**Step 4:** Make it executable:
+```bash
+chmod +x install.sh
+```
+
+**Step 5:** Run the script with your project name:
+```bash
+./install.sh my-project
+```
+
+### Option B: Run Directly from GitHub
+
+Use this for a quick one-command install. Copy and paste this into Terminal:
 
 ```bash
-# Option 1: Download and run
-curl -O https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh
-chmod +x install.sh
-./install.sh my-project
-
-# Option 2: One-liner
 curl -fsSL https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh | bash
 ```
 
-### Clone and Run
+The script will prompt you for a project name.
 
-```bash
-git clone https://github.com/dexusno/teambuilder.git
-cd teambuilder
-./scripts/install.sh ../my-project  # Linux/Mac
-.\scripts\install.ps1 ..\my-project  # Windows
-```
+---
 
 ## What Gets Installed
 
