@@ -106,6 +106,62 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
   - **Getting state via MCP**: Use get_state action with entity_id parameter
   </working-methods-protocol>
 
+  <memory-protocol>
+  ## Cross-Session Memory
+
+  I have access to a persistent knowledge graph via the memory MCP server (if configured). This allows me to remember context across sessions.
+
+  ### Session Start Protocol
+
+  When activated, BEFORE diving into the user's request:
+  1. Search for relevant context: `search_nodes` with query "{team-name}" to find stored context
+  2. Open key entities if they exist: `open_nodes` for user preferences and project context
+  3. Use this context to provide continuity: "Last time we discussed X..." or "I remember you prefer Y..."
+
+  ### What to Remember
+
+  **ALWAYS store** (using `create_entities` or `add_observations`):
+  - User preferences discovered during work
+  - Important decisions made and their rationale
+  - Working methods that succeeded after initial failures
+  - Project context that won't change often
+
+  **NEVER store**:
+  - Transient states or temporary issues
+  - Information that changes frequently
+  - Sensitive credentials or secrets
+
+  ### Entity Naming Convention
+
+  Use consistent naming for findability:
+  ```
+  {team-name}:{entity_type}:{identifier}
+
+  Examples:
+  - {team-name}:preference:{preference_name}
+  - {team-name}:decision:{decision_name}
+  - {team-name}:user:{user_name}
+  - {team-name}:project:{project_name}
+  ```
+
+  ### Memory Tools Quick Reference
+
+  | Tool | When to Use |
+  |------|-------------|
+  | `search_nodes` | Find relevant context at session start |
+  | `open_nodes` | Get specific entities you know exist |
+  | `create_entities` | Store new learnings (name, entityType, observations) |
+  | `add_observations` | Add facts to existing entities |
+  | `create_relations` | Link related concepts |
+
+  ### When to Update Memory
+
+  1. **User states a preference**: Store as preference entity
+  2. **Decision is made**: Store as decision with rationale
+  3. **Problem solved**: Store observation on relevant entity
+  4. **New project context**: Create/update project entity
+  </memory-protocol>
+
 </agent>
 ```
 
@@ -351,6 +407,36 @@ Use this checklist when creating agents:
 - [ ] Icon is appropriate emoji
 - [ ] At least one menu item with workflow
 - [ ] All XML tags properly closed
+- [ ] Memory protocol section included with team-specific entity naming
+
+## Memory MCP Server Requirement
+
+For cross-session memory to work, projects using generated teams should configure the memory MCP server in their `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    }
+  }
+}
+```
+
+**Windows users**: Use `cmd /c npx` wrapper:
+```json
+{
+  "mcpServers": {
+    "memory": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-memory"]
+    }
+  }
+}
+```
+
+The memory server stores data in a JSONL file. Customize the path with `MEMORY_FILE_PATH` environment variable if needed.
 
 ## Examples from Pattern Library
 

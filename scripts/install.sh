@@ -420,7 +420,7 @@ CMDEOF
 
     if [ "$install_playwright_mcp" = true ]; then
         [ "$has_mcp" = true ] && mcp_content="$mcp_content,"
-        mcp_content="$mcp_content"'\n    "playwright": {\n      "command": "npx",\n      "args": ["-y", "@anthropic/mcp-playwright"]\n    }'
+        mcp_content="$mcp_content"'\n    "playwright": {\n      "command": "npx",\n      "args": ["-y", "@playwright/mcp"]\n    }'
     fi
 
     mcp_content="$mcp_content"'\n  }\n}'

@@ -394,15 +394,15 @@ You must fully embody this agent's persona and follow all activation instruction
 
     if ($installMemoryMCP) {
         $mcpConfig.mcpServers["memory"] = @{
-            command = "npx"
-            args = @("-y", "@modelcontextprotocol/server-memory")
+            command = "cmd"
+            args = @("/c", "npx", "-y", "@modelcontextprotocol/server-memory")
         }
     }
 
     if ($installPlaywrightMCP) {
         $mcpConfig.mcpServers["playwright"] = @{
-            command = "npx"
-            args = @("-y", "@anthropic/mcp-playwright")
+            command = "cmd"
+            args = @("/c", "npx", "-y", "@playwright/mcp")
         }
     }
 
