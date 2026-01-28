@@ -569,20 +569,117 @@ For each agent in {{generated_agents}}, create:
 _bmad/teams/{{team_name}}/agents/{{agent-name}}.md
 ```
 
-With complete agent XML structure:
+With complete agent XML structure (see `teambuilder/templates/agent-template.md` for full reference):
 ```xml
-<agent id="..." name="..." title="..." icon="...">
+<agent id="{{agent-id}}" name="{{display_name}}" title="{{title}}" icon="{{icon}}">
   <persona>
-    <role>...</role>
-    <identity>...</identity>
-    <communication_style>...</communication_style>
-    <principles>...</principles>
+    <role>{{role}}</role>
+    <identity>{{identity}}</identity>
+    <communication_style>{{communication_style}}</communication_style>
+    <principles>{{principles}}</principles>
   </persona>
+
   <menu>
-    <item cmd="*{{workflow-command}}" workflow="...">
+    <item cmd="*{{workflow-command}}" workflow="{project-root}/_bmad/teams/{{team_name}}/workflows/{{workflow-name}}/workflow.yaml">
       {{workflow description}}
     </item>
   </menu>
+
+  <instructions>
+  ## My Role as {{title}}
+
+  {{Brief description of role and approach - generated from persona}}
+
+  ## CRITICAL: Self-Learning Protocol
+
+  When I fail at a tool/API/MCP task and then find a working method:
+  1. STOP immediately after succeeding
+  2. Say: "I learned something - updating my agent file"
+  3. Edit THIS file (`_bmad/teams/{{team_name}}/agents/{{agent-id}}.md`)
+  4. Add the method to my `<working-methods>` section
+
+  This is NOT optional. I must update MY agent file, not docs or reference files.
+
+  ## When User Invokes Me
+
+  {{How agent starts interaction - questions to ask, context to gather}}
+
+  ## Success Metrics
+
+  I've succeeded when:
+  - {{Success criterion 1 - based on role}}
+  - {{Success criterion 2 - based on role}}
+  - {{Success criterion 3 - based on role}}
+
+  </instructions>
+
+  <working-methods>
+  ## Learned Tool Methods
+
+  This section contains methods discovered through trial and error when using tools, APIs, and MCP integrations. Check here FIRST before attempting tasks. When you discover a working method after a failed attempt, add it here.
+
+  <!-- Entries added when solutions are found -->
+
+  </working-methods>
+
+  <working-methods-protocol>
+  ## Working Methods Protocol
+
+  **YOUR AGENT FILE:** `_bmad/teams/{{team_name}}/agents/{{agent-id}}.md`
+
+  When you learn something, you edit THIS FILE - not docs, not reference files - THIS agent file.
+
+  **Before** attempting any tool/API/MCP task, check your <working-methods> section above for a known method.
+
+  **After** solving a task that initially failed:
+  1. STOP and recognize: "I just learned a working method"
+  2. IMMEDIATELY edit THIS file
+  3. Add the method to the <working-methods> section above
+  4. Generalize to the highest level where the method still applies
+
+  **Format:**
+  `- **[Action] [Resource Type] via [Tool]**: [Working method]`
+  </working-methods-protocol>
+
+  <memory-protocol>
+  ## Cross-Session Memory
+
+  I have access to a persistent knowledge graph via the memory MCP server (if configured). This allows me to remember context across sessions.
+
+  ### Session Start Protocol
+
+  When activated, BEFORE diving into the user's request:
+  1. Search for relevant context: `search_nodes` with query "{{team_name}}" to find stored context
+  2. Open key entities if they exist: `open_nodes` for user preferences and project context
+  3. Use this context to provide continuity: "Last time we discussed X..." or "I remember you prefer Y..."
+
+  ### What to Remember
+
+  **ALWAYS store** (using `create_entities` or `add_observations`):
+  - User preferences discovered during work
+  - Important decisions made and their rationale
+  - Working methods that succeeded after initial failures
+  - Project context that won't change often
+
+  **NEVER store**:
+  - Transient states or temporary issues
+  - Information that changes frequently
+  - Sensitive credentials or secrets
+
+  ### Entity Naming Convention
+
+  Use consistent naming for findability:
+  ```
+  {{team_name}}:{entity_type}:{identifier}
+  ```
+
+  ### When to Update Memory
+
+  1. **User states a preference**: Store as preference entity
+  2. **Decision is made**: Store as decision with rationale
+  3. **Problem solved**: Store observation on relevant entity
+  4. **New project context**: Create/update project entity
+  </memory-protocol>
 </agent>
 ```
 
