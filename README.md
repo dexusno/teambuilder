@@ -70,7 +70,7 @@ mkdir my-project
 cd my-project
 ```
 
-**Step 2:** Download and run the installer:
+**Step 2:** Copy and paste this into PowerShell, then press Enter:
 ```powershell
 iwr https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 -OutFile install.ps1; .\install.ps1
 ```
@@ -106,7 +106,7 @@ mkdir my-project
 cd my-project
 ```
 
-**Step 2:** Run the installer:
+**Step 2:** Copy and paste this into your terminal, then press Enter:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh | bash
 ```
