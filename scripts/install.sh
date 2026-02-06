@@ -287,7 +287,7 @@ main() {
             echo ""
             echo "  After installation:"
             echo "    1. Open project: claude ."
-            echo "    2. Create team: /bmad:teambuilder:agents:teambuilder-guide"
+            echo "    2. Create team: /bmad-agent-teambuilder-teambuilder-guide"
             echo ""
             echo "  Documentation: https://github.com/dexusno/teambuilder"
             echo ""
@@ -303,8 +303,8 @@ main() {
     print_header "Step 5: Installing"
 
     # Install BMAD Method
-    print_step "Installing BMAD Method (latest alpha)..."
-    npx bmad-method@alpha install
+    print_step "Installing BMAD Method..."
+    npx bmad-method@latest install
     if [ $? -ne 0 ]; then
         print_fail "Failed to install BMAD Method"
         exit 1
@@ -365,46 +365,84 @@ main() {
 
     cat "$manifest_entries" >> "$agent_manifest"
 
-    # Add teambuilder to modules list in manifest.yaml
+    # 2. Add teambuilder module entry to manifest.yaml (beta format)
     local main_manifest="_bmad/_config/manifest.yaml"
     if [ -f "$main_manifest" ]; then
         if ! grep -q "teambuilder" "$main_manifest"; then
-            # Portable: append after the last module entry
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' 's/^  - cis$/  - cis\n  - teambuilder/' "$main_manifest"
-            else
-                sed -i 's/^  - cis$/  - cis\n  - teambuilder/' "$main_manifest"
-            fi
+            local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+            local tmp_manifest=$(mktemp)
+            while IFS= read -r line; do
+                if [ "$line" = "ides:" ]; then
+                    echo "  - name: teambuilder" >> "$tmp_manifest"
+                    echo "    version: \"2.0\"" >> "$tmp_manifest"
+                    echo "    installDate: ${timestamp}" >> "$tmp_manifest"
+                    echo "    lastUpdated: ${timestamp}" >> "$tmp_manifest"
+                    echo "    source: external" >> "$tmp_manifest"
+                    echo "    npmPackage: null" >> "$tmp_manifest"
+                    echo "    repoUrl: https://github.com/dexusno/teambuilder" >> "$tmp_manifest"
+                fi
+                echo "$line" >> "$tmp_manifest"
+            done < "$main_manifest"
+            mv "$tmp_manifest" "$main_manifest"
         fi
     fi
 
-    # Create Claude Code command files for TeamBuilder agents
-    local commands_dir=".claude/commands/bmad/teambuilder/agents"
-    mkdir -p "$commands_dir"
+    # 3. Register workflows in workflow-manifest.csv
+    local workflow_manifest="_bmad/_config/workflow-manifest.csv"
+    if [ -f "$workflow_manifest" ]; then
+        if ! grep -q "teambuilder" "$workflow_manifest"; then
+            cat >> "$workflow_manifest" << 'WFEOF'
+"collaborative-generation","Three-agent collaboration workflow for high-quality team generation","teambuilder","_bmad/teambuilder/workflows/collaborative-generation/workflow.yaml"
+"discover-team-needs","Discover user requirements through guided questions","teambuilder","_bmad/teambuilder/workflows/1-discovery/discover-team-needs/workflow.yaml"
+"generate-team","Generate custom team with distinct personas and workflows","teambuilder","_bmad/teambuilder/workflows/2-generation/generate-team/workflow.yaml"
+"validate-team","Validate generated team quality through scoring and assessment","teambuilder","_bmad/teambuilder/workflows/2-generation/validate-team/workflow.yaml"
+"refine-team","Refine generated team through targeted improvements","teambuilder","_bmad/teambuilder/workflows/3-refinement/refine-team/workflow.yaml"
+WFEOF
+        fi
+    fi
 
-    # Create command file for each agent
-    for agent_file in _bmad/teambuilder/agents/*.md; do
-        if [ -f "$agent_file" ]; then
-            local agent_name=$(basename "$agent_file" .md)
-            local command_file="$commands_dir/$agent_name.md"
-            cat > "$command_file" << CMDEOF
+    # 4. Create Claude Code command file (flat format, teambuilder-guide only)
+    local commands_dir=".claude/commands"
+    mkdir -p "$commands_dir"
+    cat > "$commands_dir/bmad-agent-teambuilder-teambuilder-guide.md" << 'CMDEOF'
 ---
-name: '$agent_name'
-description: '$agent_name agent'
+name: 'teambuilder-guide'
+description: 'Team Generation Guide'
+disable-model-invocation: true
 ---
 
 You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
 
 <agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from @_bmad/teambuilder/agents/$agent_name.md
+1. LOAD the FULL agent file from {project-root}/_bmad/teambuilder/agents/teambuilder-guide.md
 2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. Execute ALL activation steps exactly as written in the agent file
-4. Follow the agent's persona and menu system precisely
-5. Stay in character throughout the session
+3. FOLLOW every step in the <activation> section precisely
+4. DISPLAY the welcome/greeting as instructed
+5. PRESENT the numbered menu
+6. WAIT for user input before proceeding
 </agent-activation>
 CMDEOF
-        fi
-    done
+
+    # 5. Inject core config values into TeamBuilder config.yaml
+    local core_config="_bmad/core/config.yaml"
+    local tb_config="_bmad/teambuilder/config.yaml"
+    if [ -f "$core_config" ] && [ -f "$tb_config" ]; then
+        local user_name=$(grep "^user_name:" "$core_config" | sed 's/^user_name:[[:space:]]*//')
+        local comm_lang=$(grep "^communication_language:" "$core_config" | sed 's/^communication_language:[[:space:]]*//')
+        local doc_lang=$(grep "^document_output_language:" "$core_config" | sed 's/^document_output_language:[[:space:]]*//')
+        local out_folder=$(grep "^output_folder:" "$core_config" | sed 's/^output_folder:[[:space:]]*//')
+        local tb_original=$(cat "$tb_config")
+        cat > "$tb_config" << CFGEOF
+# Core Configuration (from BMAD core)
+user_name: ${user_name}
+communication_language: ${comm_lang}
+document_output_language: ${doc_lang}
+output_folder: ${out_folder}
+
+${tb_original}
+CFGEOF
+    fi
+
     print_success "TeamBuilder registered"
 
     # Create .mcp.json
@@ -469,7 +507,7 @@ EOF
     echo -e "  ${GREEN}|  Next steps:                                                |${NC}"
     echo -e "  ${GREEN}|    1. Open terminal in this folder                          |${NC}"
     echo -e "  ${GREEN}|    2. Run: claude .                                         |${NC}"
-    echo -e "  ${GREEN}|    3. Type: /bmad:teambuilder:agents:teambuilder-guide      |${NC}"
+    echo -e "  ${GREEN}|    3. Type: /bmad-agent-teambuilder-teambuilder-guide       |${NC}"
     echo -e "  ${GREEN}|                                                             |${NC}"
     echo -e "  ${GREEN}|  Happy team building!                                       |${NC}"
     echo -e "  ${GREEN}+-------------------------------------------------------------+${NC}"

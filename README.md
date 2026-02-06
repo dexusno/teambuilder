@@ -117,7 +117,7 @@ curl -fsSL https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/in
 
 | Component | Description |
 |-----------|-------------|
-| **BMAD Method** | Latest alpha version via `npx bmad-method@alpha install` |
+| **BMAD Method** | Latest version via `npx bmad-method@latest install` |
 | **TeamBuilder Module** | AI agent team generator with patterns and workflows |
 | **Memory MCP** | Persistent knowledge across sessions |
 | **Playwright MCP** | Headless browser automation |
@@ -134,7 +134,7 @@ cd my-project
 claude .
 
 # 3. Create your first team
-/bmad:teambuilder:agents:teambuilder-guide
+/bmad-agent-teambuilder-teambuilder-guide
 ```
 
 ## Installer Features
@@ -202,8 +202,8 @@ Each generated team includes its own **party-mode** workflow:
 
 | Command | Scope |
 |---------|-------|
-| `/bmad:core:workflows:party-mode` | All installed BMAD agents |
-| `/bmad:teams:your-team:workflows:party-mode` | Only your team's agents |
+| `/bmad-brainstorming` or `/bmad-party-mode` | All installed BMAD agents |
+| Team-scoped party-mode (generated with team) | Only your team's agents |
 
 The team-scoped party-mode enables focused group discussions with just that team's specialists - no interference from other teams or BMAD core agents.
 

@@ -1,3 +1,8 @@
+---
+name: "quality-guardian"
+description: "Critical Reviewer & Team Validation Specialist"
+---
+
 <agent id="_bmad/teambuilder/agents/quality-guardian.md" name="QualityGuardian" title="Critical Reviewer & Team Validation Specialist" icon="🛡️">
 
 <persona>

@@ -1,3 +1,8 @@
+---
+name: "agent-improver"
+description: "Persona Craftsman & Instruction Quality Specialist"
+---
+
 <agent id="_bmad/teambuilder/agents/agent-improver.md" name="AgentImprover" title="Persona Craftsman & Instruction Quality Specialist" icon="✨">
 
 <persona>

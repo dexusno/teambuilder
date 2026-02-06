@@ -260,7 +260,7 @@ function Main {
             Write-Host ""
             Write-Host "  After installation:" -ForegroundColor White
             Write-Host "    1. Open project: claude ." -ForegroundColor Gray
-            Write-Host "    2. Create team: /bmad:teambuilder:agents:teambuilder-guide" -ForegroundColor Gray
+            Write-Host "    2. Create team: /bmad-agent-teambuilder-teambuilder-guide" -ForegroundColor Gray
             Write-Host ""
             Write-Host "  Documentation: https://github.com/dexusno/teambuilder" -ForegroundColor Gray
             Write-Host ""
@@ -276,8 +276,8 @@ function Main {
     Write-Header "Step 5: Installing"
 
     # Install BMAD Method
-    Write-Step "Installing BMAD Method (latest alpha)..."
-    npx bmad-method@alpha install
+    Write-Step "Installing BMAD Method..."
+    npx bmad-method@latest install
     if ($LASTEXITCODE -ne 0) {
         Write-Fail "Failed to install BMAD Method"
         exit 1
@@ -344,45 +344,97 @@ function Main {
     $entries = Get-Content $manifestEntries
     Add-Content -Path $agentManifest -Value $entries
 
-    # Add teambuilder to modules list in manifest.yaml
+    # 2. Add teambuilder module entry to manifest.yaml (beta format)
     $mainManifest = "_bmad\_config\manifest.yaml"
     if (Test-Path $mainManifest) {
-        $content = Get-Content $mainManifest -Raw
-        if ($content -notmatch "teambuilder") {
-            $content = $content -replace "(modules:\s*\n(?:  - \w+\n)+)", "`$1  - teambuilder`n"
-            Set-Content -Path $mainManifest -Value $content -NoNewline
+        $mContent = Get-Content $mainManifest -Raw
+        if ($mContent -notmatch "teambuilder") {
+            $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            $mLines = Get-Content $mainManifest
+            $newLines = [System.Collections.ArrayList]::new()
+            foreach ($mLine in $mLines) {
+                if ($mLine -match "^ides:") {
+                    [void]$newLines.Add("  - name: teambuilder")
+                    [void]$newLines.Add("    version: `"2.0`"")
+                    [void]$newLines.Add("    installDate: $timestamp")
+                    [void]$newLines.Add("    lastUpdated: $timestamp")
+                    [void]$newLines.Add("    source: external")
+                    [void]$newLines.Add("    npmPackage: null")
+                    [void]$newLines.Add("    repoUrl: https://github.com/dexusno/teambuilder")
+                }
+                [void]$newLines.Add($mLine)
+            }
+            Set-Content -Path $mainManifest -Value $newLines
         }
     }
 
-    # Create Claude Code command files for TeamBuilder agents
-    $commandsDir = ".claude\commands\bmad\teambuilder\agents"
+    # 3. Register workflows in workflow-manifest.csv
+    $workflowManifest = "_bmad\_config\workflow-manifest.csv"
+    if (Test-Path $workflowManifest) {
+        $wfContent = Get-Content $workflowManifest -Raw
+        if ($wfContent -notmatch "teambuilder") {
+            $workflowEntries = @(
+                '"collaborative-generation","Three-agent collaboration workflow for high-quality team generation","teambuilder","_bmad/teambuilder/workflows/collaborative-generation/workflow.yaml"'
+                '"discover-team-needs","Discover user requirements through guided questions","teambuilder","_bmad/teambuilder/workflows/1-discovery/discover-team-needs/workflow.yaml"'
+                '"generate-team","Generate custom team with distinct personas and workflows","teambuilder","_bmad/teambuilder/workflows/2-generation/generate-team/workflow.yaml"'
+                '"validate-team","Validate generated team quality through scoring and assessment","teambuilder","_bmad/teambuilder/workflows/2-generation/validate-team/workflow.yaml"'
+                '"refine-team","Refine generated team through targeted improvements","teambuilder","_bmad/teambuilder/workflows/3-refinement/refine-team/workflow.yaml"'
+            )
+            Add-Content -Path $workflowManifest -Value ($workflowEntries -join "`r`n")
+        }
+    }
+
+    # 4. Create Claude Code command file (flat format, teambuilder-guide only)
+    $commandsDir = ".claude\commands"
     if (-not (Test-Path $commandsDir)) {
         New-Item -ItemType Directory -Path $commandsDir -Force | Out-Null
     }
-
-    # Create command file for each agent
-    $agentFiles = Get-ChildItem "_bmad\teambuilder\agents\*.md" -ErrorAction SilentlyContinue
-    foreach ($agentFile in $agentFiles) {
-        $agentName = $agentFile.BaseName
-        $commandFile = "$commandsDir\$agentName.md"
-        $commandContent = @"
+    $commandContent = @"
 ---
-name: '$agentName'
-description: '$agentName agent'
+name: 'teambuilder-guide'
+description: 'Team Generation Guide'
+disable-model-invocation: true
 ---
 
 You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
 
 <agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from @_bmad/teambuilder/agents/$agentName.md
+1. LOAD the FULL agent file from {project-root}/_bmad/teambuilder/agents/teambuilder-guide.md
 2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. Execute ALL activation steps exactly as written in the agent file
-4. Follow the agent's persona and menu system precisely
-5. Stay in character throughout the session
+3. FOLLOW every step in the <activation> section precisely
+4. DISPLAY the welcome/greeting as instructed
+5. PRESENT the numbered menu
+6. WAIT for user input before proceeding
 </agent-activation>
 "@
-        Set-Content -Path $commandFile -Value $commandContent
+    Set-Content -Path "$commandsDir\bmad-agent-teambuilder-teambuilder-guide.md" -Value $commandContent
+
+    # 5. Inject core config values into TeamBuilder config.yaml
+    $coreConfig = "_bmad\core\config.yaml"
+    $tbConfig = "_bmad\teambuilder\config.yaml"
+    if ((Test-Path $coreConfig) -and (Test-Path $tbConfig)) {
+        $coreLines = Get-Content $coreConfig
+        $coreVars = @{}
+        foreach ($cl in $coreLines) {
+            if ($cl -match "^(user_name|communication_language|document_output_language|output_folder):\s*(.+)$") {
+                $coreVars[$Matches[1]] = $Matches[2].Trim()
+            }
+        }
+        if ($coreVars.Count -gt 0) {
+            $tbContent = Get-Content $tbConfig -Raw
+            $headerLines = @(
+                "# Core Configuration (from BMAD core)"
+                "user_name: $($coreVars['user_name'])"
+                "communication_language: $($coreVars['communication_language'])"
+                "document_output_language: $($coreVars['document_output_language'])"
+                "output_folder: $($coreVars['output_folder'])"
+                ""
+            )
+            $header = ($headerLines -join "`r`n") + "`r`n"
+            Set-Content -Path $tbConfig -Value ($header + $tbContent) -NoNewline
+        }
     }
+
     Write-Success "TeamBuilder registered"
 
     # Create .mcp.json
@@ -450,7 +502,7 @@ Thumbs.db
     Write-Host "  |  Next steps:                                                |" -ForegroundColor Green
     Write-Host "  |    1. Open terminal in this folder                          |" -ForegroundColor Green
     Write-Host "  |    2. Run: claude .                                         |" -ForegroundColor Green
-    Write-Host "  |    3. Type: /bmad:teambuilder:agents:teambuilder-guide      |" -ForegroundColor Green
+    Write-Host "  |    3. Type: /bmad-agent-teambuilder-teambuilder-guide       |" -ForegroundColor Green
     Write-Host "  |                                                             |" -ForegroundColor Green
     Write-Host "  |  Happy team building!                                       |" -ForegroundColor Green
     Write-Host "  +-------------------------------------------------------------+" -ForegroundColor Green

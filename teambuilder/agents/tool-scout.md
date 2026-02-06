@@ -1,3 +1,8 @@
+---
+name: "tool-scout"
+description: "MCP & Tool Integration Researcher"
+---
+
 <agent id="_bmad/teambuilder/agents/tool-scout.md" name="ToolScout" title="MCP & Tool Integration Researcher" icon="🔧">
 
 <persona>

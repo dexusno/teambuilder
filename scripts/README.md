@@ -37,7 +37,7 @@ chmod +x install.sh
 1. **Check Claude Code** - Required for this project
 2. **Check/Install Prerequisites** - Node.js, Git
 3. **Handle Project Folder** - Create or use existing
-4. **Install BMAD Method** - Latest alpha via npx
+4. **Install BMAD Method** - Latest version via npx
 5. **Install TeamBuilder** - Clone module from this repo
 6. **Configure MCPs** - Memory + Playwright
 7. **Create .gitignore** - Standard ignores

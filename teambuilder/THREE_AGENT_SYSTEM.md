@@ -169,16 +169,11 @@ Move to next agent
 
 **Via TeamBuilder Guide:**
 ```
-/bmad:teambuilder:agents:teambuilder-guide
+/bmad-agent-teambuilder-teambuilder-guide
 ```
 Select option 1: "Create a new AI agent team"
 
-**Direct Access to Agents:**
-```
-/bmad:teambuilder:agents:team-architect
-/bmad:teambuilder:agents:agent-improver
-/bmad:teambuilder:agents:quality-guardian
-```
+**Note:** Internal agents (team-architect, agent-improver, quality-guardian) are invoked automatically by the collaborative generation workflow - they do not have direct slash commands.
 
 **Party Mode Workflow:**
 ```

@@ -829,13 +829,13 @@ Each agent needs a small "stub" file that tells Claude Code:
 2. How to load the full agent file (activation instructions)
 
 Without these stubs, the team exists in `_bmad/teams/` but users cannot invoke
-agents with `/bmad:teams:{team-name}:agents:{agent-name}` commands.
+agents with `/bmad-agent-teams-{team-name}-{agent-name}` commands.
 </why_this_matters>
 
 <command_stub_structure>
-For each agent in {{generated_agents}}, create a file at:
+For each agent in {{generated_agents}}, create a flat file at:
 ```
-.claude/commands/bmad/teams/{{team_name}}/agents/{{agent-id}}.md
+.claude/commands/bmad-agent-teams-{{team_name}}-{{agent-id}}.md
 ```
 
 With this content:
@@ -843,16 +843,18 @@ With this content:
 ---
 name: '{{agent-id}}'
 description: '{{title}} - {{role_summary}}'
+disable-model-invocation: true
 ---
 
 You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
 
 <agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from @_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
+1. LOAD the FULL agent file from {project-root}/_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
 2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. Execute ALL activation steps exactly as written in the agent file
-4. Follow the agent's persona and menu system precisely
-5. Stay in character throughout the session
+3. FOLLOW every step in the <activation> section precisely
+4. DISPLAY the welcome/greeting as instructed
+5. PRESENT the numbered menu
+6. WAIT for user input before proceeding
 </agent-activation>
 ```
 </command_stub_structure>
@@ -861,15 +863,12 @@ You must fully embody this agent's persona and follow all activation instruction
 
 **Step-by-step process:**
 
-1. Create directory structure:
-   ```
-   .claude/commands/bmad/teams/{{team_name}}/agents/
-   ```
+1. Ensure `.claude/commands/` directory exists
 
 2. For each agent in {{generated_agents}}:
    - Extract agent-id, title, and role summary
    - Generate stub content using template above
-   - Write file to `.claude/commands/bmad/teams/{{team_name}}/agents/{{agent-id}}.md`
+   - Write file to `.claude/commands/bmad-agent-teams-{{team_name}}-{{agent-id}}.md`
 
 3. Verify all files created successfully
 
@@ -883,10 +882,10 @@ You must fully embody this agent's persona and follow all activation instruction
 
 <verification>
 After creating stubs:
-- Verify directory `.claude/commands/bmad/teams/{{team_name}}/agents/` exists
-- Verify one .md file exists for each agent ({{agent_count}} files total)
-- Verify each stub has valid YAML frontmatter
-- Verify file paths in activation instructions point to correct agent files
+- Verify `.claude/commands/` directory exists
+- Verify one flat .md file exists for each agent ({{agent_count}} files total)
+- Verify each stub has valid YAML frontmatter with `disable-model-invocation: true`
+- Verify file paths in activation instructions use `{project-root}/` prefix
 </verification>
 
 <user_message>
