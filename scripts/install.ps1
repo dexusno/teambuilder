@@ -290,6 +290,37 @@ function Main {
     }
     Write-Success "BMAD Method installed"
 
+    # Fix BMAD npm dependency issues (upstream bug: --production instead of --omit=dev)
+    Write-Step "Checking BMAD module dependencies..."
+    $fixCount = 0
+
+    $cacheBase = "$env:USERPROFILE\.bmad\cache\external-modules"
+    if (Test-Path $cacheBase) {
+        Get-ChildItem $cacheBase -Directory | ForEach-Object {
+            $pkgJson = Join-Path $_.FullName "package.json"
+            $nodeModules = Join-Path $_.FullName "node_modules"
+            if ((Test-Path $pkgJson) -and -not (Test-Path $nodeModules)) {
+                npm install --omit=dev --no-audit --no-fund --legacy-peer-deps --prefix $_.FullName 2>$null | Out-Null
+                if ($LASTEXITCODE -eq 0) { $fixCount++ }
+            }
+        }
+    }
+
+    Get-ChildItem "_bmad" -Directory | ForEach-Object {
+        $pkgJson = Join-Path $_.FullName "package.json"
+        $nodeModules = Join-Path $_.FullName "node_modules"
+        if ((Test-Path $pkgJson) -and -not (Test-Path $nodeModules)) {
+            npm install --omit=dev --no-audit --no-fund --legacy-peer-deps --prefix $_.FullName 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) { $fixCount++ }
+        }
+    }
+
+    if ($fixCount -gt 0) {
+        Write-Success "Fixed $fixCount module(s) with missing dependencies"
+    } else {
+        Write-Success "All module dependencies OK"
+    }
+
     # Clone TeamBuilder module
     Write-Step "Installing TeamBuilder module..."
     $teambuilderDir = "_bmad\teambuilder"

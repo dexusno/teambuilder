@@ -317,6 +317,33 @@ main() {
     fi
     print_success "BMAD Method installed"
 
+    # Fix BMAD npm dependency issues (upstream bug: --production instead of --omit=dev)
+    print_step "Checking BMAD module dependencies..."
+    local fix_count=0
+
+    local cache_base="$HOME/.bmad/cache/external-modules"
+    if [ -d "$cache_base" ]; then
+        for mod_dir in "$cache_base"/*/; do
+            if [ -f "${mod_dir}package.json" ] && [ ! -d "${mod_dir}node_modules" ]; then
+                npm install --omit=dev --no-audit --no-fund --legacy-peer-deps --prefix "$mod_dir" >/dev/null 2>&1
+                [ $? -eq 0 ] && fix_count=$((fix_count + 1))
+            fi
+        done
+    fi
+
+    for mod_dir in _bmad/*/; do
+        if [ -f "${mod_dir}package.json" ] && [ ! -d "${mod_dir}node_modules" ]; then
+            npm install --omit=dev --no-audit --no-fund --legacy-peer-deps --prefix "$mod_dir" >/dev/null 2>&1
+            [ $? -eq 0 ] && fix_count=$((fix_count + 1))
+        fi
+    done
+
+    if [ "$fix_count" -gt 0 ]; then
+        print_success "Fixed $fix_count module(s) with missing dependencies"
+    else
+        print_success "All module dependencies OK"
+    fi
+
     # Clone TeamBuilder module
     print_step "Installing TeamBuilder module..."
     local teambuilder_dir="_bmad/teambuilder"
