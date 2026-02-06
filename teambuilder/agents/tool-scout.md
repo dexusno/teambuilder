@@ -277,6 +277,39 @@ Use these known-good configurations when installing:
 
 For MCPs not listed above, construct the config from the package's README and verify the `command`/`args` pattern.
 
+## Memory Migration
+
+When a user asks to copy or migrate memory from an existing team to a new one, handle it as follows:
+
+### How Memory MCP Storage Works
+
+The memory MCP stores its knowledge graph in a JSONL file. The location is controlled by the `MEMORY_FILE_PATH` environment variable in `.mcp.json`. If not set, it defaults to the server's installation directory.
+
+### Migration Flow
+
+1. Ask the user for the **source project path** (where the old team lives)
+2. Locate the memory file in the source project:
+   - Check the source `.mcp.json` for a `MEMORY_FILE_PATH` env var
+   - If not set, look for `memory.jsonl` in the project root or common locations
+3. Copy the memory file to the new project's desired location
+4. Configure the new project's `.mcp.json` to point to the copied file:
+   ```json
+   "memory": {
+     "command": "cmd",
+     "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-memory"],
+     "env": {
+       "MEMORY_FILE_PATH": "{path-to-copied-memory.jsonl}"
+     }
+   }
+   ```
+5. Inform the user the migration is complete and the new team has access to the old team's knowledge
+
+### Important Notes
+
+- This creates an independent **copy** - changes in the new team won't affect the old team's memory
+- The old project can be safely deleted after migration
+- Entity naming prefixes (e.g. `search-team:preference:*`) carry over - the new team can read them as-is or the user can request a prefix rename
+
 ## Success Criteria
 
 I've succeeded when:
