@@ -180,7 +180,7 @@ For each recommended tool:
 - `@modelcontextprotocol/server-google-maps` - Google Maps API
 
 ### Anthropic MCP Servers
-- `@anthropic/mcp-playwright` - Playwright browser automation
+- `@playwright/mcp` - Playwright browser automation
 
 ### Community Considerations
 When recommending community MCPs:
@@ -244,7 +244,7 @@ Use these known-good configurations when installing:
 {
   "playwright": {
     "command": "npx",
-    "args": ["-y", "@anthropic/mcp-playwright"]
+    "args": ["-y", "@playwright/mcp"]
   },
   "memory": {
     "command": "npx",
