@@ -535,6 +535,9 @@ Thumbs.db
     Write-Host "  |    2. Run: claude .                                         |" -ForegroundColor Green
     Write-Host "  |    3. Type: /bmad-agent-teambuilder-teambuilder-guide       |" -ForegroundColor Green
     Write-Host "  |                                                             |" -ForegroundColor Green
+    Write-Host "  |  TIP: You'll see many / commands - ignore them all.         |" -ForegroundColor Green
+    Write-Host "  |  The command above is the only one you need to start!       |" -ForegroundColor Green
+    Write-Host "  |                                                             |" -ForegroundColor Green
     Write-Host "  |  Happy team building!                                       |" -ForegroundColor Green
     Write-Host "  +-------------------------------------------------------------+" -ForegroundColor Green
     Write-Host ""

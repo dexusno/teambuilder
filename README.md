@@ -122,9 +122,7 @@ curl -fsSL https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/in
 | **Memory MCP** | Persistent knowledge across sessions |
 | **Playwright MCP** | Headless browser automation |
 
-## Usage
-
-After installation:
+## Getting Started (After Installation)
 
 ```bash
 # 1. Navigate to your project
@@ -133,9 +131,15 @@ cd my-project
 # 2. Open in Claude Code
 claude .
 
-# 3. Create your first team
+# 3. Type this command to start:
 /bmad-agent-teambuilder-teambuilder-guide
 ```
+
+> **New to BMAD?** When you type `/` in Claude Code you'll see a long list of commands - these are all the agents and workflows that BMAD includes. **You can ignore all of them.** The only command you need is:
+>
+> **`/bmad-agent-teambuilder-teambuilder-guide`**
+>
+> This launches the TeamBuilder Guide, which walks you through creating your first AI agent team step by step. Start here - everything else flows from it.
 
 ## Installer Features
 
