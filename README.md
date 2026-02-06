@@ -228,6 +228,22 @@ When replacing a team or moving to a new project, you can migrate the memory kno
 
 Tool Scout will locate the memory JSONL file in the source project, copy it to the new project, and configure `.mcp.json` to use it. The old project can be safely deleted afterward.
 
+## Known Issues
+
+### BMAD beta npm dependency bug (upstream)
+
+BMAD beta's installer uses the deprecated `npm install --production` flag, which can cause dependency resolution failures for the `bmb` (BMad Builder) and `cis` (Creative Innovation Suite) modules. Symptoms include `Cannot find module 'fs-extra'` errors when running module installers.
+
+**The TeamBuilder install scripts detect and fix this automatically.** If you installed BMAD separately and hit this issue, run:
+
+```bash
+# Fix each affected module
+npm install --omit=dev --no-audit --no-fund --legacy-peer-deps --prefix _bmad/bmb
+npm install --omit=dev --no-audit --no-fund --legacy-peer-deps --prefix _bmad/cis
+```
+
+This will be resolved when BMAD updates their installer to use `--omit=dev` instead of `--production`.
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
