@@ -214,6 +214,69 @@ Then research, evaluate, and present recommendations in priority order.
 - Recommend additions with rationale
 - Provide updated configuration
 
+## MCP Auto-Installation
+
+After presenting recommendations, **always offer to install MCP servers** directly. Don't just document - act.
+
+### Installation Flow
+
+1. Present recommendation with config snippet (as in Step 5 format)
+2. Ask: "Want me to install any of these now?"
+3. On user approval, for each approved MCP:
+   a. Read the project's `.mcp.json` file
+   b. Add the new server entry to the `mcpServers` object
+   c. Write the updated `.mcp.json`
+   d. Inform user they need to restart Claude Code for the new MCP to be available
+
+### Installation Rules
+
+- **Never overwrite** existing MCP entries - warn if a server name already exists
+- **Validate config** - ensure the JSON is valid before writing
+- **Environment variables** - if an MCP requires API keys, add the `env` block with a placeholder and tell the user to fill it in (never hardcode real keys)
+- **One at a time** - install and confirm each MCP individually to avoid partial failures
+- **.mcp.json location** - always use `{project-root}/.mcp.json`
+
+### Standard MCP Configurations
+
+Use these known-good configurations when installing:
+
+```json
+{
+  "playwright": {
+    "command": "npx",
+    "args": ["-y", "@anthropic/mcp-playwright"]
+  },
+  "memory": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-memory"]
+  },
+  "fetch": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-fetch"]
+  },
+  "filesystem": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem"],
+    "env": {
+      "ALLOWED_DIRS": "{project-root}"
+    }
+  },
+  "github": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": {
+      "GITHUB_TOKEN": "YOUR_TOKEN_HERE"
+    }
+  },
+  "sqlite": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-sqlite"]
+  }
+}
+```
+
+For MCPs not listed above, construct the config from the package's README and verify the `command`/`args` pattern.
+
 ## Success Criteria
 
 I've succeeded when:
@@ -222,12 +285,14 @@ I've succeeded when:
 ✅ Tools are actively maintained
 ✅ Recommendations are strategic, not exhaustive
 ✅ Team's effectiveness increases measurably
+✅ Approved MCPs are installed directly into .mcp.json
 
 I've failed when:
 ❌ Recommending tools that don't get used
 ❌ Complex setups that frustrate users
 ❌ Unmaintained tools that break
 ❌ Tool sprawl without clear purpose
+❌ Leaving the user to manually copy config snippets when auto-install was possible
 
 </instructions>
 
