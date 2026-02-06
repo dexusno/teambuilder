@@ -178,7 +178,9 @@ Both agents present together:
 **User chooses:**
 
 1. **Install Now** (if score 85%+)
-   - Register in manifests
+   - Register agents in `_bmad/_config/agent-manifest.csv`
+   - Add team to `_bmad/_config/manifest.yaml` teams list
+   - Create `.claude/commands/` stubs for ALL agents, party-mode, and workflows (see Post-Install Steps below)
    - User restarts Claude Code
    - Team ready to use
 
@@ -287,24 +289,73 @@ Use for **all new team generation** - it's the default TeamBuilder workflow.
 - User can answer domain and scope questions
 - User has time for 15-20 minute session
 
-### After Completion
+### After Completion - Post-Install Steps (CRITICAL)
 
-If team is installed:
-1. **IMPORTANT:** User must restart Claude Code
-2. Team agents become discoverable
-3. Agents registered in `_bmad/_config/agent-manifest.csv`
-4. Team listed in `_bmad/_config/manifest.yaml`
+When user chooses **Install**, you MUST complete ALL of these steps before telling the user the team is ready:
+
+#### 1. Register in Manifests
+- Add each agent to `_bmad/_config/agent-manifest.csv`
+- Add team to `_bmad/_config/manifest.yaml` teams list
+
+#### 2. Create Agent Command Stubs (one per agent)
+For EACH generated agent, create a file at:
+```
+.claude/commands/bmad-agent-teams-{team-name}-{agent-id}.md
+```
+
+With this content:
+```markdown
+---
+name: '{agent-id}'
+description: '{title} - {role_summary}'
+disable-model-invocation: true
+---
+
+You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
+
+<agent-activation CRITICAL="TRUE">
+1. LOAD the FULL agent file from {project-root}/_bmad/teams/{team-name}/agents/{agent-id}.md
+2. READ its entire contents - this contains the complete agent persona, menu, and instructions
+3. FOLLOW every step in the <activation> section precisely
+4. DISPLAY the welcome/greeting as instructed
+5. PRESENT the numbered menu
+6. WAIT for user input before proceeding
+</agent-activation>
+```
+
+#### 3. Create Party-Mode Command Stub
+Create a file at:
+```
+.claude/commands/bmad-teams-{team-name}-party-mode.md
+```
+
+This enables team-scoped group discussions with only the team's agents.
+
+#### 4. Create Workflow Command Stubs (one per team workflow)
+For EACH generated workflow, create a file at:
+```
+.claude/commands/bmad-teams-{team-name}-{workflow-name}.md
+```
+
+#### 5. Inform User
+- Tell user to restart Claude Code
+- List all new slash commands they can use
 
 ### Invoking Generated Teams
 
 **Individual agents:**
 ```
-/bmad:teams:{team-name}:agents:{agent-name}
+/bmad-agent-teams-{team-name}-{agent-name}
 ```
 
-**Party mode collaboration:**
+**Team party mode (team-scoped discussion):**
 ```
-/bmad:core:workflows:party-mode
+/bmad-teams-{team-name}-party-mode
+```
+
+**Team workflows:**
+```
+/bmad-teams-{team-name}-{workflow-name}
 ```
 
 ## Quality Thresholds

@@ -96,8 +96,9 @@ execution_notes: |
   7. Create collaboration model
   8. Package team for installation
   9. Register team in BMAD manifests (CRITICAL for discoverability)
-  10. Create Claude Code command stubs (CRITICAL for invocation)
-  11. Trigger validation workflow
+  10. Create Claude Code command stubs for agents (CRITICAL for invocation)
+  11. Create party-mode and workflow command stubs (CRITICAL for team features)
+  12. Trigger validation workflow
 
   CRITICAL: Generation uses LLM with pattern library as learning
   context. Patterns are NOT templates - they teach principles.

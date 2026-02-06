@@ -896,6 +896,77 @@ After creating stubs:
 
 ---
 
+<step n="11b" goal="Create Party-Mode and Workflow Command Stubs">
+
+<action>
+Create Claude Code command stubs for the team's party-mode and workflows.
+Without these, users cannot invoke team discussions or workflows via slash commands.
+</action>
+
+<party_mode_stub>
+Create a party-mode command stub at:
+```
+.claude/commands/bmad-teams-{{team_name}}-party-mode.md
+```
+
+With this content:
+```markdown
+---
+name: '{{team_name}}-party-mode'
+description: '{{team_display_name}} studio session - All {{agent_count}} agents collaborate'
+disable-model-invocation: true
+---
+
+IT IS CRITICAL THAT YOU FOLLOW THIS COMMAND:
+
+## {{team_display_name}} Party Mode - Team Discussion
+
+LOAD the party-mode workflow from {project-root}/_bmad/core/workflows/party-mode/workflow.md and follow its instructions.
+
+Before starting, also:
+1. LOAD the agent manifest from `{project-root}/_bmad/_config/agent-manifest.csv` and filter to `teams:{{team_name}}` agents
+2. ONLY include agents from the {{team_name}} team in the discussion
+3. This is a team-scoped party mode - do NOT include agents from other teams or modules
+```
+</party_mode_stub>
+
+<workflow_stubs>
+For EACH workflow in {{generated_workflows}}, create a command stub at:
+```
+.claude/commands/bmad-teams-{{team_name}}-{{workflow-name}}.md
+```
+
+With this content:
+```markdown
+---
+name: '{{team_name}}-{{workflow-name}}'
+description: '{{workflow_description}}'
+disable-model-invocation: true
+---
+
+IT IS CRITICAL THAT YOU FOLLOW THIS COMMAND: LOAD the FULL {project-root}/_bmad/teams/{{team_name}}/workflows/{{workflow-name}}.md, READ its entire contents and follow its directions exactly!
+
+Before starting, also:
+1. LOAD the agent manifest from `{project-root}/_bmad/_config/agent-manifest.csv` and filter to `teams:{{team_name}}` agents
+2. Use the team's agents as specified in the workflow steps
+```
+</workflow_stubs>
+
+<verification>
+After creating all stubs, verify:
+- One agent stub per agent: `.claude/commands/bmad-agent-teams-{{team_name}}-*.md`
+- One party-mode stub: `.claude/commands/bmad-teams-{{team_name}}-party-mode.md`
+- One stub per workflow: `.claude/commands/bmad-teams-{{team_name}}-{{workflow-name}}.md`
+</verification>
+
+<user_message>
+"Creating party-mode and workflow command stubs..."
+</user_message>
+
+</step>
+
+---
+
 <step n="12" goal="Handoff to Validation">
 
 <action>

@@ -328,9 +328,20 @@ workflow:
           description: "Execute based on user choice"
           instructions: |
             If INSTALL:
-            - Register team in manifests
+            - Register team agents in _bmad/_config/agent-manifest.csv
+            - Add team to _bmad/_config/manifest.yaml teams list
+            - Create Claude Code command stubs in .claude/commands/ for EACH agent:
+              File: .claude/commands/bmad-agent-teams-{team-name}-{agent-id}.md
+              Must include: frontmatter with disable-model-invocation: true,
+              and <agent-activation> block pointing to the full agent file
+            - Create party-mode command stub:
+              File: .claude/commands/bmad-teams-{team-name}-party-mode.md
+              Loads the team's party-mode workflow with team-scoped agent list
+            - Create workflow command stubs for each team workflow:
+              File: .claude/commands/bmad-teams-{team-name}-{workflow-name}.md
+              Loads the workflow file from the team's workflows directory
             - Inform user to restart Claude Code for discovery
-            - Provide instructions for using team
+            - Provide list of new slash commands user can use
 
             If REFINE:
             - Route to refinement workflow
