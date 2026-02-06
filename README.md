@@ -216,6 +216,14 @@ Default configuration includes:
 | **Memory** | Persistent knowledge graph across sessions |
 | **Playwright** | Headless browser automation for web tasks |
 
+### Memory Migration
+
+When replacing a team or moving to a new project, you can migrate the memory knowledge graph from an existing team. Just ask the TeamBuilder Guide or Tool Scout:
+
+> "Copy memory from my old team at D:\OldProject"
+
+Tool Scout will locate the memory JSONL file in the source project, copy it to the new project, and configure `.mcp.json` to use it. The old project can be safely deleted afterward.
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
