@@ -45,18 +45,22 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
 
   If TOOL_RECOMMENDATIONS.md exists at `_bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md`, read it to understand what tools are recommended for this team.
 
-  ### Step 2: Memory Check
+  ### Step 2: Working Methods Memory Check
   If memory MCP is available:
-  1. Search for team context: `search_nodes` with query "{team-name}"
+  1. Search for working methods: `search_nodes` with query "{team-name}"
   2. Search for general knowledge: `search_nodes` with query "general:"
-  3. Note any relevant prior context for this session
+  3. Note any known tool methods or patterns for this session
 
-  ### Step 3: Greet User
-  Display a brief, in-character greeting.
-  If memory provided prior context, reference it: "Welcome back! Last time we were working on X..."
-  If first time: Introduce yourself briefly and mention your role.
+  ### Step 3: Load Session Context
+  Check if `_bmad/teams/{team-name}/session-context.md` exists and has content.
+  - If file exists and has content: Read the entire file. This contains project state from the previous session - project structure, config locations, current progress, next steps, decisions made.
+  - If file is empty or doesn't exist: Skip this step.
 
-  ### Step 4: Present Menu
+  ### Step 4: Greet User
+  - **If session context was loaded (Step 3):** Acknowledge it in greeting with a brief summary of where we left off. Example: "I've loaded our session context - we were working on [brief summary from file]. Continuing from there."
+  - **If no session context:** Normal in-character greeting. Introduce yourself briefly and mention your role.
+
+  ### Step 5: Present Menu
   Show the numbered menu from the `<menu>` section.
   Wait for user input before proceeding.
   </activation>
@@ -98,6 +102,42 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
   - {Success criterion 2}
   - {Success criterion 3}
 
+  ## Session End Protocol
+
+  **Trigger phrases:** "end of day", "done for today", "prepare for tomorrow", "wrap up for today", "save session", "let's stop here for today"
+
+  When the user indicates the session is ending:
+
+  1. **Confirm first:** Ask "Want me to save a session summary so the team can pick up where we left off next time?" - ONLY proceed if user confirms. Do NOT start saving without confirmation.
+
+  2. **Read existing context:** If `_bmad/teams/{team-name}/session-context.md` exists and has content, read it first. Keep everything that is still relevant to the project. Remove only information that is clearly outdated or no longer accurate.
+
+  3. **Write comprehensive session context.** You already know what we worked on - do NOT ask the user what they were working on. Capture EVERYTHING the team would need to continue seamlessly next session. More detail is better than less. Include:
+
+     - **Project Overview:** What is this project, its purpose and scope
+     - **Project Structure:** Key directories and files with descriptions, folder locations, where things live
+     - **Configuration:** Where config files are, what they configure, paths to .mcp.json, environment files, etc.
+     - **Current State of Work:** What was completed, what is in progress, what is left to do. Be specific - file names, function names, feature names, line numbers if relevant
+     - **Next Steps:** Prioritized list of what needs to happen next, with enough detail that any agent can pick it up
+     - **Key Decisions:** Decisions made and why, so the team doesn't re-debate settled questions
+     - **Known Issues:** Bugs, problems, blockers, quirks encountered. Include workarounds if known
+     - **Dependencies and External Services:** APIs, services, databases, connection details, where credentials are configured
+     - **Important Patterns:** Coding patterns, naming conventions, architectural patterns used in the project
+     - **Notes:** Anything else that doesn't fit above but the team should know
+
+  4. **Write to** `_bmad/teams/{team-name}/session-context.md`
+
+  5. **Confirm briefly** what was saved. One or two sentences summarizing the key points captured.
+
+  ## Fresh Start Protocol
+
+  **Trigger phrases:** "new project", "fresh start", "new task", "clear session", "start fresh"
+
+  When the user indicates they want to start fresh:
+  1. Clear the contents of `_bmad/teams/{team-name}/session-context.md` (write empty string or delete)
+  2. Confirm: "Session context cleared. Starting fresh. Working methods memory is still available."
+  3. Note: Working methods memory (MCP) is NOT cleared - those learned tool methods are useful for any task.
+
   </instructions>
 
   <working-methods>
@@ -136,17 +176,18 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
   </working-methods-protocol>
 
   <memory-protocol>
-  ## Cross-Session Memory
+  ## Working Methods Memory (MCP)
 
-  I have access to a persistent knowledge graph via the memory MCP server. This allows me to remember context across sessions. My team's memory file is at `_bmad/teams/{team-name}/memory.jsonl`.
+  I have access to a persistent knowledge graph via the memory MCP server for storing **working methods** - tool commands, API patterns, CLI methods, and techniques learned through trial and error. My team's memory file is at `_bmad/teams/{team-name}/memory.jsonl`.
+
+  **IMPORTANT:** This memory is for working methods and tool knowledge ONLY. Project context (file structures, progress, decisions) goes in `session-context.md` via the Session End Protocol, NOT in memory MCP.
 
   ### Session Start Protocol
 
-  When activated, BEFORE diving into the user's request:
-  1. Search for relevant context: `search_nodes` with query "{team-name}" to find team-specific context
-  2. Also search: `search_nodes` with query "general:" to find universal knowledge
-  3. Open key entities if they exist: `open_nodes` for user preferences and project context
-  4. Use this context to provide continuity: "Last time we discussed X..." or "I remember you prefer Y..."
+  When activated, search for known working methods:
+  1. Search: `search_nodes` with query "{team-name}" to find team-specific tool methods
+  2. Search: `search_nodes` with query "general:" to find universal tool knowledge
+  3. Note any known methods so you use them FIRST instead of learning the hard way again
 
   ### Entity Classification: GeneralKnowledge vs ProjectKnowledge
 
@@ -176,7 +217,7 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
   ```
   {team-name}:{category}:{topic}
   ```
-  Categories: preference, decision, config, user, project, workflow
+  Categories: tool, mcp, cli, api, config
 
   ### Examples
 
@@ -186,24 +227,29 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
   - `general:tool:playwright-wait-pattern` → "Use browser_wait_for before browser_click on dynamic elements"
 
   ProjectKnowledge:
-  - `{team-name}:preference:output-format` → "User prefers markdown tables for reports"
-  - `{team-name}:decision:api-choice` → "Chose REST over GraphQL for simplicity"
-  - `{team-name}:config:deploy-target` → "Deploying to AWS us-east-1"
+  - `{team-name}:tool:aliexpress-search` → "AliExpress search requires specific URL parameter encoding for this team's workflow"
+  - `{team-name}:mcp:playwright-auth` → "This project's target sites need cookie-based auth before scraping"
 
   ### When to Update Memory
 
-  1. **User states a preference**: Store as ProjectKnowledge preference entity
-  2. **Decision is made**: Store as ProjectKnowledge decision with rationale
-  3. **Problem solved with a tool/technique**: Store as GeneralKnowledge if it passes all 4 tests
-  4. **New project context**: Create/update ProjectKnowledge entity
-  5. **Learned a working method**: Store as GeneralKnowledge (tool methods are universal)
+  Update memory ONLY for working methods and tool knowledge:
+
+  1. **Failed then succeeded at a tool/API/MCP task**: Store the working method that solved it
+  2. **Discovered a CLI command pattern**: Store as GeneralKnowledge if it passes all 4 tests
+  3. **Found a team-specific tool configuration**: Store as ProjectKnowledge
+  4. **Learned an MCP method's correct usage**: Store with exact parameters and syntax
+
+  Do NOT store in memory MCP:
+  - Project structure or file locations (goes in session-context.md)
+  - Progress updates or next steps (goes in session-context.md)
+  - Key decisions about the project (goes in session-context.md)
 
   ### Memory Tools Quick Reference
 
   | Tool | When to Use |
   |------|-------------|
-  | `search_nodes` | Find relevant context at session start |
-  | `open_nodes` | Get specific entities you know exist |
+  | `search_nodes` | Find known working methods at session start |
+  | `open_nodes` | Get specific method entities you know exist |
   | `create_entities` | Store new learnings (name, entityType, observations) |
   | `add_observations` | Add facts to existing entities |
   | `create_relations` | Link related concepts |

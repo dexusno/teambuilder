@@ -359,9 +359,10 @@ workflow:
               3. Update .mcp.json: set memory server's env.MEMORY_FILE_PATH to
                  the absolute path of _bmad/teams/{team-name}/memory.jsonl
                  (use OS-appropriate path separators)
+            - Create empty _bmad/teams/{team-name}/session-context.md for project continuity
             - Inform user to restart Claude Code for discovery
             - Provide list of new slash commands user can use
-            - Mention that team memory has been configured for cross-session persistence
+            - Mention working methods memory and session context capabilities
 
             If REFINE:
             - Route to refinement workflow

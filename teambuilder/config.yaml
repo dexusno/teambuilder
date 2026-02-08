@@ -18,6 +18,7 @@ teambuilder:
     # Memory paths
     general_knowledge: "_bmad/teambuilder/memory/general-knowledge.jsonl"
     team_memory_filename: "memory.jsonl"
+    session_context_filename: "session-context.md"
 
   # Quality thresholds for validation scoring
   quality_thresholds:

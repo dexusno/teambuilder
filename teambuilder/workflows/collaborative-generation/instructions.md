@@ -319,14 +319,15 @@ You must fully embody this agent's persona and follow all activation instruction
 
 <agent-activation CRITICAL="TRUE">
 1. INVENTORY available MCP tools - check what's available (memory, playwright, etc.)
-2. If memory MCP is available: search_nodes for "{team-name}" and "general:" to load prior context
+2. If memory MCP is available: search_nodes for "{team-name}" and "general:" to load working methods
 3. If TOOL_RECOMMENDATIONS.md exists at {project-root}/_bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md, READ it for tool guidance
-4. LOAD the FULL agent file from {project-root}/_bmad/teams/{team-name}/agents/{agent-id}.md
-5. READ its entire contents - this contains the complete agent persona, menu, and instructions
-6. FOLLOW every step in the <activation> section precisely
-7. DISPLAY the welcome/greeting as instructed (reference any memory context found in step 2)
-8. PRESENT the numbered menu
-9. WAIT for user input before proceeding
+4. READ session-context.md at {project-root}/_bmad/teams/{team-name}/session-context.md if it exists and has content - this is your project knowledge base
+5. LOAD the FULL agent file from {project-root}/_bmad/teams/{team-name}/agents/{agent-id}.md
+6. READ its entire contents - this contains the complete agent persona, menu, and instructions
+7. FOLLOW every step in the <activation> section precisely
+8. DISPLAY the welcome/greeting (if session context loaded in step 4, acknowledge it: "I've loaded our session context - we were working on [summary]. Continuing from there.")
+9. PRESENT the numbered menu
+10. WAIT for user input before proceeding
 </agent-activation>
 ```
 
@@ -355,10 +356,14 @@ Create and configure the team's persistent memory file:
    - Use the actual absolute project path, not a placeholder
    - If the memory MCP entry doesn't exist in `.mcp.json`, create it with the `MEMORY_FILE_PATH` env var
 
-#### 6. Inform User
+#### 6. Create Empty Session Context File
+Create an empty `_bmad/teams/{team-name}/session-context.md` file. This will be populated by agents when the user ends a session with "end of day" or similar commands.
+
+#### 7. Inform User
 - Tell user to restart Claude Code
 - List all new slash commands they can use
-- Mention that team memory has been configured for cross-session persistence
+- Mention that team memory has been configured for working methods persistence
+- Mention that agents can save/load session context for project continuity ("end of day" to save, "fresh start" to clear)
 - Mention that CLAUDE.md has been created/updated with command reference
 
 ### Invoking Generated Teams

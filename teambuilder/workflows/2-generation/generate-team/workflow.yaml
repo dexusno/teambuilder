@@ -135,14 +135,15 @@ claude_code_stubs:
 
     <agent-activation CRITICAL="TRUE">
     1. INVENTORY available MCP tools - check what's available (memory, playwright, etc.)
-    2. If memory MCP is available: search_nodes for "{{team_name}}" and "general:" to load prior context
+    2. If memory MCP is available: search_nodes for "{{team_name}}" and "general:" to load working methods
     3. If TOOL_RECOMMENDATIONS.md exists at {project-root}/_bmad/teams/{{team_name}}/TOOL_RECOMMENDATIONS.md, READ it for tool guidance
-    4. LOAD the FULL agent file from {project-root}/_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
-    5. READ its entire contents - this contains the complete agent persona, menu, and instructions
-    6. FOLLOW every step in the <activation> section precisely
-    7. DISPLAY the welcome/greeting as instructed (reference any memory context found in step 2)
-    8. PRESENT the numbered menu
-    9. WAIT for user input before proceeding
+    4. READ session-context.md at {project-root}/_bmad/teams/{{team_name}}/session-context.md if it exists and has content - this is your project knowledge base
+    5. LOAD the FULL agent file from {project-root}/_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
+    6. READ its entire contents - this contains the complete agent persona, menu, and instructions
+    7. FOLLOW every step in the <activation> section precisely
+    8. DISPLAY the welcome/greeting (if session context loaded in step 4, acknowledge it: "I've loaded our session context - we were working on [summary]. Continuing from there.")
+    9. PRESENT the numbered menu
+    10. WAIT for user input before proceeding
     </agent-activation>
 
 # Next workflow
