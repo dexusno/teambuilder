@@ -47,7 +47,8 @@ workflow:
             1. Ask targeted questions about needs, domain, scope, challenges, preferences
             2. Adapt questions based on domain type
             3. Capture requirements clearly
-            4. Generate requirements document
+            4. Create the team directory (_bmad/teams/{team-name}/) if it doesn't exist
+            5. Generate requirements document and save to _bmad/teams/{team-name}/requirements.md
 
             Agent Improver and Quality Guardian are NOT involved in this phase.
 

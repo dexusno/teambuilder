@@ -27,7 +27,8 @@ Instead of sequential passes (generate → review → fix → review), we use **
 - Team Architect conducts discovery conversation with user
 - Asks targeted questions about needs, domain, scope, challenges, preferences
 - Questions adapt based on domain type
-- Generates requirements document
+- Creates team directory (`_bmad/teams/{team-name}/`) if it doesn't exist
+- Generates requirements document and saves to team directory
 
 **Outputs:**
 - `_bmad/teams/{team-name}/requirements.md`
