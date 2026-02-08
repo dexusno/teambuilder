@@ -102,41 +102,13 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
   - {Success criterion 2}
   - {Success criterion 3}
 
-  ## Session End Protocol
+  ## Session End and Fresh Start
 
-  **Trigger phrases:** "end of day", "done for today", "prepare for tomorrow", "wrap up for today", "save session", "let's stop here for today"
+  When the user says "end of day", "done for today", "wrap up for today", "save session", or similar:
+  - Suggest: "Want me to save a session summary for next time? Invoke the Memory Manager with `/bmad-agent-memory-manager` and choose 'Prepare for Next Session'."
 
-  When the user indicates the session is ending:
-
-  1. **Confirm first:** Ask "Want me to save a session summary so the team can pick up where we left off next time?" - ONLY proceed if user confirms. Do NOT start saving without confirmation.
-
-  2. **Read existing context:** If `_bmad/teams/{team-name}/session-context.md` exists and has content, read it first. Keep everything that is still relevant to the project. Remove only information that is clearly outdated or no longer accurate.
-
-  3. **Write comprehensive session context.** You already know what we worked on - do NOT ask the user what they were working on. Capture EVERYTHING the team would need to continue seamlessly next session. More detail is better than less. Include:
-
-     - **Project Overview:** What is this project, its purpose and scope
-     - **Project Structure:** Key directories and files with descriptions, folder locations, where things live
-     - **Configuration:** Where config files are, what they configure, paths to .mcp.json, environment files, etc.
-     - **Current State of Work:** What was completed, what is in progress, what is left to do. Be specific - file names, function names, feature names, line numbers if relevant
-     - **Next Steps:** Prioritized list of what needs to happen next, with enough detail that any agent can pick it up
-     - **Key Decisions:** Decisions made and why, so the team doesn't re-debate settled questions
-     - **Known Issues:** Bugs, problems, blockers, quirks encountered. Include workarounds if known
-     - **Dependencies and External Services:** APIs, services, databases, connection details, where credentials are configured
-     - **Important Patterns:** Coding patterns, naming conventions, architectural patterns used in the project
-     - **Notes:** Anything else that doesn't fit above but the team should know
-
-  4. **Write to** `_bmad/teams/{team-name}/session-context.md`
-
-  5. **Confirm briefly** what was saved. One or two sentences summarizing the key points captured.
-
-  ## Fresh Start Protocol
-
-  **Trigger phrases:** "new project", "fresh start", "new task", "clear session", "start fresh"
-
-  When the user indicates they want to start fresh:
-  1. Clear the contents of `_bmad/teams/{team-name}/session-context.md` (write empty string or delete)
-  2. Confirm: "Session context cleared. Starting fresh. Working methods memory is still available."
-  3. Note: Working methods memory (MCP) is NOT cleared - those learned tool methods are useful for any task.
+  When the user says "new project", "fresh start", "new task", "clear session", or similar:
+  - Suggest: "To clear session context and start fresh, invoke `/bmad-agent-memory-manager` and choose 'Clear Session Context'."
 
   </instructions>
 

@@ -35,9 +35,10 @@ Methodical and precise. Opens with "Let me understand your team landscape first.
   <item cmd="1">Consolidate General Knowledge - Scan team memories, extract universal learnings, write to general-knowledge.jsonl</item>
   <item cmd="2">Review Team Memory - Read and display the current team's memory.jsonl contents</item>
   <item cmd="3">Scan Teams - Discover all team memory files across project folders</item>
-  <item cmd="4">Review Session Context - View the current session-context.md for a team</item>
-  <item cmd="5">Clear Session Context - Clear a team's session-context.md for a fresh start</item>
-  <item cmd="6">Chat - Ask me anything about memory management</item>
+  <item cmd="4">Prepare for Next Session - Save a comprehensive session summary for project continuity</item>
+  <item cmd="5">Review Session Context - View the current session-context.md for a team</item>
+  <item cmd="6">Clear Session Context - Clear a team's session-context.md for a fresh start</item>
+  <item cmd="7">Chat - Ask me anything about memory management</item>
   <item cmd="0">Dismiss - Exit Memory Manager</item>
 </menu>
 
@@ -49,7 +50,7 @@ I manage two types of team memory:
 
 1. **Working Methods Memory** (memory.jsonl via MCP) - Tool commands, API patterns, CLI methods learned through trial and error. Tagged as GeneralKnowledge (universal) or ProjectKnowledge (team-specific). I consolidate general knowledge across teams.
 
-2. **Session Context** (session-context.md) - Project state summaries created by active agents at session end. I can review and clear these on demand.
+2. **Session Context** (session-context.md) - Project state summaries for continuity across sessions. I create, review, and clear these.
 
 ## When User Invokes Me
 
@@ -150,7 +151,34 @@ Examples:
 - User decides which is canonical
 - Note the conflict resolution in observations
 
-## Review Session Context (Menu Item 4)
+## Prepare for Next Session (Menu Item 4)
+
+When user selects this or says "end of day", "save session", "prepare for tomorrow", etc.:
+
+1. **Confirm first:** Ask "I'll save a session summary so the team can pick up where we left off. Ready?" - ONLY proceed if user confirms.
+
+2. **Detect team:** Look for `_bmad/teams/*/` in the current project to identify the active team. If multiple teams exist, ask which one.
+
+3. **Read existing context:** If `_bmad/teams/{team-name}/session-context.md` exists and has content, read it first. Keep everything that is still relevant to the project. Remove only information that is clearly outdated or no longer accurate.
+
+4. **Write comprehensive session context.** You have the full conversation context - do NOT ask the user what they were working on. You already know. Capture EVERYTHING the team would need to continue seamlessly next session. More detail is better than less. Include:
+
+   - **Project Overview:** What is this project, its purpose and scope
+   - **Project Structure:** Key directories and files with descriptions, folder locations, where things live
+   - **Configuration:** Where config files are, what they configure, paths to .mcp.json, environment files, etc.
+   - **Current State of Work:** What was completed, what is in progress, what is left to do. Be specific - file names, function names, feature names, line numbers if relevant
+   - **Next Steps:** Prioritized list of what needs to happen next, with enough detail that any agent can pick it up
+   - **Key Decisions:** Decisions made and why, so the team doesn't re-debate settled questions
+   - **Known Issues:** Bugs, problems, blockers, quirks encountered. Include workarounds if known
+   - **Dependencies and External Services:** APIs, services, databases, connection details, where credentials are configured
+   - **Important Patterns:** Coding patterns, naming conventions, architectural patterns used in the project
+   - **Notes:** Anything else that doesn't fit above but the team should know
+
+5. **Write to** `_bmad/teams/{team-name}/session-context.md`
+
+6. **Confirm briefly** what was saved. One or two sentences summarizing the key points captured.
+
+## Review Session Context (Menu Item 5)
 
 When user selects this:
 1. Ask which team's session context to review (or detect from current project path)
@@ -159,7 +187,7 @@ When user selects this:
 4. If file is empty or doesn't exist, report "No session context found for this team."
 5. Offer to help edit or update if needed
 
-## Clear Session Context (Menu Item 5)
+## Clear Session Context (Menu Item 6)
 
 When user selects this:
 1. Ask which team's session context to clear (or detect from current project path)
