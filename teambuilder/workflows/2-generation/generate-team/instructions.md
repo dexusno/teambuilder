@@ -569,7 +569,24 @@ For each agent in {{generated_agents}}, create:
 _bmad/teams/{{team_name}}/agents/{{agent-name}}.md
 ```
 
-With complete agent XML structure (see `teambuilder/templates/agent-template.md` for full reference):
+**MANDATORY SECTIONS** - Every generated agent file MUST include ALL of these XML sections. Do NOT omit any:
+
+| # | Section | Purpose | Can skip? |
+|---|---------|---------|-----------|
+| 1 | `<agent>` | Root element with id, name, title, icon | NO |
+| 2 | `<persona>` | role, identity, communication_style, principles | NO |
+| 3 | `<activation>` | Startup sequence: tool inventory, memory check, greeting, menu | NO |
+| 4 | `<menu>` | Available commands and workflows | NO |
+| 5 | `<instructions>` | Role details, self-learning protocol, success metrics | NO |
+| 6 | `<working-methods>` | Learned tool methods (starts empty with placeholder) | **NO** |
+| 7 | `<working-methods-protocol>` | Rules for updating working methods | **NO** |
+| 8 | `<memory-protocol>` | Cross-session memory with entity tagging | **NO** |
+
+Sections 6-8 are just as critical as persona and instructions. Without them, agents cannot learn from mistakes or remember context across sessions. **If you generate an agent missing ANY section above, the agent will malfunction.**
+
+See `teambuilder/templates/agent-template.md` for detailed field guidelines and quality examples.
+
+Agent XML structure:
 ```xml
 <agent id="{{agent-id}}" name="{{display_name}}" title="{{title}}" icon="{{icon}}">
   <persona>
@@ -578,6 +595,35 @@ With complete agent XML structure (see `teambuilder/templates/agent-template.md`
     <communication_style>{{communication_style}}</communication_style>
     <principles>{{principles}}</principles>
   </persona>
+
+  <activation>
+  ## Startup Sequence
+
+  When activated, follow these steps IN ORDER:
+
+  ### Step 1: Tool Inventory
+  Check what MCP tools are available in this session:
+  - Memory MCP? (search_nodes, create_entities, etc.)
+  - Browser/Playwright MCP?
+  - Any other tools?
+
+  If TOOL_RECOMMENDATIONS.md exists at `_bmad/teams/{{team_name}}/TOOL_RECOMMENDATIONS.md`, read it to understand what tools are recommended for this team.
+
+  ### Step 2: Memory Check
+  If memory MCP is available:
+  1. Search for team context: `search_nodes` with query "{{team_name}}"
+  2. Search for general knowledge: `search_nodes` with query "general:"
+  3. Note any relevant prior context for this session
+
+  ### Step 3: Greet User
+  Display a brief, in-character greeting.
+  If memory provided prior context, reference it: "Welcome back! Last time we were working on X..."
+  If first time: Introduce yourself briefly and mention your role.
+
+  ### Step 4: Present Menu
+  Show the numbered menu from the `<menu>` section.
+  Wait for user input before proceeding.
+  </activation>
 
   <menu>
     <item cmd="*{{workflow-command}}" workflow="{project-root}/_bmad/teams/{{team_name}}/workflows/{{workflow-name}}/workflow.yaml">
@@ -883,12 +929,15 @@ disable-model-invocation: true
 You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
 
 <agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from {project-root}/_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
-2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. FOLLOW every step in the <activation> section precisely
-4. DISPLAY the welcome/greeting as instructed
-5. PRESENT the numbered menu
-6. WAIT for user input before proceeding
+1. INVENTORY available MCP tools - check what's available (memory, playwright, etc.)
+2. If memory MCP is available: search_nodes for "{{team_name}}" and "general:" to load prior context
+3. If TOOL_RECOMMENDATIONS.md exists at {project-root}/_bmad/teams/{{team_name}}/TOOL_RECOMMENDATIONS.md, READ it for tool guidance
+4. LOAD the FULL agent file from {project-root}/_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
+5. READ its entire contents - this contains the complete agent persona, menu, and instructions
+6. FOLLOW every step in the <activation> section precisely
+7. DISPLAY the welcome/greeting as instructed (reference any memory context found in step 2)
+8. PRESENT the numbered menu
+9. WAIT for user input before proceeding
 </agent-activation>
 ```
 </command_stub_structure>

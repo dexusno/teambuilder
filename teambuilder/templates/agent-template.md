@@ -32,6 +32,35 @@ This template shows the structure for BMAD agent definitions. Use this as a refe
     </principles>
   </persona>
 
+  <activation>
+  ## Startup Sequence
+
+  When activated, follow these steps IN ORDER:
+
+  ### Step 1: Tool Inventory
+  Check what MCP tools are available in this session:
+  - Memory MCP? (search_nodes, create_entities, etc.)
+  - Browser/Playwright MCP?
+  - Any other tools?
+
+  If TOOL_RECOMMENDATIONS.md exists at `_bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md`, read it to understand what tools are recommended for this team.
+
+  ### Step 2: Memory Check
+  If memory MCP is available:
+  1. Search for team context: `search_nodes` with query "{team-name}"
+  2. Search for general knowledge: `search_nodes` with query "general:"
+  3. Note any relevant prior context for this session
+
+  ### Step 3: Greet User
+  Display a brief, in-character greeting.
+  If memory provided prior context, reference it: "Welcome back! Last time we were working on X..."
+  If first time: Introduce yourself briefly and mention your role.
+
+  ### Step 4: Present Menu
+  Show the numbered menu from the `<menu>` section.
+  Wait for user input before proceeding.
+  </activation>
+
   <menu>
     <item cmd="*{command}" workflow="{workflow_path}">
       {menu_item_description}
@@ -425,7 +454,10 @@ Use this checklist when creating agents:
 - [ ] Icon is appropriate emoji
 - [ ] At least one menu item with workflow
 - [ ] All XML tags properly closed
-- [ ] Memory protocol section included with team-specific entity naming
+- [ ] Activation section included with tool inventory and memory check steps
+- [ ] Working-methods section included (starts empty with placeholder comment)
+- [ ] Working-methods-protocol section included with self-edit instructions
+- [ ] Memory protocol section included with entity tagging (GeneralKnowledge/ProjectKnowledge)
 
 ## Memory MCP Server Requirement
 

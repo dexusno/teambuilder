@@ -96,6 +96,7 @@ Move to next agent
 - No separate review pass after all agents done
 - Quality is built in, not added later
 - Fast and efficient
+- **EVERY agent file MUST include ALL sections**: `<persona>`, `<activation>`, `<menu>`, `<instructions>`, `<working-methods>`, `<working-methods-protocol>`, `<memory-protocol>`. Agent Improver should flag any missing sections.
 
 ---
 
@@ -110,9 +111,12 @@ Move to next agent
 Quality Guardian reviews finished team:
 
 **Scoring (0-100%):**
-- Agent Quality (40 points): Distinctness, specificity, communication, expertise
+- Agent Quality (40 points): Distinctness, specificity, communication, expertise, **mandatory section completeness**
 - Workflow Quality (30 points): Practicality, clarity, completeness
 - Team Coherence (30 points): Coverage, no overlap, appropriate size
+
+**Mandatory Section Check (Critical - auto-fail if missing):**
+Every agent file MUST contain: `<activation>`, `<working-methods>`, `<working-methods-protocol>`, `<memory-protocol>`. Missing any = Critical issue.
 
 **Issue Identification:**
 - Critical (must fix)
@@ -314,12 +318,15 @@ disable-model-invocation: true
 You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
 
 <agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from {project-root}/_bmad/teams/{team-name}/agents/{agent-id}.md
-2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. FOLLOW every step in the <activation> section precisely
-4. DISPLAY the welcome/greeting as instructed
-5. PRESENT the numbered menu
-6. WAIT for user input before proceeding
+1. INVENTORY available MCP tools - check what's available (memory, playwright, etc.)
+2. If memory MCP is available: search_nodes for "{team-name}" and "general:" to load prior context
+3. If TOOL_RECOMMENDATIONS.md exists at {project-root}/_bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md, READ it for tool guidance
+4. LOAD the FULL agent file from {project-root}/_bmad/teams/{team-name}/agents/{agent-id}.md
+5. READ its entire contents - this contains the complete agent persona, menu, and instructions
+6. FOLLOW every step in the <activation> section precisely
+7. DISPLAY the welcome/greeting as instructed (reference any memory context found in step 2)
+8. PRESENT the numbered menu
+9. WAIT for user input before proceeding
 </agent-activation>
 ```
 
@@ -352,6 +359,7 @@ Create and configure the team's persistent memory file:
 - Tell user to restart Claude Code
 - List all new slash commands they can use
 - Mention that team memory has been configured for cross-session persistence
+- Mention that CLAUDE.md has been created/updated with command reference
 
 ### Invoking Generated Teams
 

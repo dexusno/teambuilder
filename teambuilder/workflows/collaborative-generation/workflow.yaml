@@ -127,6 +127,12 @@ workflow:
 
             NO separate review pass after all agents done - quality built in during generation.
 
+            MANDATORY: Each generated agent file MUST include ALL XML sections:
+            <persona>, <activation>, <menu>, <instructions>, <working-methods>,
+            <working-methods-protocol>, <memory-protocol>.
+            Agent Improver MUST verify all sections are present before moving to next agent.
+            See teambuilder/templates/agent-template.md for section content reference.
+
         - step: 3
           action: "generate_workflows"
           agent: "team-architect"
@@ -231,6 +237,9 @@ workflow:
                - Background specificity
                - Communication differentiation
                - Domain expertise authenticity
+               - MANDATORY section check: every agent MUST have <activation>,
+                 <working-methods>, <working-methods-protocol>, <memory-protocol>
+                 (missing sections = Critical issue, automatic 10-point deduction)
 
             2. Score workflow quality (30 points):
                - Practicality
@@ -333,7 +342,11 @@ workflow:
             - Create Claude Code command stubs in .claude/commands/ for EACH agent:
               File: .claude/commands/bmad-agent-teams-{team-name}-{agent-id}.md
               Must include: frontmatter with disable-model-invocation: true,
-              and <agent-activation> block pointing to the full agent file
+              and <agent-activation> block with MCP inventory, memory search,
+              TOOL_RECOMMENDATIONS.md check, then load the full agent file
+            - CRITICAL: Every generated agent file MUST contain ALL sections:
+              <persona>, <activation>, <menu>, <instructions>, <working-methods>,
+              <working-methods-protocol>, <memory-protocol>. Do NOT omit any.
             - Create party-mode command stub:
               File: .claude/commands/bmad-teams-{team-name}-party-mode.md
               Loads the team's party-mode workflow with team-scoped agent list
