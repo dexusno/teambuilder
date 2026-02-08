@@ -296,13 +296,19 @@ Use for **all new team generation** - it's the default TeamBuilder workflow.
 
 ### After Completion - Post-Install Steps (CRITICAL)
 
-When user chooses **Install**, you MUST complete ALL of these steps before telling the user the team is ready:
+When user chooses **Install**, you MUST complete ALL of these steps IN ORDER before telling the user the team is ready.
 
-#### 1. Register in Manifests
-- Add each agent to `_bmad/_config/agent-manifest.csv`
-- Add team to `_bmad/_config/manifest.yaml` teams list
+**IMPORTANT:** Do NOT batch all writes in parallel. Follow the step order below. Always READ files before editing them to ensure exact string matching succeeds on the first attempt.
 
-#### 2. Create Agent Command Stubs (one per agent)
+#### 1. Read Manifests First (MUST do before editing)
+- READ `_bmad/_config/agent-manifest.csv` to get exact current content
+- READ `_bmad/_config/manifest.yaml` to get exact current content
+
+#### 2. Update Manifests (after reading)
+- APPEND new agent rows to `_bmad/_config/agent-manifest.csv`
+- ADD team entry to `_bmad/_config/manifest.yaml` teams list
+
+#### 3. Create Agent Command Stubs (one per agent, can be parallel)
 For EACH generated agent, create a file at:
 ```
 .claude/commands/bmad-agent-teams-{team-name}-{agent-id}.md

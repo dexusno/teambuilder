@@ -338,32 +338,44 @@ workflow:
           description: "Execute based on user choice"
           instructions: |
             If INSTALL:
-            - Register team agents in _bmad/_config/agent-manifest.csv
-            - Add team to _bmad/_config/manifest.yaml teams list
-            - Create Claude Code command stubs in .claude/commands/ for EACH agent:
+            IMPORTANT: Do these steps IN ORDER. Do NOT batch all writes in parallel.
+            Read files before editing them to ensure exact string matching.
+
+            Step 1 - Read manifests first:
+            - READ _bmad/_config/agent-manifest.csv (get exact current content)
+            - READ _bmad/_config/manifest.yaml (get exact current content)
+
+            Step 2 - Update manifests (after reading):
+            - APPEND new agent rows to agent-manifest.csv
+            - ADD team entry to manifest.yaml teams list
+
+            Step 3 - Create command stubs (can be parallel):
+            - Create .claude/commands/ stubs for EACH agent:
               File: .claude/commands/bmad-agent-teams-{team-name}-{agent-id}.md
               Must include: frontmatter with disable-model-invocation: true,
               and <agent-activation> block with MCP inventory, memory search,
               TOOL_RECOMMENDATIONS.md check, then load the full agent file
-            - CRITICAL: Every generated agent file MUST contain ALL sections:
-              <persona>, <activation>, <menu>, <instructions>, <working-methods>,
-              <working-methods-protocol>, <memory-protocol>. Do NOT omit any.
             - Create party-mode command stub:
               File: .claude/commands/bmad-teams-{team-name}-party-mode.md
-              Loads the team's party-mode workflow with team-scoped agent list
             - Create workflow command stubs for each team workflow:
               File: .claude/commands/bmad-teams-{team-name}-{workflow-name}.md
-              Loads the workflow file from the team's workflows directory
-            - Setup team memory:
-              1. Create _bmad/teams/{team-name}/memory.jsonl
-              2. Seed from _bmad/teambuilder/memory/general-knowledge.jsonl (copy contents)
-              3. Update .mcp.json: set memory server's env.MEMORY_FILE_PATH to
-                 the absolute path of _bmad/teams/{team-name}/memory.jsonl
-                 (use OS-appropriate path separators)
-            - Create empty _bmad/teams/{team-name}/session-context.md for project continuity
-            - Inform user to restart Claude Code for discovery
-            - Provide list of new slash commands user can use
+
+            Step 4 - Setup memory and session context:
+            - Create _bmad/teams/{team-name}/memory.jsonl
+            - Seed from _bmad/teambuilder/memory/general-knowledge.jsonl (copy contents)
+            - Update .mcp.json: set memory server's env.MEMORY_FILE_PATH to
+              the absolute path of _bmad/teams/{team-name}/memory.jsonl
+              (use OS-appropriate path separators)
+            - Create empty _bmad/teams/{team-name}/session-context.md
+
+            Step 5 - Inform user:
+            - Tell user to restart Claude Code
+            - List all new slash commands
             - Mention working methods memory and session context capabilities
+
+            CRITICAL: Every generated agent file MUST contain ALL sections:
+            <persona>, <activation>, <menu>, <instructions>, <working-methods>,
+            <working-methods-protocol>, <memory-protocol>. Do NOT omit any.
 
             If REFINE:
             - Route to refinement workflow
