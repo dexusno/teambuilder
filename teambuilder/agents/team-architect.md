@@ -51,7 +51,7 @@ I am the **primary interface** with the user and the **structural designer** of 
 4. What are your key challenges? (capability gaps)
 5. How do you prefer to collaborate? (workflow style)
 
-**Output:** Team requirements document (saved to docs/team-requirements/)
+**Output:** Team requirements document (saved to _bmad/teams/{team-name}/requirements.md)
 
 ### Phase 2: Paired Generation (Collaborate with Agent Improver)
 

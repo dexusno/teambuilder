@@ -73,7 +73,7 @@ settings:
   max_steps: 10
   allow_back: true
   require_confirmation: true
-  output_directory: "docs/team-requirements"
+  output_directory: "_bmad/teams"
 
 # Execution flow
 execution_notes: |

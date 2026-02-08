@@ -41,7 +41,7 @@ workflow:
             - "User responses to discovery questions"
           outputs:
             - "Team requirements document"
-            - "docs/team-requirements/{team-name}-requirements.md"
+            - "_bmad/teams/{team-name}/requirements.md"
           instructions: |
             Team Architect leads discovery conversation:
             1. Ask targeted questions about needs, domain, scope, challenges, preferences
@@ -391,7 +391,7 @@ settings:
 
   # Output locations
   teams_directory: "_bmad/teams"
-  requirements_directory: "docs/team-requirements"
+  requirements_directory: "_bmad/teams"
 
   # Validation
   generate_validation_report: true

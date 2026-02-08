@@ -30,7 +30,7 @@ Instead of sequential passes (generate → review → fix → review), we use **
 - Generates requirements document
 
 **Outputs:**
-- `docs/team-requirements/{team-name}-requirements.md`
+- `_bmad/teams/{team-name}/requirements.md`
 
 **Key Points:**
 - Agent Improver and Quality Guardian do NOT participate
