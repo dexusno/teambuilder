@@ -236,6 +236,20 @@ To see available patterns, select "View Team Patterns" from the menu.
 - Support roles included
 - Size appropriate for scope
 
+### Persistent Memory
+
+Each generated team gets its own **memory file** (`memory.jsonl`) for cross-session persistence. Your agents remember what you worked on, decisions made, and preferences stated - even after restarting Claude Code.
+
+**How it works:**
+- Each team has `_bmad/teams/{team-name}/memory.jsonl`
+- The `.mcp.json` is configured with `MEMORY_FILE_PATH` pointing to this file
+- Agents tag stored knowledge as either **GeneralKnowledge** (universal tool/technique info) or **ProjectKnowledge** (team-specific decisions, preferences, config)
+
+**Knowledge Consolidation:**
+Over time, teams accumulate general-purpose learnings (CLI tricks, MCP patterns, API behaviors) alongside project-specific knowledge. The **Memory Manager** agent (`/bmad-agent-teambuilder-memory-manager`) can consolidate GeneralKnowledge from your team memories into `_bmad/teambuilder/memory/general-knowledge.jsonl`. This seed file is then used when creating new teams, so future teams start with accumulated wisdom.
+
+**For users who fork this repo:** Commit `general-knowledge.jsonl` to your fork. This lets your accumulated general knowledge persist across fresh installs and benefit other users of your fork. Team-specific `memory.jsonl` files are gitignored by default.
+
 ### Using Your Generated Team
 
 After installation, your team lives at:
@@ -243,6 +257,7 @@ After installation, your team lives at:
 _bmad/teams/{team-name}/
 ├── agents/        (Individual agent files)
 ├── workflows/     (If generated)
+├── memory.jsonl   (Cross-session memory)
 └── config.yaml    (Team metadata)
 ```
 

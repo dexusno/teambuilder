@@ -175,6 +175,7 @@ my-project/
 | **Agent Improver** | Ensures persona quality and distinctness |
 | **Quality Guardian** | Validates and scores generated teams |
 | **Tool Scout** | Researches MCPs and tools that benefit teams |
+| **Memory Manager** | Consolidates general knowledge across team memories |
 
 ## Team Patterns
 
@@ -197,6 +198,7 @@ _bmad/teams/your-team/
 ├── workflows/
 │   └── party-mode/      # Team-scoped group discussion
 ├── docs/                # Team documentation (optional)
+├── memory.jsonl         # Cross-session persistent memory
 └── config.yaml          # Team configuration
 ```
 
@@ -219,6 +221,26 @@ Default configuration includes:
 |-----|---------|
 | **Memory** | Persistent knowledge graph across sessions |
 | **Playwright** | Headless browser automation for web tasks |
+
+### Persistent Memory System
+
+Each generated team gets its own persistent memory file for cross-session knowledge retention.
+
+**How it works:**
+- Team generation creates `_bmad/teams/{team-name}/memory.jsonl` and configures `.mcp.json` with `MEMORY_FILE_PATH`
+- Agents tag stored entities as `GeneralKnowledge` (universal tool/technique info) or `ProjectKnowledge` (team-specific)
+- GeneralKnowledge examples: CLI patterns, MCP behaviors, API quirks - things that help any project
+- ProjectKnowledge examples: user preferences, project decisions, domain-specific config
+
+**Knowledge consolidation:**
+- The **Memory Manager** agent (`/bmad-agent-teambuilder-memory-manager`) scans team memory files and extracts universally useful knowledge
+- Consolidated knowledge goes into `_bmad/teambuilder/memory/general-knowledge.jsonl`
+- New teams are seeded from this file, so they start with accumulated wisdom
+
+**For users who fork this repo:**
+- `general-knowledge.jsonl` is committed to git - your accumulated general knowledge persists across installs
+- Team-specific `memory.jsonl` files are gitignored (they contain project-specific data)
+- Over time, your fork accumulates domain knowledge that benefits all your future teams
 
 ### Memory Migration
 

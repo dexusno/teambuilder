@@ -440,6 +440,27 @@ You must fully embody this agent's persona and follow all activation instruction
 "@
     Set-Content -Path "$commandsDir\bmad-agent-teambuilder-teambuilder-guide.md" -Value $commandContent
 
+    # Memory Manager command stub
+    $memoryManagerContent = @"
+---
+name: 'memory-manager'
+description: 'Knowledge Consolidation Curator'
+disable-model-invocation: true
+---
+
+You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
+
+<agent-activation CRITICAL="TRUE">
+1. LOAD the FULL agent file from {project-root}/_bmad/teambuilder/agents/memory-manager.md
+2. READ its entire contents - this contains the complete agent persona, menu, and instructions
+3. FOLLOW every step in the <activation> section precisely
+4. DISPLAY the welcome/greeting as instructed
+5. PRESENT the numbered menu
+6. WAIT for user input before proceeding
+</agent-activation>
+"@
+    Set-Content -Path "$commandsDir\bmad-agent-teambuilder-memory-manager.md" -Value $memoryManagerContent
+
     # 5. Inject core config values into TeamBuilder config.yaml
     $coreConfig = "_bmad\core\config.yaml"
     $tbConfig = "_bmad\teambuilder\config.yaml"
@@ -511,6 +532,9 @@ Thumbs.db
 
 # Playwright artifacts
 .playwright-mcp/
+
+# Team memory files (project-specific, not shared)
+_bmad/teams/*/memory.jsonl
 "@ | Set-Content ".gitignore"
     Write-Success ".gitignore created"
 

@@ -644,41 +644,75 @@ With complete agent XML structure (see `teambuilder/templates/agent-template.md`
   <memory-protocol>
   ## Cross-Session Memory
 
-  I have access to a persistent knowledge graph via the memory MCP server (if configured). This allows me to remember context across sessions.
+  I have access to a persistent knowledge graph via the memory MCP server. This allows me to remember context across sessions. My team's memory file is at `_bmad/teams/{{team_name}}/memory.jsonl`.
 
   ### Session Start Protocol
 
   When activated, BEFORE diving into the user's request:
-  1. Search for relevant context: `search_nodes` with query "{{team_name}}" to find stored context
-  2. Open key entities if they exist: `open_nodes` for user preferences and project context
-  3. Use this context to provide continuity: "Last time we discussed X..." or "I remember you prefer Y..."
+  1. Search for relevant context: `search_nodes` with query "{{team_name}}" to find team-specific context
+  2. Also search: `search_nodes` with query "general:" to find universal knowledge
+  3. Open key entities if they exist: `open_nodes` for user preferences and project context
+  4. Use this context to provide continuity: "Last time we discussed X..." or "I remember you prefer Y..."
 
-  ### What to Remember
+  ### Entity Classification: GeneralKnowledge vs ProjectKnowledge
 
-  **ALWAYS store** (using `create_entities` or `add_observations`):
-  - User preferences discovered during work
-  - Important decisions made and their rationale
-  - Working methods that succeeded after initial failures
-  - Project context that won't change often
+  Every entity you store MUST have its `entityType` set to either `GeneralKnowledge` or `ProjectKnowledge`.
 
-  **NEVER store**:
-  - Transient states or temporary issues
-  - Information that changes frequently
-  - Sensitive credentials or secrets
+  **GeneralKnowledge** - when ALL of these are true:
+  1. About a tool, CLI command, MCP method, API behavior, or shell technique
+  2. Would help ANY project (not just this one)
+  3. About how software/APIs/services work in general
+  4. Contains NO project names, team names, or project-specific references
+
+  **ProjectKnowledge** - when ANY of these are true:
+  1. References specific team members, agents, or project entities
+  2. About project-specific configuration or setup
+  3. Contains decisions made for THIS project
+  4. Relates to domain-specific integrations unique to this project
 
   ### Entity Naming Convention
 
-  Use consistent naming for findability:
+  **GeneralKnowledge entities:**
   ```
-  {{team_name}}:{entity_type}:{identifier}
+  general:{category}:{topic}
   ```
+  Categories: tool, mcp, cli, api, pattern, technique
+
+  **ProjectKnowledge entities:**
+  ```
+  {{team_name}}:{category}:{topic}
+  ```
+  Categories: preference, decision, config, user, project, workflow
+
+  ### Examples
+
+  GeneralKnowledge:
+  - `general:mcp:memory-file-path` → "Memory MCP uses MEMORY_FILE_PATH env var, not CLI arg"
+  - `general:cli:npm-omit-dev` → "Use --omit=dev instead of deprecated --production flag"
+  - `general:tool:playwright-wait-pattern` → "Use browser_wait_for before browser_click on dynamic elements"
+
+  ProjectKnowledge:
+  - `{{team_name}}:preference:output-format` → "User prefers markdown tables for reports"
+  - `{{team_name}}:decision:api-choice` → "Chose REST over GraphQL for simplicity"
+  - `{{team_name}}:config:deploy-target` → "Deploying to AWS us-east-1"
 
   ### When to Update Memory
 
-  1. **User states a preference**: Store as preference entity
-  2. **Decision is made**: Store as decision with rationale
-  3. **Problem solved**: Store observation on relevant entity
-  4. **New project context**: Create/update project entity
+  1. **User states a preference**: Store as ProjectKnowledge preference entity
+  2. **Decision is made**: Store as ProjectKnowledge decision with rationale
+  3. **Problem solved with a tool/technique**: Store as GeneralKnowledge if it passes all 4 tests
+  4. **New project context**: Create/update ProjectKnowledge entity
+  5. **Learned a working method**: Store as GeneralKnowledge (tool methods are universal)
+
+  ### Memory Tools Quick Reference
+
+  | Tool | When to Use |
+  |------|-------------|
+  | `search_nodes` | Find relevant context at session start |
+  | `open_nodes` | Get specific entities you know exist |
+  | `create_entities` | Store new learnings (name, entityType, observations) |
+  | `add_observations` | Add facts to existing entities |
+  | `create_relations` | Link related concepts |
   </memory-protocol>
 </agent>
 ```

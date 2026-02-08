@@ -15,6 +15,9 @@ teambuilder:
     config_directory: "_bmad/_config"
     agent_manifest: "_bmad/_config/agent-manifest.csv"
     main_manifest: "_bmad/_config/manifest.yaml"
+    # Memory paths
+    general_knowledge: "_bmad/teambuilder/memory/general-knowledge.jsonl"
+    team_memory_filename: "memory.jsonl"
 
   # Quality thresholds for validation scoring
   quality_thresholds:

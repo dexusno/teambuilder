@@ -337,9 +337,21 @@ For EACH generated workflow, create a file at:
 .claude/commands/bmad-teams-{team-name}-{workflow-name}.md
 ```
 
-#### 5. Inform User
+#### 5. Setup Team Memory
+Create and configure the team's persistent memory file:
+
+1. **Create memory file:** `_bmad/teams/{team-name}/memory.jsonl`
+2. **Seed from general knowledge:** Copy contents of `_bmad/teambuilder/memory/general-knowledge.jsonl` into the new file (may be empty on first team - that's fine)
+3. **Update .mcp.json:** Read the project's `.mcp.json`, find the `memory` server entry, and add/update the `env.MEMORY_FILE_PATH` to point to the absolute path of the team's memory file:
+   - **Windows:** `"MEMORY_FILE_PATH": "D:\\path\\to\\project\\_bmad\\teams\\{team-name}\\memory.jsonl"`
+   - **Linux/macOS:** `"MEMORY_FILE_PATH": "/path/to/project/_bmad/teams/{team-name}/memory.jsonl"`
+   - Use the actual absolute project path, not a placeholder
+   - If the memory MCP entry doesn't exist in `.mcp.json`, create it with the `MEMORY_FILE_PATH` env var
+
+#### 6. Inform User
 - Tell user to restart Claude Code
 - List all new slash commands they can use
+- Mention that team memory has been configured for cross-session persistence
 
 ### Invoking Generated Teams
 

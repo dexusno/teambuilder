@@ -39,8 +39,9 @@ chmod +x install.sh
 3. **Handle Project Folder** - Create or use existing
 4. **Install BMAD Method** - Latest version via npx
 5. **Install TeamBuilder** - Clone module from this repo
-6. **Configure MCPs** - Memory + Playwright
-7. **Create .gitignore** - Standard ignores
+6. **Register Agents** - TeamBuilder Guide + Memory Manager command stubs
+7. **Configure MCPs** - Memory + Playwright
+8. **Create .gitignore** - Standard ignores (includes team memory files)
 
 ## Package Managers
 
