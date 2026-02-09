@@ -255,10 +255,13 @@ Over time, teams accumulate general-purpose learnings (CLI tricks, MCP patterns,
 After installation, your team lives at:
 ```
 _bmad/teams/{team-name}/
-├── agents/        (Individual agent files)
-├── workflows/     (If generated)
-├── memory.jsonl   (Cross-session memory)
-└── config.yaml    (Team metadata)
+├── agents/              (Individual agent files)
+├── workflows/
+│   ├── {workflow-name}/ (Workflow file triads)
+│   └── _shared/         (save-session.md, memory-guide.md)
+├── memory.jsonl         (Cross-session memory)
+├── session-context.md   (Created on first session save)
+└── config.yaml          (Team metadata)
 ```
 
 **IMPORTANT:** After team generation, **restart Claude Code** to discover the new agents.
@@ -266,9 +269,19 @@ Teams are automatically registered in `_bmad/_config/agent-manifest.csv` and `_b
 
 Invoke agents via their slash command shown after generation.
 
+**Standard commands every team agent has:**
+- **[SS] Save Session** - Saves tool learnings to memory + session context for next time
+- **[CH] Chat** - Talk freely with the agent
+- **[PM] Party Mode** - Multi-agent group discussion
+- **[MH] Menu Help** - Show available commands
+- **[DA] Dismiss** - End the session
+
+**Tip:** Always use [SS] at the end of a session! It captures what the agent learned about tools and saves context so the next session picks up where you left off.
+
 Use party mode for collaboration:
 ```
 /bmad-brainstorming or /bmad-party-mode (core level, all agents)
+/bmad-teams-{team-name}-party-mode (team-scoped, only your team's agents)
 ```
 
 ### Success Criteria

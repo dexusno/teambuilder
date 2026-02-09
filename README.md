@@ -194,13 +194,31 @@ When TeamBuilder creates a team, you get:
 
 ```
 _bmad/teams/your-team/
-├── agents/              # Team specialists with distinct personas
+├── agents/                    # Team specialists with distinct personas
 ├── workflows/
-│   └── party-mode/      # Team-scoped group discussion
-├── docs/                # Team documentation (optional)
-├── memory.jsonl         # Cross-session persistent memory
-└── config.yaml          # Team configuration
+│   ├── {workflow-name}/       # Workflow file triads (workflow.yaml + instructions.md + template.md)
+│   └── _shared/               # Shared workflows used by all team agents
+│       ├── save-session.md    # Session save + tool learning capture
+│       └── memory-guide.md    # Memory entity classification reference
+├── memory.jsonl               # Cross-session persistent memory
+├── session-context.md         # Session state (created on first save)
+├── TOOL_RECOMMENDATIONS.md    # MCP tool usage notes (if generated)
+└── config.yaml                # Team configuration
 ```
+
+### Standard Agent Commands
+
+Every generated team agent includes these menu items:
+
+| Command | Description |
+|---------|-------------|
+| **[SS] Save Session** | Captures tool learnings to memory + saves session context for next time |
+| **[CH] Chat** | Free-form conversation with the agent |
+| **[PM] Party Mode** | Multi-agent group discussion |
+| **[MH] Menu Help** | Redisplay available commands |
+| **[DA] Dismiss Agent** | End the session |
+
+Plus domain-specific commands unique to each team (e.g., `[PS] Start a Product Search`).
 
 ### Team Party-Mode
 
@@ -209,9 +227,9 @@ Each generated team includes its own **party-mode** workflow:
 | Command | Scope |
 |---------|-------|
 | `/bmad-brainstorming` or `/bmad-party-mode` | All installed BMAD agents |
-| Team-scoped party-mode (generated with team) | Only your team's agents |
+| `/bmad-teams-{team-name}-party-mode` | Only your team's agents |
 
-The team-scoped party-mode enables focused group discussions with just that team's specialists - no interference from other teams or BMAD core agents.
+The team-scoped party-mode enables focused group discussions with just that team's specialists.
 
 ## MCP Servers
 
@@ -228,9 +246,11 @@ Each generated team gets its own persistent memory file for cross-session knowle
 
 **How it works:**
 - Team generation creates `_bmad/teams/{team-name}/memory.jsonl` and configures `.mcp.json` with `MEMORY_FILE_PATH`
+- When you use **[SS] Save Session**, the agent reviews its tool interactions and saves error-to-success patterns to memory automatically
 - Agents tag stored entities as `GeneralKnowledge` (universal tool/technique info) or `ProjectKnowledge` (team-specific)
 - GeneralKnowledge examples: CLI patterns, MCP behaviors, API quirks - things that help any project
 - ProjectKnowledge examples: user preferences, project decisions, domain-specific config
+- On next session startup, agents load previous learnings from memory so they don't repeat past mistakes
 
 **Knowledge consolidation:**
 - The **Memory Manager** agent (`/bmad-agent-teambuilder-memory-manager`) scans team memory files and extracts universally useful knowledge

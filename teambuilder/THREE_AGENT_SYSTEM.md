@@ -97,20 +97,22 @@ Move to next agent
 **0-100% score based on:**
 
 ### Agent Quality (40 points)
-- Persona distinctness (10 pts)
-- Background specificity (10 pts)
-- Communication differentiation (10 pts)
-- Domain expertise authenticity (10 pts)
+- Distinctness (8 pts): Each agent memorably different?
+- Specificity (8 pts): Concrete backgrounds, not generic?
+- Communication (8 pts): Styles vary across team?
+- Expertise (8 pts): Domain knowledge authentic?
+- Architecture (8 pts): Entry-Point thin shells, Sub-Agents with focused instructions?
 
 ### Workflow Quality (30 points)
-- Practicality (10 pts)
-- Clarity (10 pts)
-- Completeness (10 pts)
+- Practicality (8 pts): Can be followed in reality?
+- Clarity (8 pts): Steps and roles crystal clear?
+- Completeness (7 pts): Outputs and handoffs defined?
+- Engine Compliance (7 pts): File triads, template-output checkpoints, shared workflow files?
 
 ### Team Coherence (30 points)
-- Coverage (10 pts)
-- No role overlap (10 pts)
-- Appropriate composition (10 pts)
+- Coverage (10 pts): All user needs addressed?
+- Structure (10 pts): Roles distinct, no overlap?
+- Composition (10 pts): Size appropriate, agent types balanced?
 
 ## Quality Thresholds
 
@@ -293,15 +295,8 @@ Possible future improvements:
   - Introduced paired generation approach
   - Added Quality Guardian for critical review
   - Updated TeamBuilder Guide to use new workflow
-
----
-
-**Architecture designed and implemented by:** BMAD Master 🧙
-**Date:** 2026-01-25
-**Status:** Ready for testing
-
-**Next Steps:**
-1. Restart Claude Code to discover new agents
-2. Test team generation workflow
-3. Evaluate quality improvements
-4. Gather user feedback
+- **v1.1 (2026-02-06):** Thin shell architecture + tool learning via save-session
+  - Entry-Point agents as thin shells (<100 lines), Sub-Agents with focused instructions
+  - Tool learning capture moved into save-session (removed separate workflow step)
+  - Added Tool Scout and Memory Manager agents
+  - Quality scoring updated with architecture compliance dimension
