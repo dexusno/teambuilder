@@ -57,6 +57,10 @@ I assess **three levels**:
 - Principles clarity
 - Domain expertise authenticity
 - Role clarity
+- **Architecture compliance:**
+  - Entry-Point agents: thin shell (<100 lines), has `<activation>`, `<menu-handlers>`, `<rules>`, `<persona>`, `<menu>`. NO `<instructions>` or `<working-methods>`.
+  - Sub-Agents: `<persona>` + focused `<instructions>`. No activation or menu.
+  - Wrong architecture = Critical issue.
 
 #### Level 2: Workflow Quality (30% of total score)
 - Practicality (can actually be followed)
@@ -64,6 +68,10 @@ I assess **three levels**:
 - Defined outputs/artifacts
 - Appropriate complexity (3-10 steps)
 - Collaboration model coherence
+- **File triads present** (workflow.yaml + instructions.md + template.md)
+- **`<template-output>` checkpoints** in instructions.md (required for workflow.xml engine)
+- **Tool-learning-review** as final step in each workflow
+- **Shared workflow files** present in `workflows/_shared/`
 
 #### Level 3: Team-Level Quality (30% of total score)
 - Role coverage (all needs addressed)
@@ -72,6 +80,7 @@ I assess **three levels**:
 - Coordinator/facilitator present
 - Domain expert present
 - Team coherence (agents work together logically)
+- **Agent type balance** (2-4 Entry-Point, rest Sub-Agent)
 
 ## Scoring System
 
@@ -104,21 +113,23 @@ I assess **three levels**:
 
 ### Quality Dimensions Detail
 
-**Agent Persona Quality (40 points max):**
-- Distinctness (10 pts): Each agent memorably different?
-- Specificity (10 pts): Concrete backgrounds, not generic?
-- Communication (10 pts): Styles vary across team?
-- Expertise (10 pts): Domain knowledge authentic?
+**Agent Quality (40 points max):**
+- Distinctness (8 pts): Each agent memorably different?
+- Specificity (8 pts): Concrete backgrounds, not generic?
+- Communication (8 pts): Styles vary across team?
+- Expertise (8 pts): Domain knowledge authentic?
+- Architecture (8 pts): Entry-Point agents are thin shells? Sub-Agents have focused instructions? No wrong-type files?
 
 **Workflow Quality (30 points max):**
-- Practicality (10 pts): Can be followed in reality?
-- Clarity (10 pts): Steps and roles crystal clear?
-- Completeness (10 pts): Outputs and handoffs defined?
+- Practicality (8 pts): Can be followed in reality?
+- Clarity (8 pts): Steps and roles crystal clear?
+- Completeness (7 pts): Outputs and handoffs defined?
+- Engine Compliance (7 pts): File triads, `<template-output>` checkpoints, tool-learning-review step?
 
 **Team Coherence (30 points max):**
 - Coverage (10 pts): All user needs addressed?
 - Structure (10 pts): Roles distinct, no overlap?
-- Composition (10 pts): Size appropriate, key roles present?
+- Composition (10 pts): Size appropriate, key roles present, agent types balanced?
 
 ## Review Process
 
@@ -139,18 +150,25 @@ For each agent, I check:
 - [ ] Principles: Strong opinions or platitudes?
 - [ ] Expertise: Authentic domain knowledge?
 - [ ] Role: Clear and distinct?
+- [ ] Architecture: Correct type (Entry-Point = thin shell <100 lines, Sub-Agent = persona + instructions)?
+- [ ] Entry-Point agents: NO `<instructions>` or `<working-methods>` sections?
+- [ ] Sub-Agents: No activation or menu?
 
-I score 0-10 for distinctness, specificity, communication, expertise.
+I score 0-8 for distinctness, specificity, communication, expertise, architecture.
 
 **Workflow Quality Review:**
 For each workflow, I check:
+- [ ] File triad present (workflow.yaml + instructions.md + template.md)?
 - [ ] Can this be followed step-by-step?
 - [ ] Are agent assignments clear?
 - [ ] Are outputs defined?
 - [ ] Is complexity appropriate (not too simple/complex)?
 - [ ] Does collaboration model make sense?
+- [ ] Does instructions.md have `<template-output>` checkpoints?
+- [ ] Is tool-learning-review the final step?
+- [ ] Are shared workflow files in `workflows/_shared/`?
 
-I score 0-10 for practicality, clarity, completeness.
+I score 0-8 for practicality, clarity, completeness, engine compliance.
 
 **Team Coherence Review:**
 For team as whole, I check:
@@ -173,6 +191,9 @@ Agent Quality (40%) + Workflow Quality (30%) + Team Coherence (30%) = Total Scor
 ### Step 4: Identify Issues by Severity
 
 **Critical Issues (Must fix before install):**
+- Wrong agent architecture (Entry-Point with `<instructions>` section, or fat monolith agents)
+- Entry-Point agent over 100 lines (bloated, needs trimming)
+- Missing workflow file triads (no instructions.md or template.md)
 - Role overlap between agents
 - Missing essential role (coordinator, domain expert)
 - Generic personas across multiple agents

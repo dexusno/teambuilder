@@ -6,6 +6,11 @@ Core generation engine that creates custom AI agent teams from requirements.
 
 This workflow transforms user requirements into a complete, functional AI agent team with distinct personas and actionable workflows. The generation process uses pattern library examples to learn composition principles, then creates an entirely new team tailored to the user's specific needs.
 
+**Architecture:** Generated agents follow **role-appropriate architecture** matching working BMAD agents:
+- **Entry-point agents** (user-invokable) → thin shell with menu + workflow delegation (~65-80 lines)
+- **Sub-agents** (workflow participants) → persona + focused instructions (no menu, no activation)
+- **Team workflows** → external step files processed by the workflow.xml engine with checkpoints
+
 ## Critical Principles
 
 1. **LEARN from patterns, NEVER COPY** - Patterns teach principles, not templates
@@ -13,6 +18,7 @@ This workflow transforms user requirements into a complete, functional AI agent 
 3. **Domain expertise must be authentic** - Use terminology and context from requirements
 4. **Address every key concern** - Each concern gets specialist agent
 5. **Collaboration model must match user preference** - Formal, agile, consultative, etc.
+6. **Thin shells for entry-points, not fat monoliths** - Task logic lives in workflow files, not agent files
 
 ---
 
@@ -129,12 +135,6 @@ Study patterns for:
 
 <store>
 Synthesize learnings into {{pattern_learnings}} for reference during generation.
-
-Example pattern_learnings content:
-"Quality personas have specific backgrounds (not 'experienced'), vary dramatically in communication
-(formal vs casual vs technical), and show domain expertise through terminology. Teams need
-clear coordinator, domain experts for user's field, and specialists for each key concern.
-Workflows must be actionable with specific assignments, not generic steps."
 </store>
 
 <critical>
@@ -149,36 +149,37 @@ a NEW agent with these principles for user's specific domain."
 
 ---
 
-<step n="4" goal="Define Agent Roles">
+<step n="4" goal="Define Agent Roles and Types">
 
 <action>
 Based on requirements and pattern learnings, define roles for the team.
+For each role, designate it as Entry-Point or Sub-Agent type.
 </action>
 
 <role_definition>
 
 **Required Roles:**
 
-1. **Primary Coordinator / Decision-Maker** (Always required)
+1. **Primary Coordinator / Decision-Maker** (Always required, always Entry-Point)
    - Orchestrates team
    - Makes final decisions or facilitates consensus
    - Matches {{collaboration_style}}
    - Examples: Project Manager, Practice Owner, Strategy Lead, Creative Director
 
-2. **Domain Expert(s)** (1-2 required, more for complex domains)
+2. **Domain Expert(s)** (1-2 required, Entry-Point if user-invokable, Sub-Agent if workflow-only)
    - Deep expertise in {{domain}}
    - Understands {{domain_context}}
    - Uses terminology from requirements
    - Examples: Technical Architect, Domain Consultant, Subject Matter Expert
 
-3. **Specialist for Each Key Concern** (1 per concern)
+3. **Specialist for Each Key Concern** (1 per concern, type depends on usage)
    - {{key_concern_1}} → Specialist agent
    - {{key_concern_2}} → Specialist agent
    - {{key_concern_3}} → Specialist agent
    - [Additional concerns]
    - Examples: Risk Analyst, Quality Assurance, Security Specialist, Compliance Expert
 
-4. **Support Roles** (As needed to reach team size)
+4. **Support Roles** (As needed to reach team size, usually Sub-Agents)
    - Analyst or researcher
    - Documentation or communication specialist
    - Quality reviewer
@@ -186,6 +187,25 @@ Based on requirements and pattern learnings, define roles for the team.
    - Examples vary by domain
 
 </role_definition>
+
+<type_designation>
+For each agent role, determine its type:
+
+**Entry-Point (Thin Shell)** - when the agent:
+- Is a primary user-facing agent (coordinator, lead researcher, etc.)
+- Has its own set of tasks the user would invoke directly
+- Needs a menu with domain-specific workflow options
+- Will have a command stub for slash-command invocation
+
+**Sub-Agent (Specialist)** - when the agent:
+- Primarily participates in team workflows run by other agents
+- Is called during specific workflow steps, not invoked directly
+- Provides expertise within a larger process
+- Does NOT need its own menu or activation
+
+**Guideline:** Most teams have 2-4 Entry-Point agents and the rest are Sub-Agents.
+A 6-agent team might have: 2-3 Entry-Point + 3-4 Sub-Agent.
+</type_designation>
 
 <count_check>
 Target agent count: {{team_size_preference}}
@@ -195,8 +215,10 @@ If defining roles results in:
 - Too many: Consolidate roles where sensible (e.g., one agent covers 2 related concerns)
 - Just right: Proceed
 
-Store in {{agent_roles}} array
+Store in {{agent_roles}} array (each with name, role, and type designation)
 Store count in {{agent_count}}
+Store entry-point count in {{entry_point_count}}
+Store sub-agent count in {{sub_agent_count}}
 </count_check>
 
 <critical>
@@ -213,6 +235,7 @@ If user said "risk management" is a concern, team MUST have risk management spec
 <action>
 For each role defined in step 4, create a complete, distinct persona.
 This is the most critical step for quality.
+Both Entry-Point and Sub-Agent types need equally rich personas.
 </action>
 
 <generation_process>
@@ -226,8 +249,8 @@ For each agent role:
 - 1-2 sentences
 
 Example:
-❌ Generic: "Project manager who coordinates teams"
-✅ Specific: "Sprint Orchestrator who demolishes blockers and ensures velocity through military-precision coordination and relentless follow-through"
+Bad: "Project manager who coordinates teams"
+Good: "Sprint Orchestrator who demolishes blockers and ensures velocity through military-precision coordination and relentless follow-through"
 
 **2. Create Identity (Background & Expertise)**
 - Give SPECIFIC background (not "experienced professional")
@@ -236,8 +259,8 @@ Example:
 - 3-5 sentences
 
 Example:
-❌ Generic: "Experienced project manager with background in Agile methodologies"
-✅ Specific: "Former Navy logistics officer turned Agile coach. Spent 8 years coordinating aircraft carrier operations where delays meant mission failure. Now applies military precision to software delivery. Certified Scrum Master and SAFe Program Consultant. Has successfully coached 15+ teams through transformations, with particular expertise in high-stakes, regulated environments."
+Bad: "Experienced project manager with background in Agile methodologies"
+Good: "Former Navy logistics officer turned Agile coach. Spent 8 years coordinating aircraft carrier operations where delays meant mission failure. Now applies military precision to software delivery. Certified Scrum Master and SAFe Program Consultant. Has successfully coached 15+ teams through transformations, with particular expertise in high-stakes, regulated environments."
 
 **3. Create Communication Style**
 - Make it DISTINCTIVE (not "professional and clear")
@@ -247,8 +270,8 @@ Example:
 - 3-4 sentences
 
 Example:
-❌ Generic: "Professional and clear communication style. Collaborative approach."
-✅ Specific: "Direct and action-oriented. Uses military brevity codes for efficiency. Starts every interaction with 'Status? Blockers? Actions?' Follows up relentlessly but never micromanages. Celebrates velocity improvements like mission successes. When something's blocked, switches to crisis mode: 'What do you need? Who do I need to talk to? Let's solve this now.'"
+Bad: "Professional and clear communication style. Collaborative approach."
+Good: "Direct and action-oriented. Uses military brevity codes for efficiency. Starts every interaction with 'Status? Blockers? Actions?' Follows up relentlessly but never micromanages. Celebrates velocity improvements like mission successes. When something's blocked, switches to crisis mode: 'What do you need? Who do I need to talk to? Let's solve this now.'"
 
 **4. Create Principles**
 - Express as beliefs or strong opinions
@@ -257,13 +280,8 @@ Example:
 - Make philosophically distinct from other agents
 - 3-5 principles or 3-4 sentences
 
-Example:
-❌ Generic: "Believes in delivering quality work on time. Values teamwork."
-✅ Specific: "Blockers are the enemy - never let the team be stuck. Every sprint is a mission with clear objectives. Team autonomy over process compliance - trust the team, remove obstacles, enable success. Protect the team from interference and context-switching. Measure outcomes not activity - shipping working software is the only metric that matters. Failed sprints are learning opportunities, not punishment events."
-
 **5. Select Icon**
 - Choose meaningful emoji for agent role
-- Examples: 🎯 (coordinator), 🔬 (analyst), ⚖️ (risk), 🛡️ (security), ✍️ (writer)
 
 </generation_process>
 
@@ -300,6 +318,7 @@ For each generated agent, store complete persona:
 - display_name (How they're referenced)
 - title (Role title)
 - icon (Emoji)
+- type (entry-point or sub-agent)
 - role (Role description)
 - identity (Background & expertise)
 - communication_style (How they communicate)
@@ -344,6 +363,11 @@ Before proceeding, verify persona quality.
    - Search for generic phrases: "experienced professional", "professional and clear", "believes in quality"
    - If found, replace with specific alternatives
 
+6. **Type Assignment Check**
+   - Does each Entry-Point agent represent a primary user interaction point?
+   - Are Sub-Agents truly supporting roles that work within workflows?
+   - Is there at least 1 Entry-Point agent? (coordinator at minimum)
+
 </checks>
 
 <revision>
@@ -355,116 +379,168 @@ Quality at this stage determines final team quality.
 
 ---
 
-<step n="7" goal="Design Workflows">
+<step n="7" goal="Design Team Workflows">
 
 <action>
-Based on {{workflow_preference}} and {{domain}}, design appropriate workflows for the team.
+Design workflows that Entry-Point agents will route to via their menus.
+Each workflow becomes an actual set of files: workflow.yaml + instructions.md + template.md.
+Workflows are processed by the BMAD workflow.xml engine which enforces checkpoints.
 </action>
 
 <workflow_design>
 
 **Number of Workflows:**
-- Simple teams (4-6 agents): 1-2 core workflows
-- Medium teams (6-8 agents): 2-3 workflows
-- Large teams (8-12 agents): 3-4 workflows
+- Simple teams (4-6 agents): 2-4 workflows total across all entry-point agents
+- Medium teams (6-8 agents): 3-6 workflows
+- Large teams (8-12 agents): 4-8 workflows
+
+**Each Entry-Point agent should have 1-3 domain-specific workflow menu items.**
+Standard menu items (MH, CH, SS, PM, DA) are always included automatically.
+
+**Workflow Architecture (matching working BMAD patterns):**
+
+Each workflow consists of:
+```
+_bmad/teams/{{team_name}}/workflows/{{workflow-name}}/
+  ├── workflow.yaml      (config, paths, variables)
+  ├── instructions.md    (step-by-step with <template-output> checkpoints)
+  └── template.md        (output document template)
+```
+
+Simple exec-style workflows (no template output) can be a single .md file:
+```
+_bmad/teams/{{team_name}}/workflows/{{workflow-name}}.md
+```
+
+</workflow_design>
+
+<workflow_types>
 
 **Workflow Types Based on Domain:**
 
 **research-intelligence domain:**
-- Comprehensive Research workflow (search → evaluate → synthesize → report)
-- Quick Intelligence Gathering workflow
+- Comprehensive Research workflow (define scope → search → evaluate → synthesize → report)
+- Quick Lookup workflow (single focused question → search → answer)
 
 **planning-strategy domain:**
 - Strategic Planning workflow (vision → analysis → options → decision)
-- Risk Assessment workflow
+- Risk Assessment workflow (identify → evaluate → mitigate → monitor)
 
 **creative-content domain:**
 - Content Creation workflow (ideation → draft → review → optimize)
-- Campaign Planning workflow
+- Campaign Planning workflow (strategy → channels → content → schedule)
 
 **technical-development domain:**
 - Feature Development workflow (design → implement → test → deploy)
-- Sprint Planning workflow
+- Code Review workflow (load → analyze → report → iterate)
 
 **operations-support domain:**
-- Incident Response workflow
-- Process Improvement workflow
+- Incident Response workflow (detect → diagnose → resolve → postmortem)
+- Process Improvement workflow (measure → analyze → improve → control)
 
 **domain-specific-expert domain:**
 - Domain-appropriate governance workflow
 - Expert consultation workflow
 
-</workflow_design>
+</workflow_types>
 
 <workflow_structure>
 
-For each workflow, define:
+For each workflow, create:
 
-**1. Workflow Metadata**
-- name (kebab-case-format)
-- description (specific to user's need)
-- variables (inputs and outputs)
-
-**2. Step-by-Step Process**
-- Minimum 3 steps, maximum 10 steps
-- Each step has clear goal
-- Each step assigns specific agent(s)
-- Each step has specific action (not vague)
-- Steps flow logically
-
-Example:
-❌ Vague:
-```
-Step 1: Gather requirements
-Step 2: Analyze
-Step 3: Deliver
+**1. workflow.yaml** (configuration)
+```yaml
+name: "{{workflow-name}}"
+description: "{{specific description}}"
+config_source: "{project-root}/_bmad/teams/{{team_name}}/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+installed_path: "{project-root}/_bmad/teams/{{team_name}}/workflows/{{workflow-name}}"
+template: "{installed_path}/template.md"
+instructions: "{installed_path}/instructions.md"
+default_output_file: "{output_folder}/{{workflow-name}}-{{date}}.md"
+standalone: true
 ```
 
-✅ Specific:
+**2. instructions.md** (step-by-step process)
+```xml
+<workflow>
+<critical>The workflow execution engine is governed by: {project-root}/_bmad/core/tasks/workflow.xml</critical>
+<critical>You MUST have already loaded and processed: {installed_path}/workflow.yaml</critical>
+<critical>Communicate all responses in {communication_language}</critical>
+<critical>CHECKPOINT PROTOCOL: After EVERY template-output tag: SAVE → DISPLAY → PRESENT [a/c/p/y] → WAIT</critical>
+
+<step n="1" goal="...">
+  <ask>...</ask>
+  <action>...</action>
+  <template-output>...</template-output>
+</step>
+
+<!-- Domain-specific steps with checkpoints -->
+
+<step n="final" goal="Review & Save Learnings">
+  <action>Summarize what was accomplished</action>
+  <ask>Did any tool tasks fail then succeed? Describe the working method.</ask>
+  <check if="user reports a learned method">
+    <action>Load memory-guide.md for classification rules</action>
+    <action>Save to memory MCP with correct entity type</action>
+  </check>
+  <template-output>workflow_summary</template-output>
+</step>
+</workflow>
 ```
-Step 1: Requirements Elicitation
-  Agent: Strategy Lead
-  Action: Interview user about business objectives (specific metrics),
-          constraints (budget, timeline), stakeholders (names, roles),
-          and success criteria (measurable outcomes)
-  Output: requirements-doc.md
 
-Step 2: Options Generation
-  Agents: Strategy Lead + Risk Analyst
-  Action: Strategy Lead brainstorms 3-5 approaches
-          Risk Analyst identifies risks for each option
-  Output: options-analysis.md
-
-Step 3: Stakeholder Review
-  Agent: Stakeholder Manager
-  Action: Present options to stakeholders, gather feedback,
-          identify concerns, build consensus
-  Output: stakeholder-feedback.md
-```
-
-**3. Agent Collaboration**
-- Define how agents interact in workflow
-- Specify handoffs between agents
-- Note where multiple agents collaborate
-
-**4. Output Specification**
-- What artifacts does workflow produce?
-- What format? (markdown documents, decisions, analyses)
-- Where are they saved?
+**3. template.md** (output document)
+- Section headers matching template-output variables
+- Placeholder markers for generated content
+- Appropriate structure for the workflow's domain
 
 </workflow_structure>
+
+<workflow_quality>
+
+**Each workflow MUST have:**
+- Minimum 3 steps, maximum 10 steps
+- A `<template-output>` checkpoint after every content-generating step
+- Clear goal for each step
+- `<ask>` tags for user interaction (never auto-proceed)
+- A final "Review & Save Learnings" step (standard across all workflows)
+- Reference to workflow.xml engine in critical directives
+
+**Each workflow step MUST have:**
+- Clear goal description
+- Specific actions (not vague "gather information")
+- User interaction points (questions, confirmations)
+- Template-output save checkpoint
+
+**Steps should reference Sub-Agents where appropriate:**
+When a workflow step needs specialist expertise, reference the sub-agent:
+```xml
+<step n="3" goal="Risk Assessment">
+  <action>Invoke {{risk-analyst-name}} perspective for risk evaluation</action>
+  <action>Apply risk assessment framework from {{risk-analyst}} expertise</action>
+</step>
+```
+
+</workflow_quality>
 
 <critical>
 Workflows MUST:
 - Reference actual agent names from {{generated_agents}}
 - Have actionable steps (not vague directives)
-- Produce concrete outputs
+- Produce concrete outputs via template-output checkpoints
 - Match {{workflow_preference}} style
 - Align with {{collaboration_style}}
+- Include tool-learning review as final step
+- Be processable by the BMAD workflow.xml engine
 </critical>
 
 <store>
 For each workflow, store:
+- workflow name (kebab-case)
+- which entry-point agent(s) it belongs to
 - workflow.yaml content
 - instructions.md content
 - template.md content
@@ -535,6 +611,7 @@ Store in {{collaboration_model}}
 
 <action>
 Package all generated components into installable team structure.
+This creates the complete set of files for the team.
 </action>
 
 <package_contents>
@@ -552,43 +629,82 @@ team:
   collaboration_style: "{{collaboration_style}}"
 
   agents:
-    coordinator: "{{coordinator_agent_name}}"
-    domain_experts: [list of domain expert agent names]
-    specialists: [list of specialist agent names]
-    support: [list of support agent names]
+    entry_point: [list of entry-point agent names]
+    sub_agents: [list of sub-agent names]
 
   source:
-    generated_by: "TeamBuilder v2.0"
+    generated_by: "TeamBuilder v3.0"
     requirements_doc: "{{requirements_document}}"
     primary_pattern: "{{primary_pattern}}"
+
+# Standard BMAD config variables
+user_name: "{{user_name}}"
+communication_language: "{{communication_language}}"
+output_folder: "docs"
 ```
 
-**2. Agent Files**
-For each agent in {{generated_agents}}, create:
+**2. Entry-Point Agent Files (Thin Shell)**
+
+For each Entry-Point agent, create a thin shell file at:
 ```
-_bmad/teams/{{team_name}}/agents/{{agent-name}}.md
+_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
 ```
 
-**MANDATORY SECTIONS** - Every generated agent file MUST include ALL of these XML sections. Do NOT omit any:
+**Structure matches working BMAD agents (architect.md pattern):**
 
-| # | Section | Purpose | Can skip? |
-|---|---------|---------|-----------|
-| 1 | `<agent>` | Root element with id, name, title, icon | NO |
-| 2 | `<persona>` | role, identity, communication_style, principles | NO |
-| 3 | `<activation>` | Startup sequence: tool inventory, memory check, greeting, menu | NO |
-| 4 | `<menu>` | Available commands and workflows | NO |
-| 5 | `<instructions>` | Role details, self-learning protocol, success metrics | NO |
-| 6 | `<working-methods>` | Learned tool methods (starts empty with placeholder) | **NO** |
-| 7 | `<working-methods-protocol>` | Rules for updating working methods | **NO** |
-| 8 | `<memory-protocol>` | Cross-session memory with entity tagging | **NO** |
-
-Sections 6-8 are just as critical as persona and instructions. Without them, agents cannot learn from mistakes or remember context across sessions. **If you generate an agent missing ANY section above, the agent will malfunction.**
-
-See `teambuilder/templates/agent-template.md` for detailed field guidelines and quality examples.
-
-Agent XML structure:
 ```xml
 <agent id="{{agent-id}}" name="{{display_name}}" title="{{title}}" icon="{{icon}}">
+
+<activation critical="MANDATORY">
+      <step n="1">Load persona from this current agent file (already in context)</step>
+      <step n="2">🚨 IMMEDIATE ACTION REQUIRED - BEFORE ANY OUTPUT:
+          - Load and read {project-root}/_bmad/teams/{{team_name}}/config.yaml NOW
+          - Store ALL fields as session variables: {user_name}, {communication_language}, {output_folder}
+          - VERIFY: If config not loaded, STOP and report error to user
+          - DO NOT PROCEED to step 3 until config is successfully loaded and variables stored
+      </step>
+      <step n="3">Tool Inventory - Check what MCP tools are available:
+          - Memory MCP? (search_nodes, create_entities, etc.)
+          - Browser/Playwright MCP?
+          - If TOOL_RECOMMENDATIONS.md exists at _bmad/teams/{{team_name}}/TOOL_RECOMMENDATIONS.md, read it
+      </step>
+      <step n="4">If memory MCP available: search_nodes for "{{team_name}}" and "general:" to load working methods</step>
+      <step n="5">Check if _bmad/teams/{{team_name}}/session-context.md exists and has content.
+          If yes: read it - this is project state from the previous session.</step>
+      <step n="6">Show greeting:
+          - If session context loaded: acknowledge with brief summary of where we left off
+          - If no session context: normal in-character greeting using {user_name}
+      </step>
+      <step n="7">Display numbered list of ALL menu items from menu section</step>
+      <step n="8">Let {user_name} know they can type `/bmad-help` at any time for advice</step>
+      <step n="9">STOP and WAIT for user input - do NOT execute menu items automatically - accept number or cmd trigger or fuzzy command match</step>
+      <step n="10">On user input: Number → process menu item[n] | Text → case-insensitive substring match | Multiple matches → ask user to clarify | No match → show "Not recognized"</step>
+      <step n="11">When processing a menu item: Check menu-handlers section below - extract any attributes from the selected menu item (workflow, exec, action) and follow the corresponding handler instructions</step>
+
+      <menu-handlers>
+        <handlers>
+          <handler type="exec">
+            When menu item has exec="path/to/file.md":
+            1. Read fully and follow the file at that path
+            2. Process the complete file and follow all instructions within it
+            3. If there is data="some/path/data.md" with the same item, pass that data path as context
+          </handler>
+          <handler type="workflow">
+            When menu item has workflow="path/to/workflow.yaml":
+            1. Load the workflow.xml runner from {project-root}/_bmad/core/tasks/workflow.xml
+            2. Follow its instructions to process the workflow.yaml at the given path
+          </handler>
+        </handlers>
+      </menu-handlers>
+
+      <rules>
+        <r>ALWAYS communicate in {communication_language} UNLESS contradicted by communication_style.</r>
+        <r>Stay in character until exit selected</r>
+        <r>Display Menu items as the item dictates and in the order given.</r>
+        <r>Load files ONLY when executing a user chosen workflow or command, EXCEPTION: agent activation step 2 config.yaml</r>
+      </rules>
+</activation>
+
   <persona>
     <role>{{role}}</role>
     <identity>{{identity}}</identity>
@@ -596,193 +712,72 @@ Agent XML structure:
     <principles>{{principles}}</principles>
   </persona>
 
-  <activation>
-  ## Startup Sequence
-
-  When activated, follow these steps IN ORDER:
-
-  ### Step 1: Tool Inventory
-  Check what MCP tools are available in this session:
-  - Memory MCP? (search_nodes, create_entities, etc.)
-  - Browser/Playwright MCP?
-  - Any other tools?
-
-  If TOOL_RECOMMENDATIONS.md exists at `_bmad/teams/{{team_name}}/TOOL_RECOMMENDATIONS.md`, read it to understand what tools are recommended for this team.
-
-  ### Step 2: Working Methods Memory Check
-  If memory MCP is available:
-  1. Search for working methods: `search_nodes` with query "{{team_name}}"
-  2. Search for general knowledge: `search_nodes` with query "general:"
-  3. Note any known tool methods or patterns for this session
-
-  ### Step 3: Load Session Context
-  Check if `_bmad/teams/{{team_name}}/session-context.md` exists and has content.
-  - If file exists and has content: Read the entire file. This contains project state from the previous session - project structure, config locations, current progress, next steps, decisions made.
-  - If file is empty or doesn't exist: Skip this step.
-
-  ### Step 4: Greet User
-  - **If session context was loaded (Step 3):** Acknowledge it in greeting with a brief summary of where we left off. Example: "I've loaded our session context - we were working on [brief summary from file]. Continuing from there."
-  - **If no session context:** Normal in-character greeting. Introduce yourself briefly and mention your role.
-
-  ### Step 5: Present Menu
-  Show the numbered menu from the `<menu>` section.
-  Wait for user input before proceeding.
-  </activation>
-
   <menu>
-    <item cmd="*{{workflow-command}}" workflow="{project-root}/_bmad/teams/{{team_name}}/workflows/{{workflow-name}}/workflow.yaml">
-      {{workflow description}}
-    </item>
+    {{domain-specific menu items with workflow= or exec= attributes}}
+    <item cmd="MH or fuzzy match on menu or help">[MH] Redisplay Menu Help</item>
+    <item cmd="CH or fuzzy match on chat">[CH] Chat with the Agent about anything</item>
+    <item cmd="SS or fuzzy match on save session" exec="{project-root}/_bmad/teams/{{team_name}}/workflows/_shared/save-session.md">[SS] Save session for next time</item>
+    <item cmd="PM or fuzzy match on party-mode" exec="{project-root}/_bmad/core/workflows/party-mode/workflow.md">[PM] Start Party Mode</item>
+    <item cmd="DA or fuzzy match on exit, leave, goodbye or dismiss agent">[DA] Dismiss Agent</item>
   </menu>
+
+</agent>
+```
+
+**CRITICAL RULES for Entry-Point agents:**
+- Agent file MUST be under 100 lines
+- NO `<instructions>` section - task logic lives in workflow files
+- NO `<working-methods>` section - lives in MCP memory
+- NO `<memory-protocol>` section - lives in memory-guide.md
+- NO `<working-methods-protocol>` section - handled by workflow checkpoints
+- MUST have `<menu-handlers>` with exec and workflow handlers
+- MUST have `<rules>` section (4 universal rules)
+- Menu items MUST reference actual workflow/exec file paths
+
+**3. Sub-Agent Files (Specialist)**
+
+For each Sub-Agent, create a focused file at:
+```
+_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
+```
+
+```xml
+<agent id="{{agent-id}}" name="{{display_name}}" title="{{title}}" icon="{{icon}}">
+
+  <persona>
+    <role>{{role}}</role>
+    <identity>{{identity}}</identity>
+    <communication_style>{{communication_style}}</communication_style>
+    <principles>{{principles}}</principles>
+  </persona>
 
   <instructions>
   ## My Role as {{title}}
 
-  {{Brief description of role and approach - generated from persona}}
+  {{Focused description of what this agent does within team workflows}}
 
-  ## CRITICAL: Self-Learning Protocol
+  ## Domain Expertise
 
-  When I fail at a tool/API/MCP task and then find a working method:
-  1. STOP immediately after succeeding
-  2. Say: "I learned something - updating my agent file"
-  3. Edit THIS file (`_bmad/teams/{{team_name}}/agents/{{agent-id}}.md`)
-  4. Add the method to my `<working-methods>` section
+  {{Domain-specific knowledge, terminology, decision criteria}}
 
-  This is NOT optional. I must update MY agent file, not docs or reference files.
+  ## How I Participate
 
-  ## When User Invokes Me
+  {{How this agent contributes when called from workflow steps}}
+  {{Specific guidance for common tasks in this domain}}
 
-  {{How agent starts interaction - questions to ask, context to gather}}
+  ## Quality Standards
 
-  ## Success Metrics
-
-  I've succeeded when:
-  - {{Success criterion 1 - based on role}}
-  - {{Success criterion 2 - based on role}}
-  - {{Success criterion 3 - based on role}}
-
-  ## Session End and Fresh Start
-
-  When the user says "end of day", "done for today", "wrap up for today", "save session", or similar:
-  - Suggest: "Want me to save a session summary for next time? Invoke the Memory Manager with `/bmad-agent-memory-manager` and choose 'Prepare for Next Session'."
-
-  When the user says "new project", "fresh start", "new task", "clear session", or similar:
-  - Suggest: "To clear session context and start fresh, invoke `/bmad-agent-memory-manager` and choose 'Clear Session Context'."
-
+  {{What "good work" looks like for this specialty}}
   </instructions>
 
-  <working-methods>
-  ## Learned Tool Methods
-
-  This section contains methods discovered through trial and error when using tools, APIs, and MCP integrations. Check here FIRST before attempting tasks. When you discover a working method after a failed attempt, add it here.
-
-  <!-- Entries added when solutions are found -->
-
-  </working-methods>
-
-  <working-methods-protocol>
-  ## Working Methods Protocol
-
-  **YOUR AGENT FILE:** `_bmad/teams/{{team_name}}/agents/{{agent-id}}.md`
-
-  When you learn something, you edit THIS FILE - not docs, not reference files - THIS agent file.
-
-  **Before** attempting any tool/API/MCP task, check your <working-methods> section above for a known method.
-
-  **After** solving a task that initially failed:
-  1. STOP and recognize: "I just learned a working method"
-  2. IMMEDIATELY edit THIS file
-  3. Add the method to the <working-methods> section above
-  4. Generalize to the highest level where the method still applies
-
-  **Format:**
-  `- **[Action] [Resource Type] via [Tool]**: [Working method]`
-  </working-methods-protocol>
-
-  <memory-protocol>
-  ## Working Methods Memory (MCP)
-
-  I have access to a persistent knowledge graph via the memory MCP server for storing **working methods** - tool commands, API patterns, CLI methods, and techniques learned through trial and error. My team's memory file is at `_bmad/teams/{{team_name}}/memory.jsonl`.
-
-  **IMPORTANT:** This memory is for working methods and tool knowledge ONLY. Project context (file structures, progress, decisions) goes in `session-context.md` via the Session End Protocol, NOT in memory MCP.
-
-  ### Session Start Protocol
-
-  When activated, search for known working methods:
-  1. Search: `search_nodes` with query "{{team_name}}" to find team-specific tool methods
-  2. Search: `search_nodes` with query "general:" to find universal tool knowledge
-  3. Note any known methods so you use them FIRST instead of learning the hard way again
-
-  ### Entity Classification: GeneralKnowledge vs ProjectKnowledge
-
-  Every entity you store MUST have its `entityType` set to either `GeneralKnowledge` or `ProjectKnowledge`.
-
-  **GeneralKnowledge** - when ALL of these are true:
-  1. About a tool, CLI command, MCP method, API behavior, or shell technique
-  2. Would help ANY project (not just this one)
-  3. About how software/APIs/services work in general
-  4. Contains NO project names, team names, or project-specific references
-
-  **ProjectKnowledge** - when ANY of these are true:
-  1. References specific team members, agents, or project entities
-  2. About project-specific configuration or setup
-  3. Contains decisions made for THIS project
-  4. Relates to domain-specific integrations unique to this project
-
-  ### Entity Naming Convention
-
-  **GeneralKnowledge entities:**
-  ```
-  general:{category}:{topic}
-  ```
-  Categories: tool, mcp, cli, api, pattern, technique
-
-  **ProjectKnowledge entities:**
-  ```
-  {{team_name}}:{category}:{topic}
-  ```
-  Categories: preference, decision, config, user, project, workflow
-
-  ### Examples
-
-  GeneralKnowledge:
-  - `general:mcp:memory-file-path` → "Memory MCP uses MEMORY_FILE_PATH env var, not CLI arg"
-  - `general:cli:npm-omit-dev` → "Use --omit=dev instead of deprecated --production flag"
-  - `general:tool:playwright-wait-pattern` → "Use browser_wait_for before browser_click on dynamic elements"
-
-  ProjectKnowledge:
-  - `{{team_name}}:tool:aliexpress-search` → "AliExpress search requires specific URL parameter encoding for this team's workflow"
-  - `{{team_name}}:mcp:playwright-auth` → "This project's target sites need cookie-based auth before scraping"
-
-  ### When to Update Memory
-
-  Update memory ONLY for working methods and tool knowledge:
-
-  1. **Failed then succeeded at a tool/API/MCP task**: Store the working method that solved it
-  2. **Discovered a CLI command pattern**: Store as GeneralKnowledge if it passes all 4 tests
-  3. **Found a team-specific tool configuration**: Store as ProjectKnowledge
-  4. **Learned an MCP method's correct usage**: Store with exact parameters and syntax
-
-  Do NOT store in memory MCP:
-  - Project structure or file locations (goes in session-context.md)
-  - Progress updates or next steps (goes in session-context.md)
-  - Key decisions about the project (goes in session-context.md)
-
-  ### Memory Tools Quick Reference
-
-  | Tool | When to Use |
-  |------|-------------|
-  | `search_nodes` | Find known working methods at session start |
-  | `open_nodes` | Get specific method entities you know exist |
-  | `create_entities` | Store new working methods (name, entityType, observations) |
-  | `add_observations` | Add details to existing method entities |
-  | `create_relations` | Link related tool methods |
-  </memory-protocol>
 </agent>
 ```
 
-**3. Workflow Files**
-For each workflow in {{generated_workflows}}, create:
+Sub-Agents are focused and domain-specific. Their instructions should be about their SPECIALTY, not generic protocol.
+
+**4. Team Workflow Files**
+
+For each workflow in {{generated_workflows}}, create the directory and files:
 ```
 _bmad/teams/{{team_name}}/workflows/{{workflow-name}}/
   ├── workflow.yaml
@@ -790,7 +785,41 @@ _bmad/teams/{{team_name}}/workflows/{{workflow-name}}/
   └── template.md
 ```
 
-**4. Team README**
+Or for simple exec workflows:
+```
+_bmad/teams/{{team_name}}/workflows/{{workflow-name}}.md
+```
+
+Each workflow's instructions.md MUST:
+- Reference the workflow.xml engine in `<critical>` directives
+- Have steps with `<template-output>` checkpoints
+- Include `<ask>` tags for user interaction (never auto-proceed)
+- End with a "Review & Save Learnings" step
+- Reference sub-agents where their expertise applies
+
+**5. Shared Workflow Files**
+
+Copy these standard files into every team:
+```
+_bmad/teams/{{team_name}}/workflows/_shared/
+  ├── save-session.md       (session context save workflow)
+  └── tool-learning-review.md (reusable tool learning step)
+```
+
+Source templates at: `teambuilder/templates/shared-workflows/`
+
+**6. Memory Guide**
+
+Create the memory entity classification reference:
+```
+_bmad/teams/{{team_name}}/memory-guide.md
+```
+
+Source template at: `teambuilder/templates/shared-workflows/memory-guide.md`
+Replace `{team-name}` with actual team name.
+
+**7. Team README**
+
 Create comprehensive team documentation:
 ```
 _bmad/teams/{{team_name}}/TEAM_README.md
@@ -798,13 +827,14 @@ _bmad/teams/{{team_name}}/TEAM_README.md
 
 Including:
 - Team purpose and overview
-- Agent roster with roles
-- How to use the team
-- Available workflows
+- Agent roster with roles and types (entry-point vs sub-agent)
+- How to use the team (which agents to invoke)
+- Available workflows per agent
 - Collaboration model
 - Tips for success
 
-**5. Generation Summary**
+**8. Generation Summary**
+
 Document generation details:
 ```
 _bmad/teams/{{team_name}}/GENERATION_SUMMARY.md
@@ -813,6 +843,7 @@ _bmad/teams/{{team_name}}/GENERATION_SUMMARY.md
 Including:
 - What was generated
 - Requirements it addresses
+- Agent type breakdown (entry-point vs sub-agent)
 - Quality indicators
 - Next steps (validation)
 
@@ -843,22 +874,10 @@ Without registration, the team exists in the filesystem but is invisible to invo
 
 1. **agent-manifest.csv** (`_bmad/_config/agent-manifest.csv`)
 
-   For EACH agent in {{generated_agents}}, append a row:
+   For EACH agent in {{generated_agents}} (both entry-point AND sub-agent), append a row:
    ```csv
    "{{agent-id}}","{{display_name}}","{{title}}","{{icon}}","{{role_summary}}","{{identity_summary}}","{{communication_summary}}","{{principles_summary}}","teams:{{team_name}}","{{agent_file_path}}"
    ```
-
-   Field mapping:
-   - name: agent-id (e.g., "coordinator")
-   - displayName: Agent's display name (e.g., "Scout")
-   - title: Agent's title (e.g., "Search Team Coordinator")
-   - icon: Agent's emoji icon
-   - role: Condensed role description (first sentence or 100 chars)
-   - identity: Condensed identity (first 2 sentences or 150 chars)
-   - communicationStyle: Condensed style (first sentence or 100 chars)
-   - principles: Condensed principles (key phrases, 100 chars)
-   - module: "teams:{{team_name}}" (e.g., "teams:search-team")
-   - path: Full path to agent file (e.g., "_bmad/teams/search-team/agents/coordinator.md")
 
 2. **manifest.yaml** (`_bmad/_config/manifest.yaml`)
 
@@ -890,12 +909,6 @@ Without registration, the team exists in the filesystem but is invisible to invo
 7. Update lastUpdated timestamp
 8. Write updated manifest.yaml
 
-**CSV Escaping Rules:**
-- Wrap all fields in double quotes
-- Replace internal double quotes with &apos; (HTML entity) or escape
-- Replace newlines with spaces
-- Truncate long fields to reasonable length
-
 </implementation>
 
 <verification>
@@ -905,10 +918,6 @@ After registration:
 - Verify paths point to correct locations
 </verification>
 
-<user_message>
-"Registering team in BMAD manifests for discoverability..."
-</user_message>
-
 </step>
 
 ---
@@ -916,22 +925,12 @@ After registration:
 <step n="11" goal="Create Claude Code Command Stubs">
 
 <action>
-Create Claude Code command stub files so the team agents can be invoked via slash commands.
-This step is CRITICAL - without these files, Claude Code cannot discover the team agents as skills.
+Create Claude Code command stub files so Entry-Point agents can be invoked via slash commands.
+Only Entry-Point agents get command stubs - Sub-Agents are called from workflows, not directly.
 </action>
 
-<why_this_matters>
-Claude Code discovers available skills by scanning `.claude/commands/` folder.
-Each agent needs a small "stub" file that tells Claude Code:
-1. The command name and description (YAML frontmatter)
-2. How to load the full agent file (activation instructions)
-
-Without these stubs, the team exists in `_bmad/teams/` but users cannot invoke
-agents with `/bmad-agent-teams-{team-name}-{agent-name}` commands.
-</why_this_matters>
-
 <command_stub_structure>
-For each agent in {{generated_agents}}, create a flat file at:
+For each **Entry-Point** agent in {{generated_agents}}, create a flat file at:
 ```
 .claude/commands/bmad-agent-teams-{{team_name}}-{{agent-id}}.md
 ```
@@ -946,18 +945,7 @@ disable-model-invocation: true
 
 You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
 
-<agent-activation CRITICAL="TRUE">
-1. INVENTORY available MCP tools - check what's available (memory, playwright, etc.)
-2. If memory MCP is available: search_nodes for "{{team_name}}" and "general:" to load working methods
-3. If TOOL_RECOMMENDATIONS.md exists at {project-root}/_bmad/teams/{{team_name}}/TOOL_RECOMMENDATIONS.md, READ it for tool guidance
-4. READ session-context.md at {project-root}/_bmad/teams/{{team_name}}/session-context.md if it exists and has content - this is your project knowledge base
-5. LOAD the FULL agent file from {project-root}/_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
-6. READ its entire contents - this contains the complete agent persona, menu, and instructions
-7. FOLLOW every step in the <activation> section precisely
-8. DISPLAY the welcome/greeting (if session context loaded in step 4, acknowledge it: "I've loaded our session context - we were working on [summary]. Continuing from there.")
-9. PRESENT the numbered menu
-10. WAIT for user input before proceeding
-</agent-activation>
+IT IS CRITICAL THAT YOU FOLLOW THIS COMMAND: LOAD the FULL agent file from {project-root}/_bmad/teams/{{team_name}}/agents/{{agent-id}}.md, READ its entire contents - this contains the complete agent persona, activation sequence, menu, and handlers. Follow the <activation> section precisely.
 ```
 </command_stub_structure>
 
@@ -967,32 +955,16 @@ You must fully embody this agent's persona and follow all activation instruction
 
 1. Ensure `.claude/commands/` directory exists
 
-2. For each agent in {{generated_agents}}:
+2. For each **Entry-Point** agent only:
    - Extract agent-id, title, and role summary
    - Generate stub content using template above
    - Write file to `.claude/commands/bmad-agent-teams-{{team_name}}-{{agent-id}}.md`
 
 3. Verify all files created successfully
 
-**Field Mapping:**
-- {{agent-id}}: The agent's id (e.g., "coordinator", "product-researcher")
-- {{title}}: The agent's title (e.g., "Search Team Coordinator")
-- {{role_summary}}: First sentence of role description
-- {{team_name}}: Team name in kebab-case (e.g., "search-team")
+**Note:** Sub-Agents do NOT get command stubs. They participate in workflows but aren't directly invoked.
 
 </implementation>
-
-<verification>
-After creating stubs:
-- Verify `.claude/commands/` directory exists
-- Verify one flat .md file exists for each agent ({{agent_count}} files total)
-- Verify each stub has valid YAML frontmatter with `disable-model-invocation: true`
-- Verify file paths in activation instructions use `{project-root}/` prefix
-</verification>
-
-<user_message>
-"Creating Claude Code command stubs for agent invocation..."
-</user_message>
 
 </step>
 
@@ -1033,7 +1005,9 @@ Before starting, also:
 </party_mode_stub>
 
 <workflow_stubs>
-For EACH workflow in {{generated_workflows}}, create a command stub at:
+For EACH workflow in {{generated_workflows}} that has a workflow.yaml (full workflows, not simple exec files):
+
+Create a command stub at:
 ```
 .claude/commands/bmad-teams-{{team_name}}-{{workflow-name}}.md
 ```
@@ -1046,24 +1020,16 @@ description: '{{workflow_description}}'
 disable-model-invocation: true
 ---
 
-IT IS CRITICAL THAT YOU FOLLOW THIS COMMAND: LOAD the FULL {project-root}/_bmad/teams/{{team_name}}/workflows/{{workflow-name}}.md, READ its entire contents and follow its directions exactly!
-
-Before starting, also:
-1. LOAD the agent manifest from `{project-root}/_bmad/_config/agent-manifest.csv` and filter to `teams:{{team_name}}` agents
-2. Use the team's agents as specified in the workflow steps
+IT IS CRITICAL THAT YOU FOLLOW THIS COMMAND: LOAD the workflow.xml runner from {project-root}/_bmad/core/tasks/workflow.xml and use it to process the workflow at {project-root}/_bmad/teams/{{team_name}}/workflows/{{workflow-name}}/workflow.yaml
 ```
 </workflow_stubs>
 
 <verification>
 After creating all stubs, verify:
-- One agent stub per agent: `.claude/commands/bmad-agent-teams-{{team_name}}-*.md`
-- One party-mode stub: `.claude/commands/bmad-teams-{{team_name}}-party-mode.md`
-- One stub per workflow: `.claude/commands/bmad-teams-{{team_name}}-{{workflow-name}}.md`
+- One agent stub per **Entry-Point** agent
+- One party-mode stub
+- One stub per full workflow
 </verification>
-
-<user_message>
-"Creating party-mode and workflow command stubs..."
-</user_message>
 
 </step>
 
@@ -1077,7 +1043,7 @@ Pass generated team to validation workflow for quality assessment.
 
 <handoff>
 Trigger validate-team workflow with:
-- {{generated_agents}} - All agent definitions
+- {{generated_agents}} - All agent definitions (with types)
 - {{generated_workflows}} - All workflow definitions
 - {{team_name}} - Team identifier
 - {{requirements_document}} - Original requirements
@@ -1108,9 +1074,17 @@ Validation workflow will:
 - Does each agent feel like a real person?
 
 **After Step 7 (Workflow Design):**
-- Are workflow steps actionable or vague?
-- Do workflows reference actual agent names?
-- Will workflows produce useful outputs?
+- Do workflows have `<template-output>` checkpoints at every step?
+- Do workflows reference the workflow.xml engine?
+- Do workflows include tool-learning review as final step?
+- Are workflow steps specific and actionable?
+
+**After Step 9 (Team Package):**
+- Are Entry-Point agent files under 100 lines? (thin shell check)
+- Do Entry-Point agents have menu-handlers and rules?
+- Do Entry-Point agents NOT have `<instructions>` sections?
+- Do Sub-Agents have focused `<instructions>` sections?
+- Do all menu items reference actual file paths?
 
 **Before Step 12 (Handoff):**
 - Does this team address user's {{primary_task}}?
@@ -1122,20 +1096,26 @@ Validation workflow will:
 
 Watch for and FIX these anti-patterns:
 
-❌ **Pattern Copying:** "I'll use the research strategist from the pattern"
-→ FIX: Create new agent inspired by principles, not copied
+**Pattern Copying:** "I'll use the research strategist from the pattern"
+FIX: Create new agent inspired by principles, not copied
 
-❌ **Generic Personas:** "Professional and experienced"
-→ FIX: Add specific background and personality
+**Generic Personas:** "Professional and experienced"
+FIX: Add specific background and personality
 
-❌ **Similar Communication Styles:** Multiple agents "professional and clear"
-→ FIX: Vary dramatically (formal, casual, technical, warm, etc.)
+**Fat Monolith Agents:** Entry-Point agent with `<instructions>`, `<working-methods>`, `<memory-protocol>`
+FIX: Remove these sections. Task logic goes in workflow files. Memory/learning handled by workflow checkpoints.
 
-❌ **Vague Workflows:** "Step 1: Gather information"
-→ FIX: "Step 1: Interview user about X, Y, Z specific aspects"
+**Workflows Without Checkpoints:** Steps that auto-proceed without `<template-output>`
+FIX: Every content-generating step MUST have a checkpoint
 
-❌ **Missing Concerns:** Key concern not addressed by any agent
-→ FIX: Add specialist agent for that concern
+**Similar Communication Styles:** Multiple agents "professional and clear"
+FIX: Vary dramatically (formal, casual, technical, warm, etc.)
+
+**Vague Workflow Steps:** "Step 1: Gather information"
+FIX: "Step 1: Interview user about X, Y, Z specific aspects"
+
+**Missing Concerns:** Key concern not addressed by any agent
+FIX: Add specialist agent for that concern
 
 ---
 
@@ -1143,13 +1123,16 @@ Watch for and FIX these anti-patterns:
 
 Generation succeeds when:
 
-1. ✅ All agents have distinct, memorable personas
-2. ✅ Domain expertise is authentic (uses terminology from requirements)
-3. ✅ Every key concern is addressed by specialist agent
-4. ✅ Collaboration model matches user preference
-5. ✅ Workflows are actionable with specific steps
-6. ✅ Team feels cohesive yet agents are distinct
-7. ✅ Package is complete and installable
+1. All agents have distinct, memorable personas
+2. Domain expertise is authentic (uses terminology from requirements)
+3. Every key concern is addressed by specialist agent
+4. Collaboration model matches user preference
+5. Entry-Point agents are thin shells (<100 lines) with menu + workflow delegation
+6. Sub-Agents have focused instructions for their specialty
+7. Workflows have step-by-step logic with template-output checkpoints
+8. All workflows include tool-learning review as final step
+9. Shared files (save-session, memory-guide) are included
+10. Package is complete and installable
 
 If ANY criterion is not met, REVISE before handoff to validation.
 

@@ -90,27 +90,32 @@ execution_notes: |
   1. Load requirements from discovery
   2. Load relevant patterns from pattern library
   3. Learn composition principles (NOT copy patterns)
-  4. Define agent roles based on requirements
+  4. Define agent roles AND types (Entry-Point vs Sub-Agent)
   5. Generate distinct personas for each agent
-  6. Design workflows appropriate for domain
-  7. Create collaboration model
-  8. Package team for installation
-  9. Register team in BMAD manifests (CRITICAL for discoverability)
-  10. Create Claude Code command stubs for agents (CRITICAL for invocation)
-  11. Create party-mode and workflow command stubs (CRITICAL for team features)
-  12. Setup team memory file and configure .mcp.json MEMORY_FILE_PATH
-  13. Trigger validation workflow
+  6. Generate Entry-Point agents as thin shells (<100 lines, no instructions section)
+  7. Generate Sub-Agents with persona + focused instructions
+  8. Design workflow file triads (workflow.yaml + instructions.md + template.md)
+  9. Copy shared workflow files (save-session, tool-learning-review, memory-guide)
+  10. Create collaboration model and team config
+  11. Package team for installation
+  12. Register team in BMAD manifests (CRITICAL for discoverability)
+  13. Create Claude Code command stubs for Entry-Point agents ONLY
+  14. Create party-mode and workflow command stubs
+  15. Setup team memory file and configure .mcp.json MEMORY_FILE_PATH
+  16. Trigger validation workflow
 
-  CRITICAL: Generation uses LLM with pattern library as learning
-  context. Patterns are NOT templates - they teach principles.
+  CRITICAL ARCHITECTURE: Generated agents follow TWO patterns:
+  - Entry-Point agents: Thin shells (<100 lines) with activation, menu-handlers,
+    rules, persona, menu. NO instructions/working-methods/memory-protocol sections.
+    All task logic lives in external workflow files.
+  - Sub-Agents: Persona + focused instructions. No activation or menu.
 
   CRITICAL: Teams MUST be registered in manifests for Claude Code
   to discover them. Registration adds agents to agent-manifest.csv
   and team to manifest.yaml.
 
-  CRITICAL: Claude Code command stubs MUST be created in
-  .claude/commands/ as flat files named bmad-agent-teams-{team-name}-{agent-id}.md
-  Without these stubs, users cannot invoke team agents via slash commands.
+  CRITICAL: Only Entry-Point agents get command stubs in .claude/commands/.
+  Sub-Agents are invoked via workflow file references, not slash commands.
 
 # Manifest registration settings
 manifest_registration:
@@ -123,6 +128,7 @@ manifest_registration:
 claude_code_stubs:
   enabled: true
   base_path: ".claude/commands"
+  note: "Only Entry-Point agents get command stubs. Sub-Agents do NOT."
   naming: "bmad-agent-teams-{{team_name}}-{{agent-id}}.md"
   stub_template: |
     ---
@@ -139,7 +145,7 @@ claude_code_stubs:
     3. If TOOL_RECOMMENDATIONS.md exists at {project-root}/_bmad/teams/{{team_name}}/TOOL_RECOMMENDATIONS.md, READ it for tool guidance
     4. READ session-context.md at {project-root}/_bmad/teams/{{team_name}}/session-context.md if it exists and has content - this is your project knowledge base
     5. LOAD the FULL agent file from {project-root}/_bmad/teams/{{team_name}}/agents/{{agent-id}}.md
-    6. READ its entire contents - this contains the complete agent persona, menu, and instructions
+    6. READ its entire contents - this is a thin shell with persona, activation, menu-handlers, rules, and menu
     7. FOLLOW every step in the <activation> section precisely
     8. DISPLAY the welcome/greeting (if session context loaded in step 4, acknowledge it: "I've loaded our session context - we were working on [summary]. Continuing from there.")
     9. PRESENT the numbered menu

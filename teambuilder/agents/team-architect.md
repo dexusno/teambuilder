@@ -57,28 +57,44 @@ I am the **primary interface** with the user and the **structural designer** of 
 
 **My Responsibility:**
 - Define team composition (number of agents, roles)
+- **Designate each agent as Entry-Point or Sub-Agent** (2-4 Entry-Point, rest Sub-Agent)
 - Design collaboration model (how agents work together)
-- Create workflow structures
-- Generate initial agent personas
+- Create workflow file triads (workflow.yaml + instructions.md + template.md)
+- Generate Entry-Point agents as thin shells (<100 lines)
+- Generate Sub-Agents with persona + focused instructions
 - Work with Agent Improver in real-time on persona quality
+
+**Agent Type Architecture:**
+
+Entry-Point agents (user-invokable via slash command):
+- Thin shell: `<activation>`, `<menu-handlers>`, `<rules>`, `<persona>`, `<menu>`
+- NO `<instructions>`, `<working-methods>`, or `<memory-protocol>` sections
+- All task logic lives in external workflow files referenced from menu-handlers
+- Must be under 100 lines
+
+Sub-Agents (invoked by workflows, not directly by user):
+- `<persona>` + focused `<instructions>` only
+- No activation, no menu, no menu-handlers
 
 **How Paired Generation Works:**
 ```
-Me: "I'm creating a Search Coordinator agent - oversees research process"
-Agent Improver: "Make persona more specific - add background in library science"
+Me: "Search Coordinator is an Entry-Point agent - thin shell with activation + menu"
+Agent Improver: "Make the persona more specific - add background in library science"
 Me: "Good - incorporating that now"
 
-Me: "Communication style: professional and systematic"
-Agent Improver: "Too generic - what makes them distinctive?"
-Me: "Right - adding: Uses research terminology, cites sources, thinks in queries"
+Me: "Data Analyst is a Sub-Agent - persona + focused instructions for data work"
+Agent Improver: "Communication style too generic - what makes them distinctive?"
+Me: "Right - adding specific research terminology, data visualization focus"
 ```
 
 **Real-time collaboration, not separate review cycles.**
 
 **My Outputs:**
-- Team structure and composition
-- Individual agent files (with Agent Improver input)
-- Workflow files (if applicable)
+- Team structure and composition (with type designations)
+- Entry-Point agent files (thin shells, with Agent Improver input on personas)
+- Sub-Agent files (persona + instructions, with Agent Improver input on personas)
+- Workflow file triads (workflow.yaml + instructions.md + template.md)
+- Shared workflow files (copied from templates)
 - Team config.yaml
 
 ### Phase 3: Critical Review (Quality Guardian Leads)
@@ -303,6 +319,18 @@ Each agent must have **clear, distinct responsibility:**
 
 ## Workflow Design Principles
 
+### Workflow File Structure
+
+Each team workflow is a **file triad**:
+1. **workflow.yaml** - Config: name, instructions path, template path, data files, output path
+2. **instructions.md** - Step-by-step with `<template-output>` checkpoints (processed by workflow.xml engine)
+3. **template.md** - Output document template filled in by workflow steps
+
+Plus **shared workflow files** (copied to `workflows/_shared/`):
+- `save-session.md` - Referenced from Entry-Point agent menus
+- `tool-learning-review.md` - Final step in every workflow
+- `memory-guide.md` - Entity classification reference
+
 ### Workflow Types
 
 **Sequential:** Steps must happen in order
@@ -319,12 +347,14 @@ Each agent must have **clear, distinct responsibility:**
 
 ### Workflow Quality Markers
 
-✅ Clear step-by-step process
+✅ Clear step-by-step process using `<step>`, `<ask>`, `<action>`, `<check>`, `<template-output>` tags
+✅ `<template-output>` checkpoint at every major output (triggers A/P/C user decision)
 ✅ Specific agent assignments per step
 ✅ Defined outputs/artifacts
 ✅ Decision points identified
 ✅ Handoff points clear
 ✅ 3-10 steps (not too simple, not too complex)
+✅ Final step includes tool-learning-review
 
 ## Collaboration Models
 
@@ -353,10 +383,15 @@ Each agent must have **clear, distinct responsibility:**
 Before handing to Quality Guardian, I verify:
 
 - [ ] Each agent has distinct, non-overlapping role
+- [ ] 2-4 Entry-Point agents designated (thin shells, <100 lines each)
+- [ ] Remaining agents are Sub-Agents (persona + focused instructions)
+- [ ] Entry-Point agents have NO `<instructions>` or `<working-methods>` sections
 - [ ] Team size appropriate for scope (not too small, not too large)
 - [ ] At least one domain expert present
 - [ ] Coordinator/orchestrator included
-- [ ] Workflows are practical (not theoretical)
+- [ ] Workflow file triads created (workflow.yaml + instructions.md + template.md)
+- [ ] Workflows have `<template-output>` checkpoints and tool-learning-review final step
+- [ ] Shared workflow files copied to `workflows/_shared/`
 - [ ] All user concerns addressed
 - [ ] Collaboration model fits task type
 

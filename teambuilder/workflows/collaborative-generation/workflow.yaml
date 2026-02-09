@@ -128,11 +128,14 @@ workflow:
 
             NO separate review pass after all agents done - quality built in during generation.
 
-            MANDATORY: Each generated agent file MUST include ALL XML sections:
-            <persona>, <activation>, <menu>, <instructions>, <working-methods>,
-            <working-methods-protocol>, <memory-protocol>.
-            Agent Improver MUST verify all sections are present before moving to next agent.
-            See teambuilder/templates/agent-template.md for section content reference.
+            MANDATORY ARCHITECTURE:
+            - Entry-Point agents (user-invokable): Thin shell (<100 lines) with
+              <activation>, <menu-handlers>, <rules>, <persona>, <menu>.
+              NO <instructions>, <working-methods>, or <memory-protocol> sections.
+            - Sub-Agents (workflow participants): <persona> + focused <instructions> only.
+              No activation, no menu.
+            Agent Improver MUST verify correct structure for each agent type.
+            See teambuilder/templates/agent-template.md for both templates.
 
         - step: 3
           action: "generate_workflows"
@@ -144,11 +147,17 @@ workflow:
           outputs:
             - "Workflow files (_bmad/teams/{team-name}/workflows/*)"
           instructions: |
-            Team Architect creates workflows appropriate for collaboration model:
-            - Clear steps
-            - Agent assignments
-            - Defined outputs
-            - Practical approach
+            Team Architect creates workflow FILE TRIADS for each team workflow:
+            - workflow.yaml (config: name, instructions path, template path, data files)
+            - instructions.md (step-by-step with <template-output> checkpoints, compatible with workflow.xml engine)
+            - template.md (output document template)
+
+            Each instructions.md MUST include tool-learning-review as final step.
+            Workflow steps use <ask>, <action>, <check>, <template-output> tags.
+
+            Also copies shared workflow files from teambuilder/templates/shared-workflows/:
+            - save-session.md, tool-learning-review.md, memory-guide.md
+            → to _bmad/teams/{team-name}/workflows/_shared/
 
             Agent Improver observes but doesn't critique workflows (not their domain).
 
@@ -238,9 +247,11 @@ workflow:
                - Background specificity
                - Communication differentiation
                - Domain expertise authenticity
-               - MANDATORY section check: every agent MUST have <activation>,
-                 <working-methods>, <working-methods-protocol>, <memory-protocol>
-                 (missing sections = Critical issue, automatic 10-point deduction)
+               - Architecture compliance check:
+                 Entry-Point agents MUST be thin shells (<100 lines) with <activation>,
+                 <menu-handlers>, <rules>, <persona>, <menu> (NO <instructions> or <working-methods>).
+                 Sub-Agents MUST have <persona> + focused <instructions>.
+                 Wrong structure = Critical issue, automatic 10-point deduction.
 
             2. Score workflow quality (30 points):
                - Practicality
@@ -350,17 +361,23 @@ workflow:
             - ADD team entry to manifest.yaml teams list
 
             Step 3 - Create command stubs (can be parallel):
-            - Create .claude/commands/ stubs for EACH agent:
+            - Create .claude/commands/ stubs for EACH Entry-Point agent ONLY:
               File: .claude/commands/bmad-agent-teams-{team-name}-{agent-id}.md
               Must include: frontmatter with disable-model-invocation: true,
               and <agent-activation> block with MCP inventory, memory search,
               TOOL_RECOMMENDATIONS.md check, then load the full agent file
+              (Sub-Agents do NOT get command stubs - they're invoked via workflows)
             - Create party-mode command stub:
               File: .claude/commands/bmad-teams-{team-name}-party-mode.md
             - Create workflow command stubs for each team workflow:
               File: .claude/commands/bmad-teams-{team-name}-{workflow-name}.md
 
-            Step 4 - Setup memory and session context:
+            Step 4 - Copy shared workflow files:
+            - Copy from _bmad/teambuilder/templates/shared-workflows/ to
+              _bmad/teams/{team-name}/workflows/_shared/:
+              save-session.md, tool-learning-review.md, memory-guide.md
+
+            Step 5 - Setup memory and session context:
             - Create _bmad/teams/{team-name}/memory.jsonl
             - Seed from _bmad/teambuilder/memory/general-knowledge.jsonl (copy contents)
             - Update .mcp.json: set memory server's env.MEMORY_FILE_PATH to
@@ -368,14 +385,17 @@ workflow:
               (use OS-appropriate path separators)
             - Create empty _bmad/teams/{team-name}/session-context.md
 
-            Step 5 - Inform user:
+            Step 6 - Inform user:
             - Tell user to restart Claude Code
             - List all new slash commands
             - Mention working methods memory and session context capabilities
 
-            CRITICAL: Every generated agent file MUST contain ALL sections:
-            <persona>, <activation>, <menu>, <instructions>, <working-methods>,
-            <working-methods-protocol>, <memory-protocol>. Do NOT omit any.
+            CRITICAL Architecture Requirements:
+            - Entry-Point agents: thin shell (<100 lines) with <activation>,
+              <menu-handlers>, <rules>, <persona>, <menu>. NO <instructions>
+              or <working-methods> sections.
+            - Sub-Agents: <persona> + focused <instructions> only.
+            - Only Entry-Point agents get command stubs.
 
             If REFINE:
             - Route to refinement workflow

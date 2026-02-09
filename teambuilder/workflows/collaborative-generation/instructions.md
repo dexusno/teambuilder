@@ -78,7 +78,9 @@ Move to next agent
 - Quality built in during generation
 
 #### Step 3: Generate Workflows (Team Architect solo)
-- Creates team workflows
+- Creates team workflow **file triads** (workflow.yaml + instructions.md + template.md)
+- instructions.md uses step structure with `<template-output>` checkpoints compatible with workflow.xml engine
+- Copies shared workflow files (save-session.md, tool-learning-review.md, memory-guide.md)
 - Clear steps, agent assignments, outputs
 - Agent Improver observes but doesn't critique (not their domain)
 
@@ -97,7 +99,10 @@ Move to next agent
 - No separate review pass after all agents done
 - Quality is built in, not added later
 - Fast and efficient
-- **EVERY agent file MUST include ALL sections**: `<persona>`, `<activation>`, `<menu>`, `<instructions>`, `<working-methods>`, `<working-methods-protocol>`, `<memory-protocol>`. Agent Improver should flag any missing sections.
+- **Agent Type Architecture (CRITICAL):**
+  - **Entry-Point Agents** (user-invokable, thin shell): `<activation>`, `<menu-handlers>`, `<rules>`, `<persona>`, `<menu>`. MUST be under 100 lines. NO `<instructions>`, `<working-methods>`, `<memory-protocol>` sections.
+  - **Sub-Agents** (workflow participants): `<persona>` + focused `<instructions>`. No activation, no menu.
+  - Agent Improver should verify correct structure for each agent type.
 
 ---
 
@@ -116,8 +121,10 @@ Quality Guardian reviews finished team:
 - Workflow Quality (30 points): Practicality, clarity, completeness
 - Team Coherence (30 points): Coverage, no overlap, appropriate size
 
-**Mandatory Section Check (Critical - auto-fail if missing):**
-Every agent file MUST contain: `<activation>`, `<working-methods>`, `<working-methods-protocol>`, `<memory-protocol>`. Missing any = Critical issue.
+**Architecture Compliance Check (Critical - auto-fail if wrong):**
+- Entry-Point agents MUST be thin shells (<100 lines): `<activation>`, `<menu-handlers>`, `<rules>`, `<persona>`, `<menu>`. NO `<instructions>` or `<working-methods>` sections.
+- Sub-Agents MUST have: `<persona>` + focused `<instructions>`. No activation or menu.
+- Wrong agent type structure = Critical issue.
 
 **Issue Identification:**
 - Critical (must fix)
@@ -308,8 +315,8 @@ When user chooses **Install**, you MUST complete ALL of these steps IN ORDER bef
 - APPEND new agent rows to `_bmad/_config/agent-manifest.csv`
 - ADD team entry to `_bmad/_config/manifest.yaml` teams list
 
-#### 3. Create Agent Command Stubs (one per agent, can be parallel)
-For EACH generated agent, create a file at:
+#### 3. Create Agent Command Stubs (Entry-Point agents only, can be parallel)
+For EACH **Entry-Point** agent (NOT Sub-Agents), create a file at:
 ```
 .claude/commands/bmad-agent-teams-{team-name}-{agent-id}.md
 ```
@@ -352,7 +359,15 @@ For EACH generated workflow, create a file at:
 .claude/commands/bmad-teams-{team-name}-{workflow-name}.md
 ```
 
-#### 5. Setup Team Memory
+#### 5. Copy Shared Workflow Files
+Copy the following files from `_bmad/teambuilder/templates/shared-workflows/` to `_bmad/teams/{team-name}/workflows/_shared/`:
+- `save-session.md` - Session context save/load workflow
+- `tool-learning-review.md` - Reusable final step for all team workflows
+- `memory-guide.md` - Entity classification reference for memory MCP
+
+These shared files are referenced by Entry-Point agent menus and workflow instructions.
+
+#### 6. Setup Team Memory
 Create and configure the team's persistent memory file:
 
 1. **Create memory file:** `_bmad/teams/{team-name}/memory.jsonl`
@@ -363,10 +378,10 @@ Create and configure the team's persistent memory file:
    - Use the actual absolute project path, not a placeholder
    - If the memory MCP entry doesn't exist in `.mcp.json`, create it with the `MEMORY_FILE_PATH` env var
 
-#### 6. Create Empty Session Context File
+#### 7. Create Empty Session Context File
 Create an empty `_bmad/teams/{team-name}/session-context.md` file. This will be populated by agents when the user ends a session with "end of day" or similar commands.
 
-#### 7. Inform User
+#### 8. Inform User
 - Tell user to restart Claude Code
 - List all new slash commands they can use
 - Mention that team memory has been configured for working methods persistence

@@ -1,0 +1,30 @@
+# Team Workflow Configuration Template
+#
+# This template shows how to structure workflow.yaml files for generated team workflows.
+# Each entry-point agent's menu items point to workflows structured like this.
+#
+# The workflow.xml engine (at _bmad/core/tasks/workflow.xml) processes these files.
+
+name: "{{workflow-name}}"
+description: "{{workflow_description}}"
+
+# Config loading - resolves user_name, communication_language, output_folder
+config_source: "{project-root}/_bmad/teams/{{team-name}}/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+
+# Module path and component files
+installed_path: "{project-root}/_bmad/teams/{{team-name}}/workflows/{{workflow-name}}"
+template: "{installed_path}/template.md"
+instructions: "{installed_path}/instructions.md"
+
+# Data files (if applicable - CSV methodology libraries, reference data, etc.)
+# data_file: "{installed_path}/data.csv"
+
+# Output configuration
+default_output_file: "{output_folder}/{{workflow-name}}-{{date}}.md"
+
+# Standalone flag - workflow can be invoked independently
+standalone: true
