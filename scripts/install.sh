@@ -513,50 +513,6 @@ CFGEOF
     echo -e "$mcp_content" > .mcp.json
     print_success "MCP configuration created"
 
-    # Pre-approve MCP servers to avoid first-run confirmation hang
-    # Claude Code can hang when MCP confirmation prompt is displayed on first launch (known Windows issue)
-    # By pre-creating settings.local.json with approvals, Claude skips the prompt entirely
-    local mcp_servers="[]"
-    if [ "$install_memory_mcp" = true ] && [ "$install_playwright_mcp" = true ]; then
-        mcp_servers='["memory", "playwright"]'
-    elif [ "$install_memory_mcp" = true ]; then
-        mcp_servers='["memory"]'
-    elif [ "$install_playwright_mcp" = true ]; then
-        mcp_servers='["playwright"]'
-    fi
-
-    if [ "$mcp_servers" != "[]" ]; then
-        local settings_file=".claude/settings.local.json"
-
-        if [ -f "$settings_file" ]; then
-            # File exists - use node to merge MCP servers
-            node -e "
-                const fs = require('fs');
-                const s = JSON.parse(fs.readFileSync('$settings_file', 'utf8'));
-                const newServers = $mcp_servers;
-                s.enableAllProjectMcpServers = true;
-                s.enabledMcpjsonServers = s.enabledMcpjsonServers || [];
-                newServers.forEach(srv => {
-                    if (!s.enabledMcpjsonServers.includes(srv)) s.enabledMcpjsonServers.push(srv);
-                });
-                fs.writeFileSync('$settings_file', JSON.stringify(s, null, 2));
-            "
-        else
-            # Create new settings with MCP approvals
-            cat > "$settings_file" << SETEOF
-{
-  "permissions": {
-    "allow": []
-  },
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": $mcp_servers
-}
-SETEOF
-        fi
-
-        print_success "MCP servers pre-approved"
-    fi
-
     # Create .gitignore
     print_step "Creating .gitignore..."
     cat > .gitignore << 'EOF'
