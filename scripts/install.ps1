@@ -513,6 +513,43 @@ You must fully embody this agent's persona and follow all activation instruction
     $mcpConfig | ConvertTo-Json -Depth 4 | Set-Content ".mcp.json"
     Write-Success "MCP configuration created"
 
+    # Pre-approve MCP servers to avoid first-run confirmation hang on Windows
+    # Claude Code hangs when MCP confirmation prompt is displayed on first launch (known issue)
+    # By pre-creating settings.local.json with approvals, Claude skips the prompt entirely
+    $mcpServers = @()
+    if ($installMemoryMCP) { $mcpServers += "memory" }
+    if ($installPlaywrightMCP) { $mcpServers += "playwright" }
+
+    if ($mcpServers.Count -gt 0) {
+        $settingsFile = ".claude\settings.local.json"
+
+        if (Test-Path $settingsFile) {
+            # Merge with existing settings
+            $settings = Get-Content $settingsFile -Raw | ConvertFrom-Json
+            if (-not $settings.enabledMcpjsonServers) {
+                $settings | Add-Member -NotePropertyName "enabledMcpjsonServers" -NotePropertyValue @()
+            }
+            foreach ($server in $mcpServers) {
+                if ($settings.enabledMcpjsonServers -notcontains $server) {
+                    $settings.enabledMcpjsonServers += $server
+                }
+            }
+            if (-not $settings.enableAllProjectMcpServers) {
+                $settings | Add-Member -NotePropertyName "enableAllProjectMcpServers" -NotePropertyValue $true -Force
+            }
+        } else {
+            # Create new settings with MCP approvals
+            $settings = [ordered]@{
+                permissions = @{ allow = @() }
+                enableAllProjectMcpServers = $true
+                enabledMcpjsonServers = $mcpServers
+            }
+        }
+
+        $settings | ConvertTo-Json -Depth 4 | Set-Content $settingsFile
+        Write-Success "MCP servers pre-approved"
+    }
+
     # Create .gitignore
     Write-Step "Creating .gitignore..."
     @"
