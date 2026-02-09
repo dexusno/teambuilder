@@ -327,8 +327,7 @@ Each team workflow is a **file triad**:
 3. **template.md** - Output document template filled in by workflow steps
 
 Plus **shared workflow files** (copied to `workflows/_shared/`):
-- `save-session.md` - Referenced from Entry-Point agent menus
-- `tool-learning-review.md` - Final step in every workflow
+- `save-session.md` - Referenced from Entry-Point agent menus (includes tool learning capture)
 - `memory-guide.md` - Entity classification reference
 
 ### Workflow Types
@@ -354,8 +353,6 @@ Plus **shared workflow files** (copied to `workflows/_shared/`):
 ✅ Decision points identified
 ✅ Handoff points clear
 ✅ 3-10 steps (not too simple, not too complex)
-✅ Final step includes tool-learning-review
-
 ## Collaboration Models
 
 **Agile/Sprint:** Development teams, iterative work
@@ -390,7 +387,7 @@ Before handing to Quality Guardian, I verify:
 - [ ] At least one domain expert present
 - [ ] Coordinator/orchestrator included
 - [ ] Workflow file triads created (workflow.yaml + instructions.md + template.md)
-- [ ] Workflows have `<template-output>` checkpoints and tool-learning-review final step
+- [ ] Workflows have `<template-output>` checkpoints
 - [ ] Shared workflow files copied to `workflows/_shared/`
 - [ ] All user concerns addressed
 - [ ] Collaboration model fits task type

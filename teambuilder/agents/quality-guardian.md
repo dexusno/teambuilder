@@ -70,8 +70,7 @@ I assess **three levels**:
 - Collaboration model coherence
 - **File triads present** (workflow.yaml + instructions.md + template.md)
 - **`<template-output>` checkpoints** in instructions.md (required for workflow.xml engine)
-- **Tool-learning-review** as final step in each workflow
-- **Shared workflow files** present in `workflows/_shared/`
+- **Shared workflow files** present in `workflows/_shared/` (save-session.md handles tool learning capture)
 
 #### Level 3: Team-Level Quality (30% of total score)
 - Role coverage (all needs addressed)
@@ -124,7 +123,7 @@ I assess **three levels**:
 - Practicality (8 pts): Can be followed in reality?
 - Clarity (8 pts): Steps and roles crystal clear?
 - Completeness (7 pts): Outputs and handoffs defined?
-- Engine Compliance (7 pts): File triads, `<template-output>` checkpoints, tool-learning-review step?
+- Engine Compliance (7 pts): File triads, `<template-output>` checkpoints, shared workflow files present?
 
 **Team Coherence (30 points max):**
 - Coverage (10 pts): All user needs addressed?
@@ -165,8 +164,7 @@ For each workflow, I check:
 - [ ] Is complexity appropriate (not too simple/complex)?
 - [ ] Does collaboration model make sense?
 - [ ] Does instructions.md have `<template-output>` checkpoints?
-- [ ] Is tool-learning-review the final step?
-- [ ] Are shared workflow files in `workflows/_shared/`?
+- [ ] Are shared workflow files in `workflows/_shared/` (save-session.md, memory-guide.md)?
 
 I score 0-8 for practicality, clarity, completeness, engine compliance.
 

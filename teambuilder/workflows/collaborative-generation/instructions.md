@@ -80,7 +80,7 @@ Move to next agent
 #### Step 3: Generate Workflows (Team Architect solo)
 - Creates team workflow **file triads** (workflow.yaml + instructions.md + template.md)
 - instructions.md uses step structure with `<template-output>` checkpoints compatible with workflow.xml engine
-- Copies shared workflow files (save-session.md, tool-learning-review.md, memory-guide.md)
+- Copies shared workflow files (save-session.md, memory-guide.md)
 - Clear steps, agent assignments, outputs
 - Agent Improver observes but doesn't critique (not their domain)
 
@@ -361,8 +361,7 @@ For EACH generated workflow, create a file at:
 
 #### 5. Copy Shared Workflow Files
 Copy the following files from `_bmad/teambuilder/templates/shared-workflows/` to `_bmad/teams/{team-name}/workflows/_shared/`:
-- `save-session.md` - Session context save/load workflow
-- `tool-learning-review.md` - Reusable final step for all team workflows
+- `save-session.md` - Session context save workflow (includes tool learning capture)
 - `memory-guide.md` - Entity classification reference for memory MCP
 
 These shared files are referenced by Entry-Point agent menus and workflow instructions.

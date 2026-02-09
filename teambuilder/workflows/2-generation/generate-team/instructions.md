@@ -533,7 +533,6 @@ Workflows MUST:
 - Produce concrete outputs via template-output checkpoints
 - Match {{workflow_preference}} style
 - Align with {{collaboration_style}}
-- Include tool-learning review as final step
 - Be processable by the BMAD workflow.xml engine
 </critical>
 
@@ -802,8 +801,8 @@ Each workflow's instructions.md MUST:
 Copy these standard files into every team:
 ```
 _bmad/teams/{{team_name}}/workflows/_shared/
-  ├── save-session.md       (session context save workflow)
-  └── tool-learning-review.md (reusable tool learning step)
+  ├── save-session.md       (session context save + tool learning capture)
+  └── memory-guide.md       (entity classification reference)
 ```
 
 Source templates at: `teambuilder/templates/shared-workflows/`
@@ -1076,7 +1075,6 @@ Validation workflow will:
 **After Step 7 (Workflow Design):**
 - Do workflows have `<template-output>` checkpoints at every step?
 - Do workflows reference the workflow.xml engine?
-- Do workflows include tool-learning review as final step?
 - Are workflow steps specific and actionable?
 
 **After Step 9 (Team Package):**
@@ -1130,8 +1128,7 @@ Generation succeeds when:
 5. Entry-Point agents are thin shells (<100 lines) with menu + workflow delegation
 6. Sub-Agents have focused instructions for their specialty
 7. Workflows have step-by-step logic with template-output checkpoints
-8. All workflows include tool-learning review as final step
-9. Shared files (save-session, memory-guide) are included
+8. Shared files (save-session with tool learning capture, memory-guide) are included
 10. Package is complete and installable
 
 If ANY criterion is not met, REVISE before handoff to validation.

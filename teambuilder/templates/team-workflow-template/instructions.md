@@ -43,24 +43,8 @@
 
 ---
 
-<step n="final" goal="Review & Save Learnings">
-
-<action>Summarize what was accomplished in this workflow</action>
-
-<ask>Did any tool tasks fail then succeed during this workflow? If yes, describe the working method you discovered.</ask>
-
-<check if="user reports a learned method">
-  <action>Load memory guide from {project-root}/_bmad/teams/{{team-name}}/memory-guide.md for entity classification rules</action>
-  <action>Classify the learning: Does it pass ALL 4 GeneralKnowledge tests? If yes, create as GeneralKnowledge. If ANY test fails, create as ProjectKnowledge.</action>
-  <action>Create entity in memory MCP using create_entities with correct entityType and naming convention from memory-guide.md</action>
-</check>
-
-<check if="no tool learnings to report">
-  <action>Acknowledge and proceed to completion</action>
-</check>
-
-<template-output>workflow_summary, learnings_saved</template-output>
-
-</step>
+<!-- No final tool-learning step needed here.
+     Tool learnings are captured automatically when the user saves the session via [SS] Save Session.
+     The save-session.md shared workflow handles both tool learning review and session context. -->
 
 </workflow>

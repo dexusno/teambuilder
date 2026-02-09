@@ -152,11 +152,11 @@ workflow:
             - instructions.md (step-by-step with <template-output> checkpoints, compatible with workflow.xml engine)
             - template.md (output document template)
 
-            Each instructions.md MUST include tool-learning-review as final step.
             Workflow steps use <ask>, <action>, <check>, <template-output> tags.
+            Tool learnings are captured by the save-session workflow, not per-workflow steps.
 
             Also copies shared workflow files from teambuilder/templates/shared-workflows/:
-            - save-session.md, tool-learning-review.md, memory-guide.md
+            - save-session.md, memory-guide.md
             → to _bmad/teams/{team-name}/workflows/_shared/
 
             Agent Improver observes but doesn't critique workflows (not their domain).
@@ -375,7 +375,7 @@ workflow:
             Step 4 - Copy shared workflow files:
             - Copy from _bmad/teambuilder/templates/shared-workflows/ to
               _bmad/teams/{team-name}/workflows/_shared/:
-              save-session.md, tool-learning-review.md, memory-guide.md
+              save-session.md, memory-guide.md
 
             Step 5 - Setup memory and session context:
             - Create _bmad/teams/{team-name}/memory.jsonl

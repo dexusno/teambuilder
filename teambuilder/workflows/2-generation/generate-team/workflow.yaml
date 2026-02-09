@@ -95,7 +95,7 @@ execution_notes: |
   6. Generate Entry-Point agents as thin shells (<100 lines, no instructions section)
   7. Generate Sub-Agents with persona + focused instructions
   8. Design workflow file triads (workflow.yaml + instructions.md + template.md)
-  9. Copy shared workflow files (save-session, tool-learning-review, memory-guide)
+  9. Copy shared workflow files (save-session, memory-guide)
   10. Create collaboration model and team config
   11. Package team for installation
   12. Register team in BMAD manifests (CRITICAL for discoverability)
