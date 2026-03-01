@@ -138,6 +138,7 @@ my-project/
 │       ├── workflows/     # Generation workflows
 │       ├── patterns/      # Team patterns (6 types)
 │       └── templates/     # Agent/workflow templates
+├── docs/                  # Team knowledge base (add reference materials here)
 ├── .mcp.json              # MCP server configuration
 └── .gitignore
 ```
@@ -230,6 +231,24 @@ Each generated team includes its own **party-mode** workflow:
 | `/bmad-teams-{team-name}-party-mode` | Only your team's agents |
 
 The team-scoped party-mode enables focused group discussions with just that team's specialists.
+
+### Team Knowledge Base
+
+Every project includes a `docs/` folder at the project root. This is the team's knowledge base — add reference materials, API docs, guides, or any `.md` files here.
+
+**How it works:**
+- The `docs/` folder is created automatically by the install script
+- During team creation, TeamBuilder asks if you have existing documents to seed the knowledge base
+- When any team agent starts up (via slash command or party-mode), it automatically discovers and reads all `.md` files in `docs/` before interacting with the user
+- A verification line confirms what was loaded: `✅ 4 team docs loaded, tools configured`
+- If the folder is empty, agents skip gracefully — an empty knowledge base is valid and can be populated anytime
+- Agents also load `TOOL_RECOMMENDATIONS.md` and `MCP_SETUP.md` (if they exist) for tool awareness
+
+**Examples of what to put in `docs/`:**
+- API documentation for services the team works with
+- Domain-specific reference guides
+- Configuration notes or setup instructions
+- Research materials or specifications
 
 ## MCP Servers
 

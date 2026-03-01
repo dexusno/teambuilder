@@ -513,6 +513,11 @@ CFGEOF
     echo -e "$mcp_content" > .mcp.json
     print_success "MCP configuration created"
 
+    # Create docs folder for team knowledge base
+    print_step "Creating docs folder..."
+    mkdir -p docs
+    print_success "Docs folder ready (add team reference materials here)"
+
     # Create .gitignore
     print_step "Creating .gitignore..."
     cat > .gitignore << 'EOF'

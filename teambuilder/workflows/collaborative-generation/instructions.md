@@ -33,6 +33,11 @@ Instead of sequential passes (generate → review → fix → review), we use **
 **Outputs:**
 - `_bmad/teams/{team-name}/requirements.md`
 
+**Knowledge Base Question (ask near end of discovery):**
+- Ask: "Do you have any existing documents, reference materials, or guides you'd like the team to have access to? If so, provide a folder path or file paths and they'll be copied into the project's `docs/` folder during installation. If not, the knowledge base starts empty and can be populated anytime."
+- If user provides file paths: record them in requirements.md under a "Knowledge Files" section
+- If user declines: note "Knowledge base: empty (user will populate later)" in requirements.md
+
 **Key Points:**
 - Agent Improver and Quality Guardian do NOT participate
 - Focus on understanding user needs deeply
@@ -333,8 +338,12 @@ You must fully embody this agent's persona and follow all activation instruction
 
 <agent-activation CRITICAL="TRUE">
 1. INVENTORY available MCP tools - check what's available (memory, playwright, etc.)
-2. If memory MCP is available: search_nodes for "{team-name}" and "general:" to load working methods
-3. If TOOL_RECOMMENDATIONS.md exists at {project-root}/_bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md, READ it for tool guidance
+2. Load team knowledge silently (do NOT dump contents to user):
+   - Glob `**/*.md` in {project-root}/docs - if files found, Read ALL in parallel
+   - Read {project-root}/_bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md if it exists
+   - Read {project-root}/_bmad/teams/{team-name}/MCP_SETUP.md if it exists
+   - Output: "✅ [count] team docs loaded, tools configured" (skip gracefully if no docs)
+3. If memory MCP is available: search_nodes for "{team-name}" and "general:" to load working methods
 4. READ session-context.md at {project-root}/_bmad/teams/{team-name}/session-context.md if it exists and has content - this is your project knowledge base
 5. LOAD the FULL agent file from {project-root}/_bmad/teams/{team-name}/agents/{agent-id}.md
 6. READ its entire contents - this contains the complete agent persona, menu, and instructions
@@ -380,12 +389,22 @@ Create and configure the team's persistent memory file:
 #### 7. Create Empty Session Context File
 Create an empty `_bmad/teams/{team-name}/session-context.md` file. This will be populated by agents when the user ends a session with "end of day" or similar commands.
 
-#### 8. Inform User
+#### 8. Copy Knowledge Files (if user provided them during discovery)
+- The project's `docs/` folder was created by the install script at `{project-root}/docs`
+- If the user specified knowledge files/folders during discovery (recorded in requirements.md "Knowledge Files" section):
+  - Glob the source path(s) to discover .md files
+  - Read each source file and Write it to `{project-root}/docs/` preserving the filename
+  - For non-.md text files, copy them as well
+  - Skip binary files (images, PDFs, etc.) and inform the user to copy those manually
+- If no knowledge files were specified, skip this step
+
+#### 9. Inform User
 - Tell user to restart Claude Code
 - List all new slash commands they can use
 - Mention that team memory has been configured for working methods persistence
 - Mention that agents can save/load session context for project continuity ("end of day" to save, "fresh start" to clear)
 - Mention that CLAUDE.md has been created/updated with command reference
+- Mention the `docs/` folder at project root: "Add any reference materials, API docs, or guides to the `docs/` folder — the team will automatically load them at startup"
 
 ### Invoking Generated Teams
 

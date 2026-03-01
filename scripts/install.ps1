@@ -513,6 +513,13 @@ You must fully embody this agent's persona and follow all activation instruction
     $mcpConfig | ConvertTo-Json -Depth 4 | Set-Content ".mcp.json"
     Write-Success "MCP configuration created"
 
+    # Create docs folder for team knowledge base
+    Write-Step "Creating docs folder..."
+    if (-not (Test-Path "docs")) {
+        New-Item -ItemType Directory -Path "docs" -Force | Out-Null
+    }
+    Write-Success "Docs folder ready (add team reference materials here)"
+
     # Create .gitignore
     Write-Step "Creating .gitignore..."
     @"

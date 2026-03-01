@@ -37,20 +37,26 @@ For agents that participate in team workflows but aren't invoked directly by use
       <step n="3">Tool Inventory - Check what MCP tools are available:
           - Memory MCP? (search_nodes, create_entities, etc.)
           - Browser/Playwright MCP?
-          - If TOOL_RECOMMENDATIONS.md exists at _bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md, read it
       </step>
-      <step n="4">If memory MCP available: search_nodes for "{team-name}" and "general:" to load working methods</step>
-      <step n="5">Check if _bmad/teams/{team-name}/session-context.md exists and has content.
+      <step n="4">Load team knowledge silently (do NOT dump contents to user):
+          - Use Glob tool: pattern `**/*.md`, path `{project-root}/docs` - if files found, Read ALL in parallel
+          - Read _bmad/teams/{team-name}/TOOL_RECOMMENDATIONS.md if it exists
+          - Read _bmad/teams/{team-name}/MCP_SETUP.md if it exists
+          - Output single verification line: "✅ [count] team docs loaded, tools configured" (or "✅ No team docs, tools configured" if docs folder empty)
+          - If no docs folder or no files, skip gracefully - an empty knowledge base is valid
+      </step>
+      <step n="5">If memory MCP available: search_nodes for "{team-name}" and "general:" to load working methods</step>
+      <step n="6">Check if _bmad/teams/{team-name}/session-context.md exists and has content.
           If yes: read it - this is project state from the previous session.</step>
-      <step n="6">Show greeting:
+      <step n="7">Show greeting:
           - If session context loaded: acknowledge with brief summary of where we left off
           - If no session context: normal in-character greeting using {user_name}
       </step>
-      <step n="7">Display numbered list of ALL menu items from menu section</step>
-      <step n="8">Let {user_name} know they can type `/bmad-help` at any time for advice</step>
-      <step n="9">STOP and WAIT for user input - do NOT execute menu items automatically - accept number or cmd trigger or fuzzy command match</step>
-      <step n="10">On user input: Number → process menu item[n] | Text → case-insensitive substring match | Multiple matches → ask user to clarify | No match → show "Not recognized"</step>
-      <step n="11">When processing a menu item: Check menu-handlers section below - extract any attributes from the selected menu item (workflow, exec, action) and follow the corresponding handler instructions</step>
+      <step n="8">Display numbered list of ALL menu items from menu section</step>
+      <step n="9">Let {user_name} know they can type `/bmad-help` at any time for advice</step>
+      <step n="10">STOP and WAIT for user input - do NOT execute menu items automatically - accept number or cmd trigger or fuzzy command match</step>
+      <step n="11">On user input: Number → process menu item[n] | Text → case-insensitive substring match | Multiple matches → ask user to clarify | No match → show "Not recognized"</step>
+      <step n="12">When processing a menu item: Check menu-handlers section below - extract any attributes from the selected menu item (workflow, exec, action) and follow the corresponding handler instructions</step>
 
       <menu-handlers>
         <handlers>
@@ -397,7 +403,7 @@ Problem: No distinctive philosophy or values
 ## Validation Checklist
 
 ### Entry-Point Agents
-- [ ] Has `<activation>` with config load (step 2), memory search (step 4), greeting, menu, wait
+- [ ] Has `<activation>` with config load (step 2), knowledge loading (step 4), memory search (step 5), greeting, menu, wait
 - [ ] Has `<menu-handlers>` section with exec and workflow handlers
 - [ ] Has `<rules>` section (4 universal rules)
 - [ ] Has `<persona>` with role, identity, communication_style, principles

@@ -26,7 +26,36 @@
 <note>CRITICAL: Only agents with module="teams:{{TEAM_ID}}" are included. This filters out BMM agents, other teams, and BMAD core agents.</note>
 </step>
 
-<step n="2" goal="Initialize {{TEAM_DISPLAY_NAME}} Team Discussion">
+<step n="2" goal="Load Team Knowledge - MANDATORY before any interaction">
+  <critical>This step MUST complete BEFORE announcing the team or engaging with the user. Do NOT dump file contents to the user.</critical>
+
+  <substep n="2a" goal="Load Team Documentation">
+    <action>Use Glob tool: pattern `**/*.md`, path `{project-root}/docs`</action>
+    <action>If files found: Read ALL discovered .md files using parallel Read calls</action>
+    <action>Absorb and retain all content - the team must be fluent in these topics BEFORE any discussion begins</action>
+    <note>If no docs folder exists or no files found, skip this substep - an empty knowledge base is valid</note>
+    <note>Read all docs in PARALLEL to minimize startup time</note>
+  </substep>
+
+  <substep n="2b" goal="Load Tool and MCP Configuration">
+    <action>Read `_bmad/teams/{{TEAM_ID}}/TOOL_RECOMMENDATIONS.md` if it exists</action>
+    <action>Read `_bmad/teams/{{TEAM_ID}}/MCP_SETUP.md` if it exists</action>
+    <action>Retain tool capabilities and MCP usage patterns for the session</action>
+  </substep>
+
+  <substep n="2c" goal="Verify Knowledge Loaded - GATE CHECK">
+    <action>Output a brief verification line proving the reads completed:</action>
+    <format>
+      ✅ **Team ready:** [count] docs loaded from knowledge base | Tools: [list available MCPs/tools] | Topics: [brief list of doc topics or "empty - ready to grow"]
+    </format>
+    <note>Doc count must match files actually READ (not just discovered). If you cannot produce this line with real values, go back and complete substeps 2a-2b.</note>
+  </substep>
+
+  <note>PURPOSE: Teams may have reference docs, API guides, domain knowledge, or user-provided materials in the project docs folder. Loading these upfront prevents fumbling, unnecessary questions, and wasted time.</note>
+  <note>DO NOT dump full file contents to the user. Read, absorb, and output ONLY the verification line.</note>
+</step>
+
+<step n="3" goal="Initialize {{TEAM_DISPLAY_NAME}} Team Discussion">
   <action>Announce team discussion activation with enthusiasm</action>
   <action>List all participating {{TEAM_DISPLAY_NAME}} agents with their information:</action>
   <format>
@@ -45,10 +74,10 @@
   <action>Wait for user to provide initial topic or question</action>
 </step>
 
-<step n="3" goal="Orchestrate Multi-Agent Discussion" repeat="until-exit">
+<step n="4" goal="Orchestrate Multi-Agent Discussion" repeat="until-exit">
   <action>For each user message or topic:</action>
 
-  <substep n="3a" goal="Determine Relevant Agents">
+  <substep n="4a" goal="Determine Relevant Agents">
     <action>Analyze the user's message/question</action>
     <action>Identify which {{TEAM_DISPLAY_NAME}} agents would naturally respond based on:</action>
       - Their role and capabilities (from filtered data)
@@ -59,7 +88,7 @@
     <note>If user addresses specific agent by name, prioritize that agent</note>
   </substep>
 
-  <substep n="3b" goal="Generate In-Character Responses">
+  <substep n="4b" goal="Generate In-Character Responses">
     <action>For each selected agent, generate authentic response:</action>
     <action>Use the agent's {{TEAM_DISPLAY_NAME}} team personality data:</action>
       - Apply their communicationStyle exactly
@@ -76,7 +105,7 @@
 
   </substep>
 
-  <substep n="3c" goal="Handle Questions and Interactions">
+  <substep n="4c" goal="Handle Questions and Interactions">
     <check if="an agent asks the user a direct question">
       <action>Clearly highlight the question</action>
       <action>End that round of responses</action>
@@ -97,7 +126,7 @@
 
   </substep>
 
-  <substep n="3d" goal="Format and Present Responses">
+  <substep n="4d" goal="Format and Present Responses">
     <action>Present each agent's contribution clearly:</action>
     <format>
       [Agent Icon] [Agent Name]: [Their response in their voice/style]
@@ -112,24 +141,24 @@
 
   </substep>
 
-  <substep n="3e" goal="Check for Exit Conditions">
+  <substep n="4e" goal="Check for Exit Conditions">
     <check if="user message contains any {{exit_triggers}}">
       <action>Have agents provide brief farewells in character</action>
       <action>Thank user for the discussion</action>
-      <goto step="4">Exit team discussion</goto>
+      <goto step="5">Exit team discussion</goto>
     </check>
 
     <check if="user seems done or conversation naturally concludes">
       <ask>Would you like to continue the discussion or end the team session?</ask>
       <check if="user indicates end">
-        <goto step="4">Exit team discussion</goto>
+        <goto step="5">Exit team discussion</goto>
       </check>
     </check>
 
   </substep>
 </step>
 
-<step n="4" goal="Exit {{TEAM_DISPLAY_NAME}} Team Discussion">
+<step n="5" goal="Exit {{TEAM_DISPLAY_NAME}} Team Discussion">
   <action>Have 2-3 agents provide characteristic farewells to the user, and 1-2 to each other</action>
   <format>
     [Agent 1 Icon] [Agent 1]: [Brief farewell in their style]
