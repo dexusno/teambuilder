@@ -34,11 +34,11 @@ chmod +x install.sh
 2. **Check/Install Prerequisites** - Node.js, Git
 3. **Handle Project Folder** - Create or use existing
 4. **Install BMAD Method** - Latest version via npx
-5. **Fix BMAD Module Dependencies** - Installs missing npm packages for BMAD modules that need them (works around an upstream bug in BMAD beta)
-6. **Install TeamBuilder** - Clone module from this repo
-7. **Register Agents** - TeamBuilder Guide + Memory Manager command stubs
-8. **Sync User Config** - Copies your name, language, and output preferences from BMAD core config into TeamBuilder's config so agents know how to greet you
-9. **Configure MCPs** - Memory + Playwright
+5. **Install TeamBuilder** - Clone module from this repo
+6. **Register Agents** - TeamBuilder Guide + Memory Manager command stubs
+7. **Sync User Config** - Copies your name, language, and output preferences from BMAD core config into TeamBuilder's config so agents know how to greet you
+8. **Configure MCPs** - Memory + Playwright
+9. **Create Docs Folder** - Team knowledge base directory
 10. **Create .gitignore** - Standard ignores (includes team memory files)
 
 ## Package Managers
