@@ -122,31 +122,7 @@ curl -fsSL https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/in
 | **Memory MCP** | Persistent knowledge across sessions |
 | **Playwright MCP** | Headless browser automation |
 
-## Getting Started (After Installation)
-
-```bash
-# 1. Navigate to your project
-cd my-project
-
-# 2. Open in Claude Code
-claude .
-
-# 3. Type this command to start:
-/bmad-agent-teambuilder-teambuilder-guide
-```
-
-> **New to BMAD?** When you type `/` in Claude Code you'll see a long list of commands - these are all the agents and workflows that BMAD includes. **You can ignore all of them.** The only command you need is:
->
-> **`/bmad-agent-teambuilder-teambuilder-guide`**
->
-> This launches the TeamBuilder Guide, which walks you through creating your first AI agent team step by step. Start here - everything else flows from it.
-
-## Installer Features
-
-- **Prerequisite checking** - Verifies Claude Code, Node.js, Git
-- **Auto-installation** - Installs missing prerequisites via winget (Windows) or apt/brew/dnf/pacman (Linux/Mac)
-- **Menu-driven** - Full install or custom component selection
-- **Current folder install** - Installs in the folder you run the script from
+The installer handles prerequisite checking (Claude Code, Node.js, Git), auto-installs missing tools via winget (Windows) or apt/brew/dnf/pacman (Linux/Mac), and offers a menu for full install or custom component selection.
 
 ## Project Structure
 
@@ -165,6 +141,25 @@ my-project/
 ├── .mcp.json              # MCP server configuration
 └── .gitignore
 ```
+
+## Getting Started (After Installation)
+
+```bash
+# 1. Navigate to your project
+cd my-project
+
+# 2. Open in Claude Code
+claude .
+
+# 3. Type this command to start:
+/bmad-agent-teambuilder-teambuilder-guide
+```
+
+> **New to BMAD?** When you type `/` in Claude Code you'll see a long list of commands - these are all the agents and workflows that BMAD includes. **You can ignore all of them.** The only command you need is:
+>
+> **`/bmad-agent-teambuilder-teambuilder-guide`**
+>
+> This launches the TeamBuilder Guide, which walks you through creating your first AI agent team step by step. Start here - everything else flows from it.
 
 ## TeamBuilder Agents
 
