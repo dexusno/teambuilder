@@ -107,6 +107,10 @@ teambuilder:
         type: "creative"
         characteristics: ["creative-process", "brand-aware", "optimization"]
 
+      - name: "operations-process"
+        type: "operations"
+        characteristics: ["lean", "six-sigma", "continuous-improvement"]
+
     # Pattern loading
     load_full_patterns: false  # Load summaries vs full content (for context optimization)
     cache_patterns: true       # Cache loaded patterns (future enhancement)

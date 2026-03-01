@@ -155,6 +155,8 @@ Move to next agent
 - `_bmad/teambuilder/agents/team-architect.md`
 - `_bmad/teambuilder/agents/agent-improver.md`
 - `_bmad/teambuilder/agents/quality-guardian.md`
+- `_bmad/teambuilder/agents/tool-scout.md` (added v1.1 - MCP/tool research and auto-installation)
+- `_bmad/teambuilder/agents/memory-manager.md` (added v1.1 - knowledge consolidation across teams)
 - `_bmad/teambuilder/agents/teambuilder-guide.md` (updated to use new workflow)
 
 ### Workflow Files

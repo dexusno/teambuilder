@@ -3,13 +3,12 @@
 ## install.ps1 (Windows PowerShell)
 
 ```powershell
-# With project name
-.\install.ps1 my-project
-
-# Current directory (if empty)
+# Run from inside your project folder
+mkdir my-project
+cd my-project
 .\install.ps1
 
-# Download and run
+# Or download and run
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 -OutFile install.ps1
 .\install.ps1
 ```
@@ -17,16 +16,13 @@ Invoke-WebRequest -Uri https://raw.githubusercontent.com/dexusno/teambuilder/mai
 ## install.sh (Linux/macOS)
 
 ```bash
-# Make executable
+# Run from inside your project folder
+mkdir my-project
+cd my-project
 chmod +x install.sh
-
-# With project name
-./install.sh my-project
-
-# Current directory (if empty)
 ./install.sh
 
-# Download and run
+# Or download and run
 curl -O https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh
 chmod +x install.sh
 ./install.sh
@@ -38,10 +34,12 @@ chmod +x install.sh
 2. **Check/Install Prerequisites** - Node.js, Git
 3. **Handle Project Folder** - Create or use existing
 4. **Install BMAD Method** - Latest version via npx
-5. **Install TeamBuilder** - Clone module from this repo
-6. **Register Agents** - TeamBuilder Guide + Memory Manager command stubs
-7. **Configure MCPs** - Memory + Playwright
-8. **Create .gitignore** - Standard ignores (includes team memory files)
+5. **Fix BMAD Module Dependencies** - Installs missing npm packages for BMAD modules that need them (works around an upstream bug in BMAD beta)
+6. **Install TeamBuilder** - Clone module from this repo
+7. **Register Agents** - TeamBuilder Guide + Memory Manager command stubs
+8. **Sync User Config** - Copies your name, language, and output preferences from BMAD core config into TeamBuilder's config so agents know how to greet you
+9. **Configure MCPs** - Memory + Playwright
+10. **Create .gitignore** - Standard ignores (includes team memory files)
 
 ## Package Managers
 

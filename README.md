@@ -36,7 +36,7 @@ With TeamBuilder, you get:
 
 ## Prerequisites
 
-- **[Claude Code](https://claude.ai)** - Anthropic's CLI for Claude
+- **[Claude Code](https://claude.ai/product/claude-code)** - Anthropic's CLI for Claude
 - **Node.js** (installed automatically if missing)
 - **Git** (installed automatically if missing)
 
@@ -212,13 +212,18 @@ Every generated team agent includes these menu items:
 
 | Command | Description |
 |---------|-------------|
-| **[SS] Save Session** | Captures tool learnings to memory + saves session context for next time |
+| **[SS] Save Session** | Saves tool learnings to memory + writes session context for next time |
 | **[CH] Chat** | Free-form conversation with the agent |
 | **[PM] Party Mode** | Multi-agent group discussion |
 | **[MH] Menu Help** | Redisplay available commands |
 | **[DA] Dismiss Agent** | End the session |
 
 Plus domain-specific commands unique to each team (e.g., `[PS] Start a Product Search`).
+
+**About Save Session:** Always run **[SS]** at the end of a session. It does two things:
+
+1. **Tool learnings** - Reviews your session for tool calls that failed then succeeded with a different approach, and saves those patterns to memory so the agent won't repeat the same mistakes next time
+2. **Session context** - Compiles a summary of what you worked on, where you left off, and planned next steps. You review it before it saves. Next time any team agent starts up, it automatically loads this context and picks up where you left off
 
 ### Team Party-Mode
 
@@ -252,10 +257,14 @@ Each generated team gets its own persistent memory file for cross-session knowle
 - ProjectKnowledge examples: user preferences, project decisions, domain-specific config
 - On next session startup, agents load previous learnings from memory so they don't repeat past mistakes
 
-**Knowledge consolidation:**
-- The **Memory Manager** agent (`/bmad-agent-teambuilder-memory-manager`) scans team memory files and extracts universally useful knowledge
-- Consolidated knowledge goes into `_bmad/teambuilder/memory/general-knowledge.jsonl`
-- New teams are seeded from this file, so they start with accumulated wisdom
+**Knowledge consolidation and session management:**
+
+The **Memory Manager** agent (`/bmad-agent-teambuilder-memory-manager`) provides:
+
+- **Consolidate General Knowledge** - Scans team memories across projects, extracts universally useful learnings (tool patterns, MCP behaviors, CLI tricks), and merges them into `_bmad/teambuilder/memory/general-knowledge.jsonl`. New teams are seeded from this file, so they start with accumulated wisdom
+- **Prepare for Next Session** - Writes a comprehensive session context covering project structure, current work state, next steps, key decisions, and known issues. More thorough than the [SS] quick save - useful at the end of a work day
+- **Review / Clear Session Context** - View what's in a team's session context, or clear it for a fresh start
+- **Scan Teams** - Discover all team memory files across your projects
 
 **For users who fork this repo:**
 - `general-knowledge.jsonl` is committed to git - your accumulated general knowledge persists across installs
