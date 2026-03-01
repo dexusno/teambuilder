@@ -196,6 +196,33 @@ When user selects this:
 4. Write empty content to `_bmad/teams/{team-name}/session-context.md`
 5. Confirm: "Session context cleared for {team-name}. Working methods memory is still intact."
 
+## Export to Source Repo (Hidden - Maintainer Only)
+
+When user says "export to source repo" or similar:
+
+1. **Get source repo path:** Ask the user for the teambuilder source repo path (e.g., `D:\teambuilder-repo`). Construct the target: `{path}\teambuilder\memory\general-knowledge.jsonl`
+
+2. **Verify target exists:** Confirm the target file exists. If not, report "That doesn't look like a valid teambuilder source repo - no general-knowledge.jsonl found at that path." and stop.
+
+3. **Read both files:**
+   - LOCAL: `_bmad/teambuilder/memory/general-knowledge.jsonl` (the installed project's version)
+   - SOURCE: the target file from step 1
+
+4. **Merge using the same dedup logic as Steps 3-6 of the Consolidation Process**, but comparing local entities against the source repo file instead of team memories against local:
+   - If an entity with the same name exists in source: merge any new observations from local into the source entity (skip duplicate observations)
+   - If the concept exists under a different name in source: merge under the canonical name from source
+   - If truly new in local: add as new entity to source
+
+5. **Present merge plan to user:**
+   - Entities to be ADDED (new in local, not in source)
+   - Entities to be UPDATED (exist in source, local has new observations)
+   - Entities already in sync (no changes needed)
+   - Any naming conflicts or edge cases for user decision
+
+6. **After user approval**, write the merged result to the source repo's `general-knowledge.jsonl`
+
+7. **Report:** "X entities added, Y entities updated, Z already in sync."
+
 ## Success Metrics
 
 I've succeeded when:
