@@ -76,35 +76,12 @@ TeamBuilder is itself a BMAD v6 custom module, installed via BMAD's native `--cu
 
 TeamBuilder runs a **four-phase collaborative pipeline** orchestrated by the `bmad-skill-collaborative-generation` skill. Four agents take turns leading phases:
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Phase 1  │  DISCOVERY           │  Team Architect                   │
-│           │                      │  (bmad-skill-discover-team-needs) │
-│           │  10-question guided interview with domain branching.    │
-│           │  Output: team-requirements-{timestamp}.md                │
-├───────────┼──────────────────────┼───────────────────────────────────┤
-│  Phase 2  │  PAIRED GENERATION   │  Team Architect  +  Persona       │
-│           │                      │  Improver  (real-time pair)       │
-│           │  Team Architect drafts each agent and workflow.         │
-│           │  Persona Improver critiques immediately (2-3 exchanges   │
-│           │  per agent) before Team Architect moves on.              │
-│           │  Quality is built in DURING generation, not after.       │
-│           │                      │                                   │
-│           │  Then Tool Scout researches MCP/CLI integrations.        │
-├───────────┼──────────────────────┼───────────────────────────────────┤
-│  Phase 3  │  CRITICAL REVIEW     │  Quality Guardian                 │
-│           │                      │  (bmad-skill-validate-team)       │
-│           │  Scores 0-100 against 42+ rules:                         │
-│           │    - Agent quality        (40%)                          │
-│           │    - Workflow quality     (30%)                          │
-│           │    - Team coherence       (30%)                          │
-│           │  Produces VALIDATION_REPORT.md with priority issues.     │
-├───────────┼──────────────────────┼───────────────────────────────────┤
-│  Phase 4  │  USER DECISION       │  Team Architect + Quality         │
-│           │                      │  Guardian (joint presentation)    │
-│           │  Install  /  Refine  /  Regenerate                       │
-└───────────┴──────────────────────┴───────────────────────────────────┘
-```
+| Phase | Name | Lead agent(s) | What happens |
+|---|---|---|---|
+| **1** | Discovery | `bmad-agent-team-architect` (via `bmad-skill-discover-team-needs`) | 10-question guided interview with domain-specific branching. Captures task, domain, scope, concerns, team-size preference, collaboration style. Output: `team-requirements-{timestamp}.md`. |
+| **2** | Paired Generation | `bmad-agent-team-architect` + `bmad-agent-persona-improver` (real-time pair) | Team Architect drafts each agent and workflow. Persona Improver critiques immediately (2–3 exchanges per agent) before Team Architect moves on. Quality is built in **during** generation, not patched in after. Then `bmad-agent-tool-scout` researches MCP / CLI integrations. |
+| **3** | Critical Review | `bmad-agent-quality-guardian` (via `bmad-skill-validate-team`) | Scores 0–100 against 42+ rules: Agent quality (40%), Workflow quality (30%), Team coherence (30%). Produces `VALIDATION_REPORT.md` with priority issues ranked by severity. |
+| **4** | User Decision | `bmad-agent-team-architect` + `bmad-agent-quality-guardian` (joint presentation) | Team Architect presents structure; Quality Guardian presents score + findings. User chooses: **Install** / **Refine** / **Regenerate**. |
 
 **Quality bands:**
 - **95–100** — Exceptional. Install immediately.
