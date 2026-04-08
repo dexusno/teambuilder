@@ -38,11 +38,16 @@
     Project root containing _bmad/. Default: current directory.
 .PARAMETER KeepBackup
     Don't prompt to delete the .tb-backup-{ts}/ snapshot at the end.
+.PARAMETER Channel
+    BMAD release channel to update against: stable (default), beta, nightly.
+    beta and nightly are UNSUPPORTED.
 .EXAMPLE
     cd C:\path\to\my-project
     .\update.ps1
 .EXAMPLE
     .\update.ps1 -Yes -Branch develop
+.EXAMPLE
+    .\update.ps1 -Channel beta
 .LINK
     https://github.com/dexusno/teambuilder
 #>
@@ -53,7 +58,9 @@ param(
     [string]$Branch = "main",
     [string]$LocalSource = "",
     [string]$ProjectPath = (Get-Location).Path,
-    [switch]$KeepBackup
+    [switch]$KeepBackup,
+    [ValidateSet("stable", "beta", "nightly")]
+    [string]$Channel = "stable"
 )
 
 $ErrorActionPreference = "Stop"
@@ -63,9 +70,25 @@ $ErrorActionPreference = "Stop"
 # -----------------------------------------------------------------------------
 $TEAMBUILDER_REPO = "https://github.com/dexusno/teambuilder.git"
 $TEAMBUILDER_MODULE_PATH = "teambuilder"
-$BMAD_VERSION = "6.2.2"
+$BMAD_STABLE_VERSION = "6.2.2"
 $BMAD_MODULES = "bmm"
 $BMAD_TOOLS = "claude-code"
+
+function Resolve-BmadVersion {
+    param([string]$Ch)
+    if ($Ch -eq "stable") { return $BMAD_STABLE_VERSION }
+    if ($Ch -eq "beta" -or $Ch -eq "nightly") {
+        try {
+            $next = (& cmd /c "npx --yes -- npm view bmad-method dist-tags.next 2>nul") -join "" -replace '\s',''
+            if ($next) { return $next }
+        } catch { }
+        Write-Host ("[!] Could not resolve " + $Ch + " from npm; falling back to stable " + $BMAD_STABLE_VERSION) -ForegroundColor DarkYellow
+        return $BMAD_STABLE_VERSION
+    }
+    return $BMAD_STABLE_VERSION
+}
+
+$BMAD_VERSION = Resolve-BmadVersion $Channel
 
 # -----------------------------------------------------------------------------
 # Console formatting

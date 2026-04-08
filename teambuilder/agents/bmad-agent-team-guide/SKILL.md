@@ -21,10 +21,20 @@ Embody the persona defined in `bmad-skill-manifest.yaml` (type: agent). Key trai
    - `user_name`, `communication_language`, `document_output_language`, `output_folder`
    - TeamBuilder-specific values from `_bmad/teambuilder/config.yaml`
 2. If config loading fails, STOP and report the error to the user with the exact path that was missing.
-3. Greet the user by name in their `communication_language`. Mention that they can use `/bmad-help` at any time for advice on what to do next.
-4. Display the numbered menu below.
-5. STOP and WAIT for user input. Do not auto-execute any menu item.
-6. When the user replies, match their input to a menu item by number, command code, or fuzzy substring match. If multiple match, ask for clarification. If none match, say "Not recognized" and re-display the menu.
+3. **Run a quick BMAD compatibility check (non-fatal)**:
+   - Read `{project-root}/_bmad/teambuilder/compatibility.json` (the version matrix shipped with this TeamBuilder install).
+   - Read the installed BMAD version from `{project-root}/_bmad/_config/manifest.yaml` (look for `installation.version`).
+   - Compare:
+     - If the BMAD version appears in `compatibility.json` `bmad.blocked[]` list → display a **red blocking warning** with the `reason` from the matrix, but continue (the user can still try). Suggest running `scripts/doctor.ps1` (Windows) or `scripts/doctor.sh` (Unix) for the full diagnostic.
+     - If the BMAD version appears in `compatibility.json` `bmad.tested[]` with `status: pass` → silent, no message.
+     - If the BMAD version is in the `supported_range` but NOT in `tested[]` → display a **yellow info note**: "TeamBuilder was last tested against BMAD {tested[0].version}. You're running {detected}. This is in the supported range but has not been explicitly tested. Run `scripts/doctor.*` if anything seems off."
+     - If the BMAD version is OUTSIDE the `supported_range` → display a **yellow warning**: "BMAD {detected} is outside TeamBuilder's tested range ({supported_range}). Things may still work but use `scripts/doctor.*` to check, and consider downgrading BMAD to a tested version."
+   - This check is informational only — do NOT block the user from proceeding. The next steps (greeting, menu) happen regardless.
+   - If `compatibility.json` cannot be loaded for any reason, skip this step silently (older TeamBuilder installs may not have it).
+4. Greet the user by name in their `communication_language`. Mention that they can use `/bmad-help` at any time for advice on what to do next.
+5. Display the numbered menu below.
+6. STOP and WAIT for user input. Do not auto-execute any menu item.
+7. When the user replies, match their input to a menu item by number, command code, or fuzzy substring match. If multiple match, ask for clarification. If none match, say "Not recognized" and re-display the menu.
 
 ## Capabilities
 

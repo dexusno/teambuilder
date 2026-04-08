@@ -1,0 +1,132 @@
+name: TeamBuilder Smoke Test
+
+# When this runs:
+#   - On every push to main
+#   - On every pull request to main
+#   - Daily at 04:17 UTC (catches BMAD upstream regressions)
+#   - Manually via the Actions tab
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    name: Install + compat-check (Node ${{ matrix.node }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['18', '20', '22']
+
+    steps:
+      - name: Checkout TeamBuilder
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Show Node + npm + git versions
+        shell: bash
+        run: |
+          node --version
+          npm --version
+          git --version
+
+      - name: Show resolved BMAD versions
+        shell: bash
+        run: |
+          echo "=== bmad-method dist-tags ==="
+          npx --yes -- npm view bmad-method dist-tags
+          echo ""
+          echo "=== bmad-method 6.2.2 (stable, what we test against) ==="
+          npx --yes -- npm view bmad-method@6.2.2 version
+
+      - name: Create sandbox project directory
+        shell: bash
+        run: mkdir -p sandbox
+
+      - name: Run install.sh against sandbox using LocalSource (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        working-directory: sandbox
+        run: bash ../scripts/install.sh -y --no-mcp --local-source ../teambuilder
+
+      - name: Run install.ps1 against sandbox using LocalSource (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        working-directory: sandbox
+        run: ..\scripts\install.ps1 -Yes -NoMcp -LocalSource ..\teambuilder
+
+      - name: Verify install (manifest counts, files present)
+        shell: bash
+        working-directory: sandbox
+        run: |
+          set -e
+          echo "=== teambuilder agents installed ==="
+          ls _bmad/teambuilder/agents/
+          test -f _bmad/teambuilder/config.yaml || (echo "MISSING config.yaml"; exit 1)
+          test -f _bmad/teambuilder/compatibility.json || (echo "MISSING compatibility.json"; exit 1)
+          test -f _bmad/_config/agent-manifest.csv || (echo "MISSING agent-manifest.csv"; exit 1)
+          test -f _bmad/_config/skill-manifest.csv || (echo "MISSING skill-manifest.csv"; exit 1)
+          AGENT_ROWS=$(grep -c '"teambuilder"' _bmad/_config/agent-manifest.csv || true)
+          SKILL_ROWS=$(grep -c '"teambuilder"' _bmad/_config/skill-manifest.csv || true)
+          echo "Agent rows: $AGENT_ROWS (expected 6)"
+          echo "Skill rows: $SKILL_ROWS (expected 11)"
+          [ "$AGENT_ROWS" = "6" ] || (echo "FAIL: agent count mismatch"; exit 1)
+          [ "$SKILL_ROWS" = "11" ] || (echo "FAIL: skill count mismatch"; exit 1)
+
+      - name: Run compat-check.js (must report HEALTHY)
+        shell: bash
+        working-directory: sandbox
+        run: node ../scripts/lib/compat-check.js --bmad-path .
+
+      - name: Run compat-check.js --strict (warnings count as failures)
+        shell: bash
+        working-directory: sandbox
+        run: node ../scripts/lib/compat-check.js --bmad-path . --strict
+
+      - name: Run doctor.sh (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        working-directory: sandbox
+        run: bash ../scripts/doctor.sh --project-path .
+
+      - name: Run doctor.ps1 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        working-directory: sandbox
+        run: ..\scripts\doctor.ps1 -ProjectPath .
+
+      - name: Run bmad-method status
+        shell: bash
+        working-directory: sandbox
+        run: npx --yes bmad-method@6.2.2 status
+
+      - name: Cleanup sandbox
+        if: always()
+        shell: bash
+        run: rm -rf sandbox
+
+  smoke-test-summary:
+    name: Smoke test summary
+    needs: smoke-test
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report aggregate result
+        run: |
+          if [ "${{ needs.smoke-test.result }}" = "success" ]; then
+            echo "✅ All smoke-test matrix jobs passed."
+          else
+            echo "❌ At least one smoke-test matrix job failed: ${{ needs.smoke-test.result }}"
+            echo "See the matrix job results above for which OS/Node combination failed."
+            exit 1
+          fi

@@ -1,7 +1,7 @@
 {
   "$schema_note": "TeamBuilder compatibility matrix. Read by scripts/lib/compat-check.js, scripts/doctor.*, scripts/update.*. Update this file when testing TeamBuilder against a new BMAD version. JSON (not YAML) for zero-dependency parsing in vanilla Node.",
 
-  "teambuilder_version": "3.1.0",
+  "teambuilder_version": "3.2.0",
 
   "bmad": {
     "supported_range": ">=6.2.2 <6.3.0",

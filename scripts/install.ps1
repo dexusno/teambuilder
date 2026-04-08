@@ -31,15 +31,22 @@
     Path to a local teambuilder module directory (skips the git clone).
     Used by maintainers testing changes before committing. Must point at a
     directory that contains module.yaml.
+.PARAMETER Channel
+    BMAD release channel to install: stable (default, pinned 6.2.2),
+    beta (next pre-release), or nightly (npm 'next' dist-tag, untested).
+    Use beta/nightly only if you accept the risk of breakage.
 .EXAMPLE
     mkdir my-project
     cd my-project
-    .\install-v6.ps1
+    .\install.ps1
 .EXAMPLE
     .\install.ps1 -Yes -NoPlaywright
 .EXAMPLE
     # Maintainer flow: test a local checkout without pushing
     .\install.ps1 -LocalSource D:\teambuilder-repo\teambuilder -Yes
+.EXAMPLE
+    # Try the latest BMAD nightly (UNSUPPORTED)
+    .\install.ps1 -Channel nightly
 .LINK
     https://github.com/dexusno/teambuilder
 #>
@@ -49,7 +56,9 @@ param(
     [switch]$NoMcp,
     [switch]$NoPlaywright,
     [string]$Branch = "main",
-    [string]$LocalSource = ""
+    [string]$LocalSource = "",
+    [ValidateSet("stable", "beta", "nightly")]
+    [string]$Channel = "stable"
 )
 
 $ErrorActionPreference = "Stop"
@@ -60,9 +69,29 @@ $ErrorActionPreference = "Stop"
 
 $TEAMBUILDER_REPO = "https://github.com/dexusno/teambuilder.git"
 $TEAMBUILDER_MODULE_PATH = "teambuilder"     # Module directory within the cloned repo
-$BMAD_VERSION = "6.2.2"                      # Pinned stable version (channel: stable)
+$BMAD_STABLE_VERSION = "6.2.2"               # Pinned stable version (channel: stable)
 $BMAD_MODULES = "bmm"                        # Default modules to install alongside teambuilder
 $BMAD_TOOLS = "claude-code"                  # Default IDE integration
+
+# Resolve BMAD version based on selected channel.
+# stable  -> the pinned $BMAD_STABLE_VERSION
+# beta    -> npm dist-tag 'next' (returns prerelease versions, e.g. 6.2.3-next.30)
+# nightly -> alias for beta (BMAD has only 'latest' and 'next' dist-tags)
+function Resolve-BmadVersion {
+    param([string]$Ch)
+    if ($Ch -eq "stable") { return $BMAD_STABLE_VERSION }
+    if ($Ch -eq "beta" -or $Ch -eq "nightly") {
+        try {
+            $next = (& cmd /c "npx --yes -- npm view bmad-method dist-tags.next 2>nul") -join "" -replace '\s',''
+            if ($next) { return $next }
+        } catch { }
+        Write-Host ("[!] Could not resolve " + $Ch + " version from npm; falling back to stable " + $BMAD_STABLE_VERSION) -ForegroundColor DarkYellow
+        return $BMAD_STABLE_VERSION
+    }
+    return $BMAD_STABLE_VERSION
+}
+
+$BMAD_VERSION = Resolve-BmadVersion $Channel
 
 # =============================================================================
 # Console formatting
@@ -461,6 +490,24 @@ function Show-Success {
 # =============================================================================
 
 Show-Banner
+
+if ($Channel -ne "stable") {
+    Write-Host ""
+    Write-Host "  +---------------------------------------------------+" -ForegroundColor DarkYellow
+    Write-Host ("  |  Non-stable channel selected: " + $Channel.PadRight(20) + "|") -ForegroundColor DarkYellow
+    Write-Host ("  |  Resolved BMAD version:       " + $BMAD_VERSION.PadRight(20) + "|") -ForegroundColor DarkYellow
+    Write-Host "  |  This is UNSUPPORTED. Stability not guaranteed.   |" -ForegroundColor DarkYellow
+    Write-Host "  +---------------------------------------------------+" -ForegroundColor DarkYellow
+    Write-Host ""
+    if (-not $Yes) {
+        $reply = Read-Host "  Continue with $Channel channel? [y/N]"
+        if ($reply -notmatch '^[Yy]') {
+            Write-Info "Aborted by user."
+            exit 0
+        }
+    }
+}
+
 Test-Prerequisites
 Test-NotAlreadyInstalled
 

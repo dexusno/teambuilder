@@ -18,13 +18,18 @@
 #   --branch NAME         Git branch to clone (default: main)
 #   --local-source PATH   Use a local module directory instead of cloning
 #                         (for maintainers testing changes pre-commit)
+#   --channel NAME        BMAD release channel: stable (default), beta, nightly
+#                         beta and nightly are UNSUPPORTED - accept the risk
 #
 # Usage:
 #   mkdir my-project && cd my-project
-#   ./install-v6.sh
+#   ./install.sh
 #
 #   # Maintainer test flow:
 #   ./install.sh -y --local-source /path/to/teambuilder
+#
+#   # Try the latest BMAD nightly (UNSUPPORTED):
+#   ./install.sh --channel nightly
 # =============================================================================
 
 set -euo pipefail
@@ -34,7 +39,7 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 TEAMBUILDER_REPO="https://github.com/dexusno/teambuilder.git"
 TEAMBUILDER_MODULE_PATH="teambuilder"     # Module directory within the cloned repo
-BMAD_VERSION="6.2.2"                      # Pinned stable version (channel: stable)
+BMAD_STABLE_VERSION="6.2.2"               # Pinned stable version (channel: stable)
 BMAD_MODULES="bmm"
 BMAD_TOOLS="claude-code"
 
@@ -46,6 +51,7 @@ NO_MCP=0
 NO_PLAYWRIGHT=0
 BRANCH="main"
 LOCAL_SOURCE=""
+CHANNEL="stable"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -54,6 +60,7 @@ while [[ $# -gt 0 ]]; do
         --no-playwright) NO_PLAYWRIGHT=1; shift ;;
         --branch) BRANCH="$2"; shift 2 ;;
         --local-source) LOCAL_SOURCE="$2"; shift 2 ;;
+        --channel) CHANNEL="$2"; shift 2 ;;
         -h|--help)
             grep '^#' "$0" | sed 's/^# \{0,1\}//'
             exit 0
@@ -419,9 +426,49 @@ show_success() {
 }
 
 # -----------------------------------------------------------------------------
+# Resolve BMAD version based on channel
+# -----------------------------------------------------------------------------
+resolve_bmad_version() {
+    case "$CHANNEL" in
+        stable) BMAD_VERSION="$BMAD_STABLE_VERSION" ;;
+        beta|nightly)
+            local next
+            if next="$(npx --yes -- npm view bmad-method dist-tags.next 2>/dev/null | tr -d '[:space:]')" && [[ -n "$next" ]]; then
+                BMAD_VERSION="$next"
+            else
+                printf "  ${C_YELLOW}[!] Could not resolve %s version from npm; falling back to stable %s${C_RESET}\n" "$CHANNEL" "$BMAD_STABLE_VERSION"
+                BMAD_VERSION="$BMAD_STABLE_VERSION"
+            fi
+            ;;
+        *)
+            echo "Unknown channel: $CHANNEL (must be stable, beta, or nightly)" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 banner
+resolve_bmad_version
+
+if [[ "$CHANNEL" != "stable" ]]; then
+    printf "\n"
+    printf "  ${C_YELLOW}+---------------------------------------------------+${C_RESET}\n"
+    printf "  ${C_YELLOW}|  Non-stable channel selected: %-20s|${C_RESET}\n" "$CHANNEL"
+    printf "  ${C_YELLOW}|  Resolved BMAD version:       %-20s|${C_RESET}\n" "$BMAD_VERSION"
+    printf "  ${C_YELLOW}|  This is UNSUPPORTED. Stability not guaranteed.   |${C_RESET}\n"
+    printf "  ${C_YELLOW}+---------------------------------------------------+${C_RESET}\n\n"
+    if [[ $YES_FLAG -eq 0 ]]; then
+        read -r -p "  Continue with $CHANNEL channel? [y/N] " reply
+        if [[ ! "$reply" =~ ^[Yy] ]]; then
+            info "Aborted by user."
+            exit 0
+        fi
+    fi
+fi
+
 check_prerequisites
 check_not_already_installed
 fetch_teambuilder_source
