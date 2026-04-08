@@ -133,8 +133,10 @@ check_prerequisites() {
         nv="$(node --version | sed 's/^v//')"
         ok "Node.js $nv"
         local major="${nv%%.*}"
-        if [[ "$major" -lt 18 ]]; then
-            warn "Node.js >= 18 recommended (you have $nv)"
+        if [[ "$major" -lt 20 ]]; then
+            fail "Node.js >= 20 REQUIRED (you have $nv). BMAD $BMAD_STABLE_VERSION uses features (e.g. node:util styleText) not available in Node 18."
+            info "Upgrade Node.js from https://nodejs.org/ and re-run this script."
+            exit 1
         fi
     else
         fail "Node.js not found"

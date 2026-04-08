@@ -21,8 +21,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # BMAD 6.2.2 requires Node >= 20 (uses styleText from node:util).
+        # Do NOT add Node 18 back — it is below BMAD's engine requirement.
         os: [ubuntu-latest, windows-latest]
-        node: ['18', '20', '22']
+        node: ['20', '22']
 
     steps:
       - name: Checkout TeamBuilder

@@ -123,7 +123,7 @@ If you choose **Install**, BMAD's `--custom-content` installer picks up the gene
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| **Node.js** | 18.x | `npx bmad-method@6.2.2 install` is invoked under the hood |
+| **Node.js** | **20.x** | BMAD 6.2.2 uses `styleText` from `node:util` which was added in Node 20. Node 18 WILL fail at install time with `The requested module 'node:util' does not provide an export named 'styleText'`. |
 | **npm** | Ships with Node.js | Required to run `bmad-method` via `npx` |
 | **git** | Any recent version | Installer git-clones this repo to a temp dir |
 | **Claude Code** | Desktop app or CLI | TeamBuilder installs skills into `.claude/skills/` |

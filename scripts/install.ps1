@@ -147,8 +147,10 @@ function Test-Prerequisites {
         $nodeVersion = (node --version) -replace '^v',''
         Write-Success "Node.js $nodeVersion"
         $major = [int]($nodeVersion -split '\.')[0]
-        if ($major -lt 18) {
-            Write-Warn "Node.js >= 18 recommended (you have $nodeVersion)"
+        if ($major -lt 20) {
+            Write-Fail "Node.js >= 20 REQUIRED (you have $nodeVersion). BMAD $BMAD_STABLE_VERSION uses features (e.g. node:util styleText) not available in Node 18."
+            Write-Info "Upgrade Node.js from https://nodejs.org/ and re-run this script."
+            exit 1
         }
     } else {
         Write-Fail "Node.js not found"
