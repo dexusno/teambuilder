@@ -1,0 +1,138 @@
+{
+  "$schema_note": "TeamBuilder compatibility matrix. Read by scripts/lib/compat-check.js, scripts/doctor.*, scripts/update.*. Update this file when testing TeamBuilder against a new BMAD version. JSON (not YAML) for zero-dependency parsing in vanilla Node.",
+
+  "teambuilder_version": "3.1.0",
+
+  "bmad": {
+    "supported_range": ">=6.2.2 <6.3.0",
+    "channel_default": "stable",
+
+    "tested": [
+      {
+        "version": "6.2.2",
+        "channel": "stable",
+        "tested_on": "2026-04-08",
+        "status": "pass",
+        "notes": "Tested with TeamBuilder v3.0 (initial release) and v3.1 (compat guardrails). Phase 1-5 full gate suite + Phase 6a 7-test compat-check/doctor/update suite all pass."
+      }
+    ],
+
+    "blocked": []
+  },
+
+  "required_structure": {
+    "files": [
+      "_bmad/_config/agent-manifest.csv",
+      "_bmad/_config/skill-manifest.csv",
+      "_bmad/_config/files-manifest.csv",
+      "_bmad/_config/manifest.yaml",
+      "_bmad/core/config.yaml",
+      "_bmad/bmm/config.yaml"
+    ],
+    "directories": [
+      "_bmad/_config",
+      "_bmad/core",
+      "_bmad/bmm"
+    ],
+    "agent_manifest_columns": [
+      "name",
+      "displayName",
+      "title",
+      "icon",
+      "capabilities",
+      "role",
+      "identity",
+      "communicationStyle",
+      "principles",
+      "module",
+      "path",
+      "canonicalId"
+    ],
+    "skill_manifest_columns": [
+      "canonicalId",
+      "name",
+      "description",
+      "module",
+      "path",
+      "install_to_bmad"
+    ],
+    "files_manifest_columns": [
+      "type",
+      "name",
+      "module",
+      "path",
+      "hash"
+    ],
+    "manifest_yaml_top_keys": [
+      "installation",
+      "modules",
+      "ides"
+    ]
+  },
+
+  "teambuilder_invariants": {
+    "expected_agent_count": 6,
+    "expected_skill_count": 5,
+    "expected_total_skill_manifest_rows": 11,
+
+    "expected_agents": [
+      "bmad-agent-team-guide",
+      "bmad-agent-team-architect",
+      "bmad-agent-persona-improver",
+      "bmad-agent-quality-guardian",
+      "bmad-agent-tool-scout",
+      "bmad-agent-memory-manager"
+    ],
+
+    "expected_skills": [
+      "bmad-skill-collaborative-generation",
+      "bmad-skill-discover-team-needs",
+      "bmad-skill-generate-team",
+      "bmad-skill-validate-team",
+      "bmad-skill-refine-team"
+    ],
+
+    "expected_patterns": [
+      "creative-content",
+      "itil-domain-expert",
+      "operations-process",
+      "planning-strategy",
+      "research-intelligence",
+      "software-development"
+    ],
+
+    "required_files": [
+      "_bmad/teambuilder/config.yaml",
+      "_bmad/teambuilder/templates/validation-rules.yaml",
+      "_bmad/teambuilder/templates/_team-skills/bmad-skill-save-session/SKILL.md",
+      "_bmad/teambuilder/templates/_team-skills/bmad-skill-save-session/workflow.md",
+      "_bmad/teambuilder/templates/_team-skills/bmad-skill-memory-guide/SKILL.md",
+      "_bmad/teambuilder/templates/_team-skills/bmad-skill-memory-guide/reference.md",
+      "_bmad/teambuilder/memory/general-knowledge.jsonl"
+    ],
+
+    "agent_manifest_fields_required": [
+      "type",
+      "name",
+      "displayName",
+      "title",
+      "icon",
+      "capabilities",
+      "role",
+      "identity",
+      "communicationStyle",
+      "principles",
+      "module"
+    ]
+  },
+
+  "remediation": {
+    "blocked_version": "BMAD version is in the blocked list. Either downgrade BMAD or wait for a TeamBuilder release that supports it. See https://github.com/dexusno/teambuilder/issues for status.",
+    "out_of_range": "BMAD version is outside the supported range. The installed BMAD has not been tested against this TeamBuilder release. Use scripts/doctor.* for details and consider downgrading BMAD to a tested version.",
+    "untested_in_range": "BMAD version is in the supported range but has not been explicitly tested. TeamBuilder is likely to work but no guarantees.",
+    "missing_file": "A required file is missing. The BMAD or TeamBuilder install is incomplete. Run scripts/doctor.* for details, or reinstall by removing _bmad/teambuilder/ and rerunning scripts/install.*.",
+    "schema_drift": "A manifest CSV has unexpected columns. BMAD may have changed its schema in a way TeamBuilder does not yet support. Report at https://github.com/dexusno/teambuilder/issues.",
+    "agent_count_mismatch": "TeamBuilder agent count does not match expected. Either an agent failed to install or the local module has been modified. Reinstall TeamBuilder if you did not modify it.",
+    "skill_count_mismatch": "TeamBuilder skill count does not match expected. Either a skill failed to install or the local module has been modified. Reinstall TeamBuilder if you did not modify it."
+  }
+}

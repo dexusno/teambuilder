@@ -222,8 +222,9 @@ Example:
 
 ### Reinstalling, updating, uninstalling
 
-- **Reinstall from scratch** — delete `_bmad/` manually, then run the installer again. **Warning:** deleting `_bmad/` also removes any generated teams stored under `_bmad/teams-*/`. Back them up first.
-- **Update TeamBuilder** — not yet fully supported; for now, manually delete `_bmad/teambuilder/` and rerun the installer (your generated teams in `_bmad/teams-*/` are preserved). An `update.ps1` / `update.sh` script is planned for a future release.
+- **Diagnose problems** — `scripts/doctor.ps1` (Windows) or `scripts/doctor.sh` (Linux/macOS). Read-only health check that runs the full compatibility test suite plus `bmad status` and reports a structured pass/fail summary. Use this when something feels wrong, before filing a bug report, or after upgrading BMAD. Supports `-Json` / `--json` for scripts.
+- **Update TeamBuilder in place** — `scripts/update.ps1` (Windows) or `scripts/update.sh` (Linux/macOS). Snapshots the current install to `_bmad/.tb-backup-{timestamp}/`, runs the compatibility check, applies the update via BMAD's `--custom-content` quick-update, re-runs the check, and offers rollback if anything went wrong. **Never touches `_bmad/teams-*/` (your generated teams are preserved).** Use `-Yes` for non-interactive, `-KeepBackup` to retain the snapshot, `-Force` to override pre-check failures.
+- **Reinstall from scratch** — delete `_bmad/` manually, then run `scripts/install.*` again. **Warning:** deleting `_bmad/` also removes any generated teams stored under `_bmad/teams-*/`. Back them up first, or use `update.*` instead.
 - **Uninstall only TeamBuilder** — delete `_bmad/teambuilder/` and rerun BMAD's installer: `npx bmad-method@6.2.2 install --directory . -y --modules bmm --tools claude-code`. BMAD will regenerate manifests without TeamBuilder.
 - **Uninstall everything** — `npx bmad-method uninstall` (BMAD's built-in uninstall command).
 
@@ -516,8 +517,20 @@ your-project/
 
 ## Troubleshooting
 
+**Run `doctor.ps1` or `doctor.sh` first.** Most issues below can be auto-detected. The doctor script runs the full compatibility test suite (42+ checks) plus `bmad status` and reports a structured pass/fail summary in seconds. It is read-only and safe to run anytime.
+
+```powershell
+# Windows
+.\scripts\doctor.ps1
+```
+
+```bash
+# Linux/macOS
+bash scripts/doctor.sh
+```
+
 **The installer says "TeamBuilder is already installed in this directory."**
-You already have `_bmad/teambuilder/`. Either delete it manually (and back up any generated teams in `_bmad/teams-*/` first) or use a different project directory.
+You already have `_bmad/teambuilder/`. To **update** instead of reinstall, use `scripts/update.ps1` (Windows) or `scripts/update.sh` (Linux/macOS) — it preserves your generated teams. To **start over**, delete `_bmad/` manually (back up any generated teams in `_bmad/teams-*/` first) and rerun the installer.
 
 **BMAD install fails with "Node.js not found" or version mismatch.**
 Install Node.js 18 or newer from https://nodejs.org/ and re-run the installer. The installer checks `node --version` on startup.
@@ -601,11 +614,14 @@ bash /path/to/teambuilder/scripts/install.sh -y --local-source /path/to/teambuil
 
 | Version | Date | Notes |
 |---|---|---|
+| **3.1.0** | 2026-04-08 | **Compatibility guardrails (Phase 6a).** Added `compatibility.json` (BMAD version matrix + structural invariants), `scripts/lib/compat-check.js` (zero-dependency Node engine), `scripts/doctor.{ps1,sh}` (read-only diagnostics), `scripts/update.{ps1,sh}` (safe in-place update with snapshot + rollback). Update never touches `_bmad/teams-*/`. All 7 Phase 6a tests pass: doctor on healthy install, doctor JSON output, doctor on corrupted install detects failure, update succeeds and re-validates, backup snapshot preservation, refusal on non-installed targets, cleanup. |
 | **3.0.0** | 2026-04-08 | **Full port to BMAD v6.2.2 architecture.** SKILL.md + bmad-skill-manifest.yaml replace v5 XML agent files. 42+ validation rules rewritten for v6. 6 pattern libraries rewritten (~55,000 words of v6-shape examples). Team-skills templates become first-class skills in generated teams. Installer rewritten to use BMAD's `--custom-content` flow (no more manual manifest editing, no more `.claude/commands/` stubs). The critical `teams-{name}` module code convention for generated teams. |
 | **2.0.0** | 2025-12-02 | Dynamic generation architecture with pattern library (BMAD v5) |
 | **1.0.0** | 2025-11-29 | Initial pre-built ITIL Configuration Management team |
 
-v3.0 is **not backward compatible** with v2.0 — the v5 architecture and v6 architecture are fundamentally different. If you have v2-generated teams, you'll need to regenerate them with v3 for use on BMAD v6.
+v3.x is **not backward compatible** with v2.x — the v5 architecture and v6 architecture are fundamentally different. If you have v2-generated teams, you'll need to regenerate them with v3 for use on BMAD v6.
+
+v3.1 is fully backward compatible with v3.0 — `update.ps1` / `update.sh` will detect a v3.0 install, snapshot it, and upgrade in place to v3.1.
 
 ---
 

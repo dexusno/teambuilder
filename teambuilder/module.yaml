@@ -1,7 +1,7 @@
 code: teambuilder
 name: TeamBuilder
 description: "Dynamic AI agent team generator. Guided discovery, paired generation with quality feedback, and validation scoring for building custom domain teams on top of BMAD."
-version: 3.0.0
+version: 3.1.0
 default_selected: false
 author: dexusno
 repository: https://github.com/dexusno/teambuilder
