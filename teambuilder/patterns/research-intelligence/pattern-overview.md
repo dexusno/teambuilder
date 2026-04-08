@@ -1,5 +1,9 @@
 # Research / Intelligence Pattern Overview
 
+> **v6 architecture** — examples below use BMAD v6.2.2 shape: `SKILL.md` + `bmad-skill-manifest.yaml` for agents, `SKILL.md` + `workflow.md` for skills.
+
+> **Learn, don't copy.** Patterns teach principles. Generated teams apply them creatively to the user's specific context.
+
 ## Purpose
 Research and analytics teams (6-8 agents) for deep investigation, market research, competitive intelligence, data analysis, and insight synthesis.
 

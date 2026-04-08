@@ -1,325 +1,284 @@
-# ITIL / Domain Expert Pattern - Generation Guidance
+# ITIL / Domain Expert Pattern — Generation Guidance
 
-Explicit instructions for generation engine when creating teams based on this pattern.
+> **v6 architecture** — examples below use BMAD v6.2.2 shape: `SKILL.md` + `bmad-skill-manifest.yaml` for agents, `SKILL.md` + `workflow.md` for skills.
+
+Explicit instructions for the generation engine (`bmad-agent-team-architect` in paired mode with `bmad-agent-persona-improver`) when creating teams based on this pattern. This guidance is prescriptive about **principles** and deliberately non-prescriptive about **content** — the user's ITIL context, not this document, determines the actual roles, frameworks, and vocabulary.
 
 ## When to Apply This Pattern
 
-**Primary Indicators:**
-- User domain classified as "domain-specific-expert"
-- Mentions governance, compliance, or policy
-- Multiple stakeholder groups identified
-- Formal organizational context
-- Requirements include documentation and procedures
+**Primary indicators:**
+- Discovery classified the domain as `domain-specific-expert`.
+- User mentioned ITIL, ITSM, service management, governance, compliance, or a specific ITIL practice by name (Change, Incident, Problem, Release, Configuration, Knowledge, Service Catalogue, etc.).
+- Multiple stakeholder groups or consuming practices were identified.
+- Formal organizational context — enterprise, regulated industry, or public sector.
+- Requirements include documentation, policy, and auditability.
 
-**Secondary Indicators:**
-- User mentions ITIL, frameworks, standards
-- Complexity rated as "high"
-- Key concerns include compliance or audit
-- Team size preference is 8-12 agents
+**Secondary indicators:**
+- Mentions frameworks: ITIL 4, ISO/IEC 20000, ISO/IEC 27001, SOX, DORA, NIS2, HIPAA, HITRUST, FedRAMP.
+- Complexity rated `complex`.
+- Key concerns include `compliance`, `audit`, `regulatory risk`, `change failure rate`, `mean time to restore`, `known error backlog`, `configuration drift`.
+- Team-size preference is 8–12.
 
-## Core Structure to Replicate
+## Core Structure to Apply
 
-### Team Composition Formula
+Large formal ITIL governance teams follow a repeatable composition, but the **role names and vocabulary must come from the user's actual practice**, not from this pattern.
 
-**Core Team (4 agents):**
-1. **Strategic Leader** (like Practice Owner)
-   - Domain expert + strategic thinker
-   - Policy and stakeholder management
-   - Final decision authority
+### Role archetypes (apply the shape, invent the names)
 
-2. **Operational Coordinator** (like Manager)
-   - Day-to-day execution
-   - Coordinates team activities
-   - Tactical decisions
+1. **Practice leader for each in-scope ITIL practice.** If the user asked for an end-to-end ITIL team, you will typically have practice leaders for several of: Change Enablement, Incident Management, Problem Management, Release Management, Service Configuration Management, Service Request, Knowledge, and Service Level Management. Pick the ones that match the user's stated scope. Do not invent practices they did not ask for.
+2. **An Incident Commander (or Major Incident Manager)** if incident response is in scope. This role is structurally distinct from an Incident Manager — a Commander runs the room during a P1/P2 and hands off to Problem Management, not a generalist IM role.
+3. **A data-quality custodian** for the CMDB or equivalent reference-data system. Every serious ITIL team has a voice that says "the CMDB currently asserts" and attaches freshness confidence to CI queries. Do not skip this role.
+4. **An independent compliance voice** if the user mentioned audit, regulatory, or controls. Structural independence matters — the compliance reviewer attests, they do not approve. If the user is in a regulated industry, this role is mandatory; if they are a mature internal IT group with no external regulator, it is optional.
+5. **A platform or tooling bridge** if the user mentioned a specific ITSM platform (ServiceNow, Jira Service Management, BMC Helix, Ivanti, Freshservice). This role translates practice requirements into platform capability and flags "beautiful policies that cannot be automated."
 
-3. **Analyst/Technical Expert** (like Analyst)
-   - Deep technical/domain knowledge
-   - Analysis and assessment
-   - Technical recommendations
+### Dual-mandate representatives
 
-4. **Quality/Compliance Lead** (like Auditor)
-   - Quality assurance
-   - Compliance verification
-   - Audit preparation
+If the user's team is cross-functional and serves multiple consuming practices or business units, add **representative agents** that operate on the dual-mandate pattern described in `collaboration-model.md`: each representative brings their practice's requirements *into* the team and carries guidance *back out* to their practice. This prevents the common failure mode where a governance team builds policies the consuming practices cannot or will not follow.
 
-**Representatives (5-7 agents):**
-- One per consuming stakeholder group
-- Dual mandate: demand + advise
-- Understand both their domain AND user's domain
+### Size guidance
 
-**Liaison (1 agent):**
-- Bridges domain and implementation
-- Technical translator or platform expert
-- Prevents requirements-implementation gap
+- **Focused single-practice team** (e.g., a Change Enablement team only): 5–7 agents.
+- **Multi-practice governance team** (Change + Incident + Problem + Release): 8–10 agents.
+- **Full ITIL team with representation** (multi-practice + dual-mandate reps + compliance + platform bridge): 10–12 agents.
 
-### Critical: Don't Copy, Apply Principles
+Do not pad the team to hit a size number. If the user's scope is narrow, the team is narrow — a tight 7-agent team is better than a padded 11-agent team.
 
-❌ **Wrong:** "User wants data governance, so I'll use CM Practice Owner but call them Data Governance Lead"
+### Critical: don't copy, apply principles
 
-✅ **Right:** "Study why Practice Owner is effective (strategic + pragmatic + stakeholder-focused), then create Data Governance Lead with THOSE qualities using DATA GOVERNANCE terminology and challenges"
+**Wrong:** "The user wants a Release Management team, so I will use the Release Manager example from `example-agents.md` and rename him from Tomás to Aditya."
+
+**Right:** "Study why the Release Manager example is effective — release-train vocabulary, 'what does it displace?' catchphrase, clean handoff seam with the Change Manager, rollback-artifact non-negotiable — then create an original Release Manager persona for the user's actual context, using *their* tooling, *their* release cadence, *their* regulatory environment."
+
+The examples in `example-agents.md` and `example-workflows.md` are the quality bar, not the content.
 
 ## Persona Generation Instructions
 
-### For Strategic Leader
+### For any ITIL practice leader
 
-**Background Template (Adapt, Don't Copy):**
-- Former practitioner → leadership role (shows credibility)
-- Relevant certifications (user's domain)
-- Experience at scale (appropriate to user's context)
-- Career-defining moment that shaped philosophy
+**Background elements that work:**
+- A career spine that shows progression into governance from a technical role (infrastructure, release engineering, SRE, NOC, data quality).
+- A formative incident that shaped their philosophy — specific enough to be vivid, general enough not to be a cliché.
+- A real ITIL 4 certification (Foundation, Specialist, Managing Professional) or equivalent (DASA, PeopleCert). Pick the one that matches the role.
+- Optional: a non-English language or a specific geography, to break up the "generic American consultant" pattern the LLM defaults to.
 
-**Communication Style:**
-- Strategic and stakeholder-focused
-- Opens with "What problem..." or "Who's impacted..."
-- Uses domain terminology fluently
-- Diplomatic but clear on priorities
+**Voice markers that work:**
+- A **signature opening line** — the agent's first move in a conversation. ("Walk me through the back-out plan first." "What do we know, what do we suspect, what do we need?" "The CMDB currently asserts...")
+- **Fluent ITIL vocabulary** used in context, never listed. RFC, CAB, ECAB, FSC, KEDB, CMDB, PIR, OLA, SLA, MIM, MTTR, MTBF, change success rate, failed-change rate, p50/p99, release train, promotion gate, rollback artifact.
+- A **non-negotiable** or two — a specific line they will not cross. ("No RFC without a back-out plan." "No workaround without an expiry date." "Evidence is not documentation.")
 
-**Principles:**
-- Balance pragmatism with governance
-- Value delivery over bureaucracy
-- Partnership with stakeholders
-- Measured, evidence-based decisions
+**Principles that work:**
+- Expressed as strong opinions, not platitudes. "Emergency changes get less paperwork, not less rigor." "Restoration first, root cause second — those are two different jobs owned by two different people." "A CI without an owner is a liability."
+- Show an awareness of trade-offs. Governance vs velocity. Rigor vs pragmatism. Safety vs delivery.
+- Reference handoffs to other team members by role — this reinforces the team's collaboration model and prevents role creep.
 
-### For Representatives
+### For the Incident Commander specifically
 
-**Critical Dual-Mandate Pattern:**
+The Incident Commander is structurally different from the other practice leaders and tends to go wrong when generated carelessly. The common failures:
 
-Each representative MUST demonstrate understanding of BOTH domains:
-- Their stakeholder group's needs
-- User's domain practice
+- **Treating the Commander as a debugger.** They are not. They run the room. If the persona starts offering technical fixes, the role is wrong.
+- **Missing the comms cadence discipline.** P1 cadence is tighter than P2 cadence, and "no change" is a valid update. The persona must treat this as non-negotiable.
+- **Blurring the handoff to Problem Management.** The Commander's job ends at restoration. Root cause is the Problem Manager's job. If the persona starts chasing root cause on the bridge, generate again.
 
-**Background:**
-- Currently in their stakeholder role
-- Volunteered or assigned as representative
-- Experienced pain of poor coordination
-- Motivated to improve interface
+Borrow the emergency-services vocabulary (ICS-200, bridge, commander, scribe, comms lead) deliberately — it is the clearest way to signal that this role is about logistics, not technical debugging.
 
-**Communication:**
-- Switches perspectives: "From [their practice] side..." and "From [user domain] side..."
-- Uses scenarios and use cases
-- Pragmatic and solution-oriented
-- Impatient with abstract theory
+### For the compliance voice
 
-**Principles:**
-- Practical requirements matter
-- Real scenarios should drive design
-- Both practices need to succeed
-- Theory must work in practice
+Structural independence is the entire point. The compliance voice must:
+- Attest, not approve. The distinction is load-bearing. Make it explicit in the persona.
+- Distinguish evidence from documentation and design effectiveness from operating effectiveness. These are the phrases auditors use and they should show up naturally in the persona's voice.
+- Refuse to backdate. Ever. A persona that would quietly fix an audit trail after the fact is a liability — make the no-backdating line explicit and hard.
+- Use regulator-neutral language in findings, so they can travel into an evidence pack unchanged.
 
-### For Platform Liaison
+### For the CMDB custodian (or equivalent data-quality voice)
 
-**Bridging Role Essential:**
-
-**Background:**
-- Deep technical/platform expertise
-- Previous experience with implementation gaps
-- Now focused on alignment from day one
-- Speaks both "governance language" and "technical language"
-
-**Communication:**
-- Translates both directions
-- "Here's how we'd implement..." (technical detail)
-- "The constraint is..." (explains limitations)
-- Proactive about trade-offs
-
-**Principles:**
-- Requirements must be implementable
-- Technical constraints are real
-- "Good enough in production" philosophy
-- Enable success, don't create limitations
+The hallmark of a good custodian persona is that they distrust their own database. Markers:
+- Uses language like "currently asserts" rather than "says."
+- Attaches a freshness tier to every query.
+- Refuses to cite data they know is stale without first correcting or flagging it.
+- Treats the CMDB as a reference-data system, not a wiki — this is a specific and vivid mental model.
 
 ## Workflow Generation Instructions
 
-### Workflow Structure
+### File shape (v6)
 
-**Standard governance workflow pattern:**
-1. Scope/Define (1-2 steps)
-2. Gather Input (2-3 steps, multiple agents)
-3. Draft/Create (1-2 steps)
-4. Review (2-3 steps: technical, compliance, stakeholder)
-5. Approval (1 step)
-6. Communication (1 step)
+Each team workflow is a **skill directory** under `skills/bmad-skill-<workflow-name>/` containing:
 
-**Total: 7-10 steps**
+- `SKILL.md` — frontmatter (`name`, `description`, optional `argument-hint`) plus a short body that references `./workflow.md`.
+- `workflow.md` — the actual step-by-step instructions with variables to capture, agent assignments at each step, governance gates, and edge cases.
+- `template.md` — the structured output document template (only if the workflow produces a named artifact).
 
-### Must Include
+Do not invent other file shapes. Do not produce a separate "instructions" file. Do not write a `workflow.yaml`. Do not create `.claude/commands/` stubs. BMAD v6 installs everything automatically from `--custom-content` when the user later runs `npx bmad-method install`.
 
-✅ **Review steps** - Technical, compliance, stakeholder
-✅ **Approval steps** - Formal sign-off
-✅ **Document outputs** - Named artifacts at each stage
-✅ **Multi-agent collaboration** - Representatives provide input
-✅ **Version control** - Draft v1, v2, final
+### Workflow shape
 
-### Workflow Patterns by Type
+Target **5–10 steps** per workflow. Fewer than five is usually too thin to be a governance workflow; more than ten becomes a ritual nobody follows. Each step must have:
 
-**Policy/Standard Development:**
-Scope → Requirements → Draft → Technical Review → Compliance Check → Stakeholder Review → Approval → Communication
+- A named **lead agent** (by `bmad-agent-*` name) and any consulted agents.
+- Declared **inputs** and **outputs**.
+- A short description of the action, in imperative prose.
+- A **governance gate** marker if the step is load-bearing — the workflow cannot proceed without the named output.
 
-**Agreement/Interface Creation:**
-Identify → Define → Assess → Negotiate → RACI → Document → Sign-off
+### Required elements for ITIL governance workflows
 
-**Audit/Compliance:**
-Scope → Evidence Gathering → Gap Analysis → Remediation → Verification → Reporting
+- **Named artifacts.** Every workflow produces versioned, timestamped output files (CDR, RCA report, PIR report, evidence pack, impact map). Audit trails are collections of artifacts, not narratives.
+- **Governance gates.** At least one explicit gate owned by an independent agent. For change workflows this is the impact analysis and (conditionally) the compliance attestation. For incident workflows it is ECAB approval before restoration-driving change. For problem workflows it is the compliance implication check.
+- **Clean handoffs.** Explicit handoffs between practices at specific steps, with timestamps. Incident → Problem at restoration. Release → Change at the production boundary. Problem → Change at permanent-fix proposal.
+- **Edge cases.** Emergency paths, freeze windows, stale-data conditions, regulated-component conditions. Governance workflows live or die by their handling of edge cases.
+
+### Standard governance patterns to reuse
+
+- **Approval pattern:** Triage → Impact analysis → Known-error check → Alignment → SoD check → Compliance attestation (conditional) → Deliberation → Schedule & record.
+- **Response pattern:** Open → Confirm impact → Drive timeline → Coordinate emergency change (conditional) → Restore → Hand off.
+- **Investigation pattern:** Frame → Historical state → Five-whys → Compliance check (conditional) → Workaround & KEDB → Permanent-fix proposal → Report & handoff.
+- **Review pattern:** Outcome vs criteria → Predicted vs actual impact → Downstream effects → Evidence completeness → Lessons & catalogue updates.
+
+Adapt these to the user's scope — do not force all four into every team.
 
 ## Domain Adaptation Checklist
 
-When adapting this pattern to user's domain:
+When adapting this pattern to the user's actual ITIL context:
 
 ### Terminology
-- [ ] Replace ITIL terms with user's domain terms
-- [ ] Use user's framework names (not ITIL)
-- [ ] Reference user's standards (not ISO/SOX unless mentioned)
-- [ ] Use stakeholder names from user's context
+- [ ] Use the user's platform vocabulary (ServiceNow tables, JSM queues, etc.) if a platform was named.
+- [ ] Reference the user's specific frameworks (ISO 20000? SOX ITGCs? DORA? HIPAA?). Default to ITIL 4 if no framework was named.
+- [ ] Use the user's severity scheme if they have one. P1/P2/P3/P4 is a default, not a requirement — some organizations use Sev1/Sev2/Sev3 or Priority 1/2/3.
+- [ ] Use the user's ceremony names (CAB, ECAB, MIM bridge, post-mortem) — do not translate them into generic terms.
 
-### Team Structure
-- [ ] Core team roles match user's domain norms
-- [ ] Representatives match user's stakeholder groups
-- [ ] Liaison role appropriate (technical? regulatory? business?)
-- [ ] Team size fits user's complexity
+### Team structure
+- [ ] Practice leaders match the practices the user actually runs.
+- [ ] Representatives (if any) match the user's actual consuming groups.
+- [ ] Compliance voice is present if the user is regulated; absent if not.
+- [ ] Platform bridge is present if the user named a specific ITSM tool.
+- [ ] Team size fits the user's scope — no padding, no under-staffing.
 
-### Collaboration
-- [ ] Formality matches user's organizational context
-- [ ] Touchpoints fit user's pace
-- [ ] Decision authority aligns with user's structure
-- [ ] Documentation level appropriate
+### Collaboration model
+- [ ] Formality matches the user's stated culture (a startup ITIL team looks different from a bank ITIL team).
+- [ ] Cadence matches the user's stated pace (weekly CAB vs daily standup).
+- [ ] Decision authority reflects the user's actual reporting lines.
+- [ ] Documentation level matches the user's compliance environment.
 
 ### Workflows
-- [ ] Approval processes match user's governance
-- [ ] Review steps include user's stakeholders
-- [ ] Outputs are user's document types
-- [ ] Compliance checks reference user's requirements
+- [ ] Governance gates map to the user's actual framework requirements.
+- [ ] Named artifacts match the user's document taxonomy.
+- [ ] Handoffs are explicit and traceable in the user's tooling.
+- [ ] Edge cases cover the user's actual risk scenarios.
 
 ## Quality Markers to Maintain
 
-### Agent Quality
-✅ Specific backgrounds (not "experienced")
-✅ Domain certifications (user's domain)
-✅ Career journeys (practitioner → current role)
-✅ Memorable philosophies ("pragmatic governance")
-✅ Distinctive communication patterns
-✅ Strong, specific principles
+### Agent quality (each agent)
+- Specific career spine and formative incident.
+- Real ITIL certification or equivalent.
+- Signature linguistic tic (opening line, catchphrase, or distinctive framing).
+- At least one hard non-negotiable.
+- Principles expressed as strong opinions, not platitudes.
+- Explicit awareness of handoffs to other team members.
 
-### Workflow Quality
-✅ 7-10 specific, actionable steps
-✅ Clear agent assignments
-✅ Named document outputs
-✅ Review and approval included
-✅ Multi-agent collaboration explicit
-✅ Stakeholder touchpoints defined
+### Team quality (across the team)
+- Every persona is distinct enough that you could identify them on a transcript.
+- Role seams are clean — no two agents do the same job.
+- At least one independent voice (compliance) if regulation is in scope.
+- A data-quality voice with freshness discipline.
+- A Coordinator or orchestrator role (usually the most senior practice leader).
+- Complete coverage of the user's stated concerns via specialist roles.
 
-### Team Quality
-✅ Complete stakeholder coverage via reps
-✅ Dual-mandate pattern for reps
-✅ Clear strategic vs operational split
-✅ Quality/compliance oversight included
-✅ Technical liaison prevents gaps
+### Workflow quality
+- 5–10 steps per workflow.
+- Every step has a named lead agent and declared inputs/outputs.
+- At least one governance gate per workflow.
+- Named, versioned output artifacts.
+- Edge cases handled explicitly.
+- Clean handoffs between workflows (e.g., Incident Response hands off to Problem Investigation; Problem Investigation feeds Change Approval).
+
+### Architecture compliance (v6)
+- Every user-facing agent has both `SKILL.md` and `bmad-skill-manifest.yaml` with `type: agent` and all nine manifest fields populated.
+- Every workflow is a `skills/bmad-skill-<name>/` directory with `SKILL.md` and `workflow.md` (and `template.md` if the workflow produces a structured document).
+- Names follow `bmad-agent-*` (user-facing) or `bmad-skill-*` (skill-only), lowercase with hyphens, matching the directory name.
+- `module:` field on manifests reflects the generated team name (e.g., `teams-itil-team`).
+- No XML agent files. No `workflow.yaml`. No `instructions.md` triads. No `.claude/commands/` stubs. No manual manifest editing.
 
 ## Common Pitfalls to Avoid
 
-### Pitfall 1: Making Reps Too Similar
-❌ All reps sound the same
-✅ Each rep authentically understands their specific stakeholder practice
+### Pitfall 1 — Generic practice leaders
+**Wrong:** "Change Manager with extensive experience in change management."
+**Right:** A specific career spine (release engineer → Change Enablement), a formative incident (the nine-hour DNS outage), a non-negotiable (no RFC without a back-out plan), and a signature line ("Walk me through the back-out plan first.").
 
-### Pitfall 2: Missing Dual Mandate
-❌ Reps only demand requirements
-✅ Reps both demand AND advise (two-way)
+### Pitfall 2 — Overlapping incident and problem roles
+**Wrong:** An "Incident Manager" persona who also investigates root cause.
+**Right:** An Incident Commander who runs the bridge and hands off at restoration, and a separate Problem Manager who picks up root cause from that handoff. Clean seam.
 
-### Pitfall 3: Generic Core Team
-❌ "Manager" and "Analyst" with no domain context
-✅ "Data Governance Manager" with data-specific expertise
+### Pitfall 3 — Compliance as a rubber stamp
+**Wrong:** A "Compliance Officer" who approves changes after the CAB.
+**Right:** An independent Compliance Auditor who **attests**, does not approve, and whose sign-off is required (not delegable) on regulated components.
 
-### Pitfall 4: Informal Workflows
-❌ "Step 1: Gather input, Step 2: Create policy"
-✅ Specific steps with review, approval, document outputs
+### Pitfall 4 — CMDB as a passive lookup
+**Wrong:** A "CMDB Administrator" who answers questions about CIs.
+**Right:** A CMDB Custodian who distrusts her own database, attaches freshness confidence to every query, and will tell a CAB that the data is "last reconciled 47 days ago, confidence: medium" and let the room decide.
 
-### Pitfall 5: Copying Instead of Adapting
-❌ CM Practice Owner → Data Practice Owner (just renamed)
-✅ Study what makes Practice Owner effective, create original Data Governance Lead with those qualities
+### Pitfall 5 — Copying examples verbatim
+**Wrong:** Renaming Priya Sundaram to Alex Kim, same background, same formative incident.
+**Right:** Studying why the example persona works, then building an original persona with an equally specific spine, equally vivid formative incident, and equally distinctive voice — using the user's actual context.
+
+### Pitfall 6 — Missing handoff seams
+**Wrong:** A generic collaboration note at the bottom of each agent.
+**Right:** Explicit handoff behaviors in the agent's rules: "Defer to the Incident Commander during a live P1." "Hand the release to the Change Manager at the production boundary." "Coordinate with the Problem Manager before trusting any CI relationship as causal." Seams become behaviors.
+
+### Pitfall 7 — Governance-theatre workflows
+**Wrong:** A twelve-step workflow full of review and sign-off steps that nobody would ever run in practice.
+**Right:** A disciplined six-to-eight-step workflow with named governance gates where the gates are load-bearing. If removing a step would not break the audit trail, remove it.
 
 ## Validation Checklist
 
-Before finalizing generated team:
+Before handing the generated team to `bmad-agent-quality-guardian`:
 
-**Agent Level:**
-- [ ] Each agent has specific domain background?
-- [ ] Communication styles vary dramatically?
-- [ ] Representatives show dual perspective?
-- [ ] Domain terminology used throughout?
-- [ ] Principles reflect governance mindset?
+### Agent level
+- [ ] Every agent has a specific career spine (not "experienced").
+- [ ] Every agent has a formative incident, credential, or vivid mental model.
+- [ ] Every agent has a signature linguistic tic.
+- [ ] Every agent has at least one hard non-negotiable.
+- [ ] Communication styles vary dramatically across the team.
+- [ ] ITIL vocabulary is used in context, not listed.
 
-**Workflow Level:**
-- [ ] 7-10 steps with clear goals?
-- [ ] Review and approval steps included?
-- [ ] Document outputs specified?
-- [ ] Agent assignments explicit?
-- [ ] Appropriate for governance context?
+### Team level
+- [ ] Team size matches user scope (no padding).
+- [ ] All practice leaders match in-scope practices.
+- [ ] Compliance voice present if regulation is in scope.
+- [ ] CMDB custodian (or equivalent data-quality voice) present.
+- [ ] Platform bridge present if a specific ITSM tool was named.
+- [ ] Role seams are clean; no two agents overlap.
+- [ ] At least one coordinator/orchestrator.
 
-**Team Level:**
-- [ ] All stakeholder groups have representatives?
-- [ ] Strategic and operational roles separated?
-- [ ] Quality/compliance oversight present?
-- [ ] Technical liaison included?
-- [ ] Team size 10-12 agents?
+### Workflow level
+- [ ] Every workflow has 5–10 steps with named lead agents.
+- [ ] Every workflow has at least one governance gate.
+- [ ] Every workflow produces a named, versioned artifact.
+- [ ] Edge cases handled explicitly.
+- [ ] Handoffs between workflows are explicit.
 
-## Example Adaptation Scenarios
-
-### Scenario: User Needs Legal Compliance Team
-
-**Apply pattern:**
-- Strategic Leader → Chief Compliance Officer
-- Operational Coordinator → Compliance Program Manager
-- Analyst → Legal Analyst
-- Quality Lead → Compliance Auditor
-- Representatives → From Business Units (Sales, Marketing, Product, HR, Finance)
-- Liaison → Regulatory Affairs Liaison
-
-**Adapt terminology:**
-- Use legal/compliance terms
-- Reference regulations (SOX, GDPR, etc.)
-- Workflows produce compliance policies, training materials
-- Formal approval from Legal
-
-### Scenario: User Needs Data Governance Team
-
-**Apply pattern:**
-- Strategic Leader → Chief Data Officer
-- Operational Coordinator → Data Governance Manager
-- Analyst → Data Steward / Data Architect
-- Quality Lead → Data Quality Auditor
-- Representatives → From Data Consumers (Analytics, Engineering, Product, Legal, Security)
-- Liaison → Data Platform Architect
-
-**Adapt workflows:**
-- Data Policy Development
-- Data Quality Standards Creation
-- Access Control Framework
-- Stewardship Program Design
-
----
+### Architecture level (v6)
+- [ ] Each user-facing agent: `SKILL.md` + `bmad-skill-manifest.yaml` (9 fields, `type: agent`).
+- [ ] Each workflow skill: `SKILL.md` + `workflow.md` (+ `template.md` if needed).
+- [ ] All names follow `bmad-agent-*` / `bmad-skill-*` conventions and match directory names.
+- [ ] `module:` field on manifests reflects the generated team name.
+- [ ] No XML files. No `workflow.yaml`. No manual manifest edits. No `.claude/commands/` stubs.
 
 ## Summary
 
 **Learn from this pattern:**
-- Large team structure (core + reps + liaison)
-- Dual-mandate representative model
-- Formal collaboration with documentation
-- Strategic vs operational split
-- Quality and compliance oversight
+- Large, formal ITIL team composition — multiple practice leaders, independent compliance voice, data-quality custodian, optional platform bridge, optional dual-mandate representatives.
+- Governance gates that are load-bearing, named, and owned.
+- Clean role seams and explicit handoffs between practices.
+- Named, versioned artifacts as the audit trail.
+- Distinctive personas with formative incidents and signature voices.
 
-**Apply to user's domain:**
-- Use their terminology
-- Address their stakeholders
-- Match their formality
-- Reference their standards
-- Solve their challenges
+**Apply to the user's actual ITIL context:**
+- Use their framework vocabulary.
+- Use their practice names.
+- Use their platform tooling if they named one.
+- Use their severity scheme, ceremony names, and document taxonomy.
+- Match their regulatory environment.
 
-**Generate original team:**
-- Don't copy agents
-- Don't just rename roles
-- Create authentic domain expertise
-- Maintain quality level
-- Achieve same distinctness
+**Generate original, high-quality teams** — do not rename the examples.
 
 ---
 
-**This pattern teaches governance team composition. Study principles, then generate original high-quality team for user's specific domain.**
+**This pattern teaches ITIL governance team composition. Study the principles; then generate an original, high-quality team for the user's specific ITIL context.**

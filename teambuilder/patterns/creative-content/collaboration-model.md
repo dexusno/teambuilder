@@ -1,4 +1,8 @@
-# Creative / Content Pattern - Collaboration
+# Creative / Content Pattern — Collaboration
+
+> **v6 architecture** — examples below use BMAD v6.2.2 shape: `SKILL.md` + `bmad-skill-manifest.yaml` for agents, `SKILL.md` + `workflow.md` for skills.
+
+> **Learn, don't copy.** These collaboration principles should be applied to the actual team you generate for the user, not copied as-is.
 
 ## Style: Creative Process with Review Gates
 

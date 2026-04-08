@@ -1,5 +1,9 @@
 # Creative / Content Pattern Overview
 
+> **v6 architecture** — examples below use BMAD v6.2.2 shape: `SKILL.md` + `bmad-skill-manifest.yaml` for agents, `SKILL.md` + `workflow.md` for skills.
+
+> **Learn, don't copy.** This pattern is a learning example. When TeamBuilder generates a creative-content team, it applies these composition principles to the user's actual situation — it does not copy the roles or workflows verbatim.
+
 ## Purpose
 Creative content teams (6-7 agents) for content creation, marketing, writing, and brand-focused work.
 

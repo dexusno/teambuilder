@@ -1,86 +1,114 @@
 # Software Development Pattern Metadata
 
 pattern_id: "software-development"
-pattern_name: "Agile Software Development Team"
-version: "1.0"
+pattern_name: "Specialty Software Development Team"
+version: "3.0"
 created: "2025-12-02"
+updated: "2026-04-08"
 
 pattern_type: "development"
 primary_domain: "technical-development"
 secondary_domains:
+  - "operations-support"
   - "planning-strategy"
+
+# IMPORTANT — use this pattern for SPECIALTY software teams only.
+# For general agile software development (PM, Architect, Dev, QA, SM) install BMAD's
+# own BMM module instead (`npx bmad-method install --modules bmm`). BMM already ships
+# bmad-agent-pm, bmad-agent-architect, bmad-agent-dev, bmad-agent-qa, bmad-agent-sm
+# and a full sprint workflow. This pattern exists for teams that need non-standard or
+# specialty roles BMM doesn't provide (Security Engineer, SRE, Performance Engineer,
+# ML Engineer, Accessibility Specialist, Platform Engineer, Database Architect, etc.).
+bmm_disambiguation:
+  prefer_bmm_when: "standard agile dev team (PM / Architect / Dev / QA / SM)"
+  use_this_pattern_when: "team needs specialty / non-standard roles BMM doesn't cover"
+  bmm_install: "npx bmad-method install --modules bmm"
 
 characteristics:
   team_size: "medium"  # 6-8 agents
-  specialization: "moderate"
+  specialization: "high"  # specialty roles, not generalist dev team
   collaboration: "agile"
-  workflow_style: "sprint-based"
-  decision_making: "collaborative-consensus"
+  workflow_style: "sprint-and-incident-driven"
+  decision_making: "collaborative-consensus-with-specialist-authority"
   pace: "fast-iterative"
 
 use_when:
-  - "Software/code development projects"
-  - "Feature implementation tasks"
-  - "Agile or iterative methodology"
-  - "Technical work with sprint cycles"
-  - "Quality and testing important"
+  - "Software team needs specialty roles BMM doesn't provide"
+  - "Security, reliability, performance, ML, or accessibility focus"
+  - "Platform / infrastructure / SRE teams"
+  - "Cross-functional specialty squads embedded in larger orgs"
+  - "Incident response and postmortem workflows needed"
+
+avoid_when:
+  - "User just wants a standard agile dev team → install BMM instead"
+  - "No specialty focus is required"
 
 key_learnings:
-  - name: "Scrum Role Structure"
-    description: "Product Manager, Scrum Master, Developers, QA - clear agile roles"
+  - name: "Specialty Role Composition"
+    description: "Non-generalist specialists (SRE, Security, Performance, ML) with deep authority in their domain"
 
-  - name: "Sprint Workflow Pattern"
-    description: "Planning → Development → Testing → Review → Retro cycle"
+  - name: "Specialty Workflow Shape"
+    description: "Postmortem, threat model, perf profile, model validation — not just sprint ceremonies"
 
-  - name: "Velocity and Iteration Focus"
-    description: "Deliver working software regularly, measure progress by velocity"
+  - name: "SLO/Error-Budget Mindset"
+    description: "Reliability and quality are quantified, not vibes; specialists own measurable targets"
+
+  - name: "Specialist Authority Within Swim Lane"
+    description: "Each specialist has veto power in their domain (security blocks risky deploys, SRE blocks on error-budget burn)"
 
 agent_structure:
-  core_team:
-    - "Product Manager"
-    - "Architect / Tech Lead"
-    - "Scrum Master / Agile Coach"
-    - "Developer (1-3)"
-    - "QA / Test Engineer"
-    - "DevOps Engineer (optional)"
+  typical_specialty_roles:
+    - "Security Engineer (AppSec, threat modeling, OWASP)"
+    - "SRE / Reliability Engineer (SLOs, incidents, chaos)"
+    - "Performance Engineer (profiling, p95/p99, capacity)"
+    - "ML Engineer (training, eval, model validation)"
+    - "Platform / Infra Engineer (k8s, IaC, developer platforms)"
+    - "Accessibility Specialist (WCAG, assistive tech)"
+    - "Database Architect (schema, query perf, migrations)"
+    - "Mobile Lead (iOS/Android platform depth)"
+  note: "Pick 4–6 specialty roles. Do NOT duplicate BMM's PM/Architect/Dev/QA/SM."
 
 collaboration_model:
-  style: "agile"
-  decision_authority: "Product Manager (what), Architect (how)"
-  ceremonies: "Planning, Standup, Review, Retrospective"
-  pace: "Fast - 2-week sprints"
+  style: "agile-with-specialist-authority"
+  decision_authority: "Specialist owns their domain; team consensus for cross-cutting"
+  ceremonies: "Standup, sprint planning (lightweight), incident review, threat modeling, postmortem"
+  pace: "Sprint cadence + on-call / incident-driven spikes"
 
 workflow_characteristics:
   typical_workflows:
-    - "Sprint Planning"
-    - "Feature Development"
-    - "Code Review"
-    - "Testing & QA"
-    - "Sprint Retrospective"
-  iteration: "2-week sprint cycles"
+    - "Security Audit & Threat Model"
+    - "Reliability Incident Postmortem"
+    - "Performance Profile & Optimize"
+    - "ML Model Validation Pipeline"
+  iteration: "Sprint cadence with incident-driven interrupts"
 
 quality_indicators:
-  - "Technical depth in developer personas"
-  - "Agile terminology (velocity, story points, sprint)"
-  - "Quality mindset (testing, code review)"
-  - "Collaborative decision-making"
+  - "Authentic specialty terminology (SLO, SLI, error budget, SBOM, CVE, p95, blast radius, OWASP, WCAG)"
+  - "Specialists have strong opinions grounded in operational reality"
+  - "Workflows produce concrete artifacts (threat model, postmortem, perf report, model card)"
+  - "Clear specialist-authority boundaries — not a flat consensus blob"
+  - "Does NOT overlap with BMM's standard dev team roles"
 
 generation_guidance:
-  - "Use agile/scrum terminology"
-  - "Include sprint ceremony workflows"
-  - "Developer agents need technical credibility"
-  - "QA agent prevents 'code and ship' anti-pattern"
-  - "Architect provides technical direction without micromanaging"
+  - "DO NOT generate generic Product Manager / Developer / QA — refer user to BMM for those"
+  - "Pick 4–6 specialty roles matching user's specific concern (security, reliability, ML, etc.)"
+  - "Each specialist needs authentic domain terminology"
+  - "Include at least one incident/review workflow (postmortem, threat model, perf profile)"
+  - "Give specialists authority in their domain, not just advisory voice"
+  - "Personas should feel operationally weathered — they've been paged at 3am"
 
 example_use_cases:
-  - "Web application feature development"
-  - "API service creation"
-  - "Mobile app development"
-  - "Internal tool building"
+  - "Platform team needs security + SRE + performance specialists"
+  - "ML platform squad needs MLE + data engineer + infra"
+  - "Mobile squad needs iOS lead + accessibility specialist"
+  - "Post-incident reliability investment team"
 
 tags:
-  - "agile"
-  - "scrum"
-  - "development"
-  - "technical"
-  - "sprint-based"
+  - "specialty"
+  - "sre"
+  - "security"
+  - "performance"
+  - "ml-engineering"
+  - "accessibility"
+  - "platform"
+  - "not-bmm-replacement"

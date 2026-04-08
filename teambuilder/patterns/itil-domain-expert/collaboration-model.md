@@ -1,4 +1,6 @@
-# ITIL / Domain Expert Pattern - Collaboration Model
+# ITIL / Domain Expert Pattern — Collaboration Model
+
+> **v6 architecture** — examples below use BMAD v6.2.2 shape: `SKILL.md` + `bmad-skill-manifest.yaml` for agents, `SKILL.md` + `workflow.md` for skills.
 
 ## Collaboration Style: Formal with Structured Touchpoints
 

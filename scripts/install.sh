@@ -1,549 +1,431 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# TeamBuilder v3 Project Installer for Linux/macOS (BMAD v6.2.2)
+# =============================================================================
 #
-# TeamBuilder Project Installer for Linux/macOS
-# Installs BMAD Method + TeamBuilder module with all prerequisites.
-# Creates a ready-to-use project for building AI agent teams.
-# Run this script from inside your project folder.
+# Installs BMAD Method v6 core + bmm module + the TeamBuilder custom module
+# into the CURRENT DIRECTORY, and configures Claude Code + Memory/Playwright MCP.
+#
+# This is the BMAD v6 installer. It uses BMAD's native --custom-content flow
+# to register TeamBuilder as a first-class v6 custom module. No manual manifest
+# editing, no .claude/commands/ stubs, no file-triad workflows — BMAD auto-generates
+# everything from the TeamBuilder module's SKILL.md + bmad-skill-manifest.yaml files.
+#
+# Flags:
+#   -y                    Accept all defaults, no prompts
+#   --no-mcp              Skip .mcp.json creation
+#   --no-playwright       Skip Playwright MCP server in .mcp.json
+#   --branch NAME         Git branch to clone (default: main)
+#   --local-source PATH   Use a local module directory instead of cloning
+#                         (for maintainers testing changes pre-commit)
 #
 # Usage:
 #   mkdir my-project && cd my-project
-#   ./install.sh
+#   ./install-v6.sh
 #
-# https://github.com/dexusno/teambuilder
+#   # Maintainer test flow:
+#   ./install.sh -y --local-source /path/to/teambuilder
+# =============================================================================
 
-set -e
+set -euo pipefail
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
-GRAY='\033[0;37m'
-NC='\033[0m' # No Color
+# -----------------------------------------------------------------------------
+# Configuration
+# -----------------------------------------------------------------------------
+TEAMBUILDER_REPO="https://github.com/dexusno/teambuilder.git"
+TEAMBUILDER_MODULE_PATH="teambuilder"     # Module directory within the cloned repo
+BMAD_VERSION="6.2.2"                      # Pinned stable version (channel: stable)
+BMAD_MODULES="bmm"
+BMAD_TOOLS="claude-code"
 
-# Formatting functions
-print_header() {
-    echo ""
-    echo -e "${CYAN}=======================================================${NC}"
-    echo -e "${CYAN}  $1${NC}"
-    echo -e "${CYAN}=======================================================${NC}"
-    echo ""
-}
+# -----------------------------------------------------------------------------
+# Flags
+# -----------------------------------------------------------------------------
+YES_FLAG=0
+NO_MCP=0
+NO_PLAYWRIGHT=0
+BRANCH="main"
+LOCAL_SOURCE=""
 
-print_step() {
-    echo -e "  ${YELLOW}-> $1${NC}"
-}
-
-print_success() {
-    echo -e "  ${GREEN}[OK] $1${NC}"
-}
-
-print_fail() {
-    echo -e "  ${RED}[X] $1${NC}"
-}
-
-print_info() {
-    echo -e "  ${GRAY}$1${NC}"
-}
-
-# Banner
-show_banner() {
-    echo ""
-    echo -e "${MAGENTA}  +-------------------------------------------------+${NC}"
-    echo -e "${MAGENTA}  |        TeamBuilder Project Installer            |${NC}"
-    echo -e "${MAGENTA}  |        github.com/dexusno/teambuilder           |${NC}"
-    echo -e "${MAGENTA}  +-------------------------------------------------+${NC}"
-    echo ""
-}
-
-# Check if command exists
-command_exists() {
-    command -v "$1" &> /dev/null
-}
-
-# Get command version
-get_version() {
+while [[ $# -gt 0 ]]; do
     case "$1" in
-        node) node --version 2>/dev/null | sed 's/v//' ;;
-        npm) npm --version 2>/dev/null ;;
-        git) git --version 2>/dev/null | sed 's/git version //' ;;
-        claude) echo "installed" ;;
-        *) echo "unknown" ;;
-    esac
-}
-
-# Detect OS and package manager
-detect_package_manager() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        if command_exists brew; then
-            echo "brew"
-        else
-            echo "none"
-        fi
-    elif command_exists apt-get; then
-        echo "apt"
-    elif command_exists dnf; then
-        echo "dnf"
-    elif command_exists pacman; then
-        echo "pacman"
-    elif command_exists brew; then
-        echo "brew"
-    else
-        echo "none"
-    fi
-}
-
-# Install package
-install_package() {
-    local package=$1
-    local display_name=$2
-    local pm=$(detect_package_manager)
-
-    print_step "Installing $display_name..."
-
-    case "$pm" in
-        brew)
-            brew install "$package"
-            ;;
-        apt)
-            sudo apt-get update && sudo apt-get install -y "$package"
-            ;;
-        dnf)
-            sudo dnf install -y "$package"
-            ;;
-        pacman)
-            sudo pacman -S --noconfirm "$package"
-            ;;
-        *)
-            print_fail "No supported package manager found"
-            print_info "Please install $display_name manually"
-            return 1
-            ;;
-    esac
-
-    if [ $? -eq 0 ]; then
-        print_success "$display_name installed"
-        return 0
-    else
-        print_fail "Failed to install $display_name"
-        return 1
-    fi
-}
-
-# Main installation
-main() {
-    local install_claude_code=false
-    local install_memory_mcp=true
-    local install_playwright_mcp=true
-    local init_git=false
-
-    show_banner
-
-    # ===== STEP 1: Check Claude Code =====
-    print_header "Step 1: Checking Claude Code"
-
-    if command_exists claude; then
-        print_success "Claude Code found"
-    else
-        print_fail "Claude Code not found"
-        echo ""
-        echo -e "  ${YELLOW}Claude Code is required for this project.${NC}"
-        echo -e "  ${YELLOW}More info: https://claude.ai${NC}"
-        echo ""
-        echo "  1. I have Claude Code - install it now"
-        echo "  2. Exit"
-        echo ""
-        read -p "  Select option (1-2): " choice
-
-        if [ "$choice" != "1" ]; then
-            echo ""
-            print_info "Visit https://claude.ai to learn more."
-            print_info "Run this installer again when ready."
-            echo ""
-            exit 0
-        fi
-
-        install_claude_code=true
-    fi
-
-    # ===== STEP 2: Check/Install Prerequisites =====
-    print_header "Step 2: Checking Prerequisites"
-
-    local pm=$(detect_package_manager)
-    if [ "$pm" == "none" ]; then
-        print_fail "No supported package manager found"
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            print_info "Please install Homebrew: https://brew.sh"
-        else
-            print_info "Please install packages manually"
-        fi
-        exit 1
-    fi
-    print_success "Package manager: $pm"
-
-    # Check/Install Node.js
-    if command_exists node; then
-        local node_version=$(get_version node)
-        print_success "Node.js v$node_version"
-    else
-        print_fail "Node.js not found"
-        echo ""
-        read -p "  Install Node.js? (Y/n): " install_node
-        if [[ "$install_node" == "" || "$install_node" =~ ^[Yy] ]]; then
-            local node_pkg="node"
-            [ "$pm" == "apt" ] && node_pkg="nodejs"
-            if ! install_package "$node_pkg" "Node.js"; then
-                exit 1
-            fi
-        else
-            print_info "Node.js is required. Exiting."
-            exit 1
-        fi
-    fi
-
-    # Check/Install Git
-    if command_exists git; then
-        local git_version=$(get_version git)
-        print_success "Git v$git_version"
-    else
-        print_fail "Git not found"
-        echo ""
-        read -p "  Install Git? (Y/n): " install_git
-        if [[ "$install_git" == "" || "$install_git" =~ ^[Yy] ]]; then
-            if ! install_package "git" "Git"; then
-                exit 1
-            fi
-        else
-            print_info "Git is required. Exiting."
-            exit 1
-        fi
-    fi
-
-    # Install Claude Code if needed
-    if [ "$install_claude_code" = true ]; then
-        print_step "Installing Claude Code via npm..."
-        npm install -g @anthropic-ai/claude-code
-        if [ $? -eq 0 ]; then
-            print_success "Claude Code installed"
-        else
-            print_fail "Failed to install Claude Code"
-            print_info "Try manually: npm install -g @anthropic-ai/claude-code"
-            exit 1
-        fi
-    fi
-
-    print_success "All prerequisites satisfied"
-
-    # ===== STEP 3: Project Folder =====
-    print_header "Step 3: Project Folder"
-
-    local target_dir="$(pwd)"
-    local item_count=$(ls -A 2>/dev/null | grep -v "^install\.\(ps1\|sh\)$" | wc -l)
-
-    if [ "$item_count" -eq 0 ]; then
-        print_success "Using current directory: $target_dir"
-    else
-        print_info "Current directory is not empty."
-        read -p "  Continue installation here? (y/N): " continue_install
-        if [[ ! "$continue_install" =~ ^[Yy] ]]; then
-            print_info "Installation cancelled. Create a new folder for your project and run again."
-            exit 0
-        fi
-        print_success "Using current directory: $target_dir"
-    fi
-
-    # ===== STEP 4: Main Menu =====
-    print_header "Step 4: Installation Options"
-
-    echo "  1. Full Install (recommended)"
-    echo "  2. Custom Install"
-    echo "  3. Help / Documentation"
-    echo "  4. Exit"
-    echo ""
-    read -p "  Select option (1-4): " menu_choice
-
-    case "$menu_choice" in
-        1)
-            # Full install - use defaults
-            ;;
-        2)
-            echo ""
-            echo -e "  ${CYAN}Select components (Y/n for each):${NC}"
-            echo ""
-
-            read -p "  Install Memory MCP? (Y/n): " memory_choice
-            [[ "$memory_choice" =~ ^[Nn] ]] && install_memory_mcp=false
-
-            read -p "  Install Playwright MCP? (Y/n): " playwright_choice
-            [[ "$playwright_choice" =~ ^[Nn] ]] && install_playwright_mcp=false
-
-            read -p "  Initialize Git repository? (y/N): " git_choice
-            [[ "$git_choice" =~ ^[Yy] ]] && init_git=true
-            ;;
-        3)
-            echo ""
-            echo -e "  ${CYAN}TeamBuilder creates AI agent teams using the BMAD Method.${NC}"
-            echo ""
-            echo "  After installation:"
-            echo "    1. Open project: claude ."
-            echo "    2. Create team: /bmad-agent-teambuilder-teambuilder-guide"
-            echo ""
-            echo "  Documentation: https://github.com/dexusno/teambuilder"
-            echo ""
+        -y|--yes) YES_FLAG=1; shift ;;
+        --no-mcp) NO_MCP=1; shift ;;
+        --no-playwright) NO_PLAYWRIGHT=1; shift ;;
+        --branch) BRANCH="$2"; shift 2 ;;
+        --local-source) LOCAL_SOURCE="$2"; shift 2 ;;
+        -h|--help)
+            grep '^#' "$0" | sed 's/^# \{0,1\}//'
             exit 0
             ;;
         *)
-            print_info "Installation cancelled."
-            exit 0
+            echo "Unknown argument: $1" >&2
+            exit 1
             ;;
     esac
+done
 
-    # ===== STEP 5: Installation =====
-    print_header "Step 5: Installing"
+# -----------------------------------------------------------------------------
+# Console formatting
+# -----------------------------------------------------------------------------
+if [[ -t 1 ]]; then
+    C_RESET=$'\033[0m'
+    C_CYAN=$'\033[36m'
+    C_GREEN=$'\033[32m'
+    C_RED=$'\033[31m'
+    C_YELLOW=$'\033[33m'
+    C_MAGENTA=$'\033[35m'
+    C_GRAY=$'\033[90m'
+    C_WHITE=$'\033[97m'
+else
+    C_RESET=""; C_CYAN=""; C_GREEN=""; C_RED=""; C_YELLOW=""; C_MAGENTA=""; C_GRAY=""; C_WHITE=""
+fi
 
-    # Install BMAD Method
-    print_step "Installing BMAD Method..."
-    npx bmad-method@latest install
-    if [ $? -ne 0 ]; then
-        print_fail "Failed to install BMAD Method"
-        exit 1
+header()  { printf "\n${C_CYAN}%s${C_RESET}\n  ${C_CYAN}%s${C_RESET}\n${C_CYAN}%s${C_RESET}\n\n" \
+            "============================================================" "$1" \
+            "============================================================"; }
+step()    { printf "  ${C_YELLOW}-> %s${C_RESET}\n" "$1"; }
+ok()      { printf "  ${C_GREEN}[OK] %s${C_RESET}\n" "$1"; }
+fail()    { printf "  ${C_RED}[X]  %s${C_RESET}\n" "$1"; }
+warn()    { printf "  ${C_YELLOW}[!]  %s${C_RESET}\n" "$1"; }
+info()    { printf "  ${C_GRAY}%s${C_RESET}\n" "$1"; }
+
+banner() {
+    printf "\n"
+    printf "  ${C_MAGENTA}+---------------------------------------------------+${C_RESET}\n"
+    printf "  ${C_MAGENTA}|   TeamBuilder v3 Installer (BMAD v6.2.2)          |${C_RESET}\n"
+    printf "  ${C_MAGENTA}|   github.com/dexusno/teambuilder                  |${C_RESET}\n"
+    printf "  ${C_MAGENTA}+---------------------------------------------------+${C_RESET}\n\n"
+}
+
+confirm() {
+    local prompt="$1"
+    local default="${2:-y}"
+    if [[ $YES_FLAG -eq 1 ]]; then
+        [[ "$default" == "y" ]]
+        return $?
     fi
+    local suffix="[Y/n]"
+    [[ "$default" == "n" ]] && suffix="[y/N]"
+    read -r -p "  $prompt $suffix " reply
+    reply="${reply:-$default}"
+    [[ "$reply" =~ ^[Yy] ]]
+}
 
-    # Verify BMAD installed
-    if [ ! -d "_bmad" ]; then
-        print_fail "BMAD Method installation failed - _bmad folder not created"
-        exit 1
-    fi
-    print_success "BMAD Method installed"
+has_cmd() { command -v "$1" >/dev/null 2>&1; }
 
-    # Clone TeamBuilder module
-    print_step "Installing TeamBuilder module..."
-    local teambuilder_dir="_bmad/teambuilder"
+# -----------------------------------------------------------------------------
+# Prerequisite checks
+# -----------------------------------------------------------------------------
+check_prerequisites() {
+    header "Checking Prerequisites"
+    local missing=()
 
-    [ -d "$teambuilder_dir" ] && rm -rf "$teambuilder_dir"
-
-    # Clone and check for errors
-    if ! git clone --depth 1 https://github.com/dexusno/teambuilder.git temp-teambuilder 2>&1; then
-        print_fail "Failed to clone TeamBuilder repository"
-        exit 1
-    fi
-
-    # Verify and move
-    if [ -d "temp-teambuilder/teambuilder" ]; then
-        mv temp-teambuilder/teambuilder "$teambuilder_dir"
+    if has_cmd node; then
+        local nv
+        nv="$(node --version | sed 's/^v//')"
+        ok "Node.js $nv"
+        local major="${nv%%.*}"
+        if [[ "$major" -lt 18 ]]; then
+            warn "Node.js >= 18 recommended (you have $nv)"
+        fi
     else
-        print_fail "TeamBuilder module not found in cloned repository"
-        rm -rf temp-teambuilder 2>/dev/null
-        exit 1
-    fi
-    rm -rf temp-teambuilder 2>/dev/null
-
-    # Verify TeamBuilder installed
-    if [ ! -d "$teambuilder_dir" ]; then
-        print_fail "TeamBuilder installation failed"
-        exit 1
-    fi
-    print_success "TeamBuilder module installed"
-
-    # Register TeamBuilder in manifests
-    print_step "Registering TeamBuilder in BMAD manifests..."
-    local agent_manifest="_bmad/_config/agent-manifest.csv"
-    local manifest_entries="_bmad/teambuilder/agent-manifest-entries.csv"
-
-    if [ ! -f "$agent_manifest" ]; then
-        print_fail "Agent manifest not found at $agent_manifest"
-        print_info "BMAD may not have installed correctly"
-        exit 1
+        fail "Node.js not found"
+        missing+=("Node.js (https://nodejs.org/)")
     fi
 
-    if [ ! -f "$manifest_entries" ]; then
-        print_fail "TeamBuilder manifest entries not found"
-        print_info "TeamBuilder module may be incomplete"
+    if has_cmd npm; then
+        ok "npm $(npm --version)"
+    else
+        fail "npm not found"
+        missing+=("npm (ships with Node.js)")
+    fi
+
+    if has_cmd git; then
+        ok "git $(git --version | sed 's/^git version //')"
+    else
+        fail "git not found"
+        missing+=("git (https://git-scm.com/)")
+    fi
+
+    if has_cmd claude; then
+        ok "Claude Code CLI detected (optional — desktop app works too)"
+    else
+        info "Claude Code CLI not in PATH (the desktop app works fine too)"
+    fi
+
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        printf "\n"
+        fail "Missing required tools:"
+        for m in "${missing[@]}"; do printf "    ${C_RED}- %s${C_RESET}\n" "$m"; done
+        printf "\n  ${C_RED}Install them and re-run this script.${C_RESET}\n"
+        exit 1
+    fi
+    printf "\n"
+}
+
+# -----------------------------------------------------------------------------
+# Refuse-if-exists guard
+# -----------------------------------------------------------------------------
+check_not_already_installed() {
+    header "Checking Target Directory"
+    info "Target: $(pwd)"
+
+    if [[ -d "_bmad/teambuilder" ]]; then
+        printf "\n"
+        fail "TeamBuilder is already installed in this directory."
+        printf "\n"
+        printf "  ${C_RED}Found: _bmad/teambuilder/${C_RESET}\n\n"
+        printf "  ${C_YELLOW}To update TeamBuilder, use scripts/update-v6.sh (coming in Phase 6).${C_RESET}\n"
+        printf "  ${C_YELLOW}To diagnose issues,  use scripts/doctor-v6.sh (coming in Phase 6).${C_RESET}\n\n"
+        printf "  ${C_YELLOW}If you want a fresh install, manually remove _bmad/ first (this will${C_RESET}\n"
+        printf "  ${C_YELLOW}delete your current BMAD installation including any generated teams!).${C_RESET}\n\n"
         exit 1
     fi
 
-    cat "$manifest_entries" >> "$agent_manifest"
+    if [[ -d "_bmad" ]]; then
+        warn "_bmad/ already exists (BMAD is installed, but TeamBuilder is not)"
+        info "This installer will ADD TeamBuilder to your existing BMAD installation."
+        info "Core and BMM modules will not be touched."
+        if ! confirm "Proceed?" "y"; then
+            info "Aborted."
+            exit 0
+        fi
+    else
+        ok "Clean directory — full BMAD + TeamBuilder install will proceed"
+    fi
+    printf "\n"
+}
 
-    # 2. Add teambuilder module entry to manifest.yaml
-    local main_manifest="_bmad/_config/manifest.yaml"
-    if [ -f "$main_manifest" ]; then
-        if ! grep -q "teambuilder" "$main_manifest"; then
-            local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
-            local tmp_manifest=$(mktemp)
-            while IFS= read -r line; do
-                if [ "$line" = "ides:" ]; then
-                    echo "  - name: teambuilder" >> "$tmp_manifest"
-                    echo "    version: \"2.0\"" >> "$tmp_manifest"
-                    echo "    installDate: ${timestamp}" >> "$tmp_manifest"
-                    echo "    lastUpdated: ${timestamp}" >> "$tmp_manifest"
-                    echo "    source: external" >> "$tmp_manifest"
-                    echo "    npmPackage: null" >> "$tmp_manifest"
-                    echo "    repoUrl: https://github.com/dexusno/teambuilder" >> "$tmp_manifest"
-                fi
-                echo "$line" >> "$tmp_manifest"
-            done < "$main_manifest"
-            mv "$tmp_manifest" "$main_manifest"
+# -----------------------------------------------------------------------------
+# Clone teambuilder repo to temp
+# -----------------------------------------------------------------------------
+TEMP_BASE=""
+cleanup_temp() {
+    if [[ -n "$TEMP_BASE" && -d "$TEMP_BASE" ]]; then
+        if rm -rf "$TEMP_BASE" 2>/dev/null; then
+            ok "Cleaned up temp clone"
+        else
+            warn "Could not remove temp clone at $TEMP_BASE (you may delete it manually)"
         fi
     fi
+}
+trap cleanup_temp EXIT
 
-    # 3. Register workflows in workflow-manifest.csv
-    local workflow_manifest="_bmad/_config/workflow-manifest.csv"
-    if [ -f "$workflow_manifest" ]; then
-        if ! grep -q "teambuilder" "$workflow_manifest"; then
-            cat >> "$workflow_manifest" << 'WFEOF'
-"collaborative-generation","Three-agent collaboration workflow for high-quality team generation","teambuilder","_bmad/teambuilder/workflows/collaborative-generation/workflow.yaml"
-"discover-team-needs","Discover user requirements through guided questions","teambuilder","_bmad/teambuilder/workflows/1-discovery/discover-team-needs/workflow.yaml"
-"generate-team","Generate custom team with distinct personas and workflows","teambuilder","_bmad/teambuilder/workflows/2-generation/generate-team/workflow.yaml"
-"validate-team","Validate generated team quality through scoring and assessment","teambuilder","_bmad/teambuilder/workflows/2-generation/validate-team/workflow.yaml"
-"refine-team","Refine generated team through targeted improvements","teambuilder","_bmad/teambuilder/workflows/3-refinement/refine-team/workflow.yaml"
-WFEOF
+fetch_teambuilder_source() {
+    header "Fetching TeamBuilder Module Source"
+
+    # Maintainer flow: use a local directory instead of cloning
+    if [[ -n "$LOCAL_SOURCE" ]]; then
+        step "Using local source: $LOCAL_SOURCE"
+        if [[ ! -d "$LOCAL_SOURCE" ]]; then
+            fail "--local-source path does not exist: $LOCAL_SOURCE"
+            exit 1
         fi
+        if [[ ! -f "$LOCAL_SOURCE/module.yaml" ]]; then
+            fail "--local-source does not contain module.yaml: $LOCAL_SOURCE"
+            info "Must point at a valid BMAD custom module directory."
+            exit 1
+        fi
+        MODULE_PATH="$(cd "$LOCAL_SOURCE" && pwd)"
+        TEMP_BASE=""  # nothing to clean up
+        ok "Using local TeamBuilder module source (no clone)"
+        printf "\n"
+        return
     fi
 
-    # 4. Create Claude Code command file (flat format, teambuilder-guide only)
-    local commands_dir=".claude/commands"
-    mkdir -p "$commands_dir"
-    cat > "$commands_dir/bmad-agent-teambuilder-teambuilder-guide.md" << 'CMDEOF'
----
-name: 'teambuilder-guide'
-description: 'Team Generation Guide'
-disable-model-invocation: true
----
+    # Normal flow: clone from remote
+    TEMP_BASE="$(mktemp -d -t teambuilder-install-XXXXXXXX)"
+    step "Cloning $TEAMBUILDER_REPO (branch: $BRANCH) to temp..."
+    info "Temp: $TEMP_BASE"
 
-You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
-
-<agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from {project-root}/_bmad/teambuilder/agents/teambuilder-guide.md
-2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. FOLLOW every step in the <activation> section precisely
-4. DISPLAY the welcome/greeting as instructed
-5. PRESENT the numbered menu
-6. WAIT for user input before proceeding
-</agent-activation>
-CMDEOF
-
-    # Memory Manager command stub
-    cat > "$commands_dir/bmad-agent-teambuilder-memory-manager.md" << 'CMDEOF'
----
-name: 'memory-manager'
-description: 'Knowledge Consolidation Curator'
-disable-model-invocation: true
----
-
-You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
-
-<agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from {project-root}/_bmad/teambuilder/agents/memory-manager.md
-2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. FOLLOW every step in the <activation> section precisely
-4. DISPLAY the welcome/greeting as instructed
-5. PRESENT the numbered menu
-6. WAIT for user input before proceeding
-</agent-activation>
-CMDEOF
-
-    # 5. Inject core config values into TeamBuilder config.yaml
-    local core_config="_bmad/core/config.yaml"
-    local tb_config="_bmad/teambuilder/config.yaml"
-    if [ -f "$core_config" ] && [ -f "$tb_config" ]; then
-        local user_name=$(grep "^user_name:" "$core_config" | sed 's/^user_name:[[:space:]]*//')
-        local comm_lang=$(grep "^communication_language:" "$core_config" | sed 's/^communication_language:[[:space:]]*//')
-        local doc_lang=$(grep "^document_output_language:" "$core_config" | sed 's/^document_output_language:[[:space:]]*//')
-        local out_folder=$(grep "^output_folder:" "$core_config" | sed 's/^output_folder:[[:space:]]*//')
-        local tb_original=$(cat "$tb_config")
-        cat > "$tb_config" << CFGEOF
-# Core Configuration (from BMAD core)
-user_name: ${user_name}
-communication_language: ${comm_lang}
-document_output_language: ${doc_lang}
-output_folder: ${out_folder}
-
-${tb_original}
-CFGEOF
+    if ! git clone --depth 1 --branch "$BRANCH" "$TEAMBUILDER_REPO" "$TEMP_BASE" >/dev/null 2>&1; then
+        fail "Failed to clone teambuilder repo"
+        exit 1
     fi
 
-    print_success "TeamBuilder registered"
-
-    # Create .mcp.json
-    print_step "Creating MCP configuration..."
-
-    local mcp_content='{\n  "mcpServers": {'
-    local has_mcp=false
-
-    if [ "$install_memory_mcp" = true ]; then
-        mcp_content="$mcp_content"'\n    "memory": {\n      "command": "npx",\n      "args": ["-y", "@modelcontextprotocol/server-memory"]\n    }'
-        has_mcp=true
+    MODULE_PATH="$TEMP_BASE/$TEAMBUILDER_MODULE_PATH"
+    if [[ ! -d "$MODULE_PATH" ]]; then
+        fail "Cloned repo does not contain '$TEAMBUILDER_MODULE_PATH/'"
+        info "The teambuilder repo layout may have changed."
+        info "Check https://github.com/dexusno/teambuilder for updates."
+        exit 1
+    fi
+    if [[ ! -f "$MODULE_PATH/module.yaml" ]]; then
+        fail "Module source is missing module.yaml (not a valid BMAD custom module)"
+        exit 1
     fi
 
-    if [ "$install_playwright_mcp" = true ]; then
-        [ "$has_mcp" = true ] && mcp_content="$mcp_content,"
-        mcp_content="$mcp_content"'\n    "playwright": {\n      "command": "npx",\n      "args": ["-y", "@playwright/mcp"]\n    }'
+    ok "TeamBuilder module source ready"
+    printf "\n"
+}
+
+# -----------------------------------------------------------------------------
+# Install BMAD + TeamBuilder via --custom-content
+# -----------------------------------------------------------------------------
+install_bmad() {
+    header "Installing BMAD $BMAD_VERSION + TeamBuilder"
+    local target_dir
+    target_dir="$(pwd)"
+
+    step "Running: npx bmad-method@$BMAD_VERSION install -y --modules $BMAD_MODULES --tools $BMAD_TOOLS --custom-content \"$MODULE_PATH\""
+    info "This will take a minute or two. BMAD will:"
+    info "  - Install core module"
+    info "  - Install $BMAD_MODULES module"
+    info "  - Copy teambuilder module from $MODULE_PATH"
+    info "  - Auto-discover all SKILL.md files and generate manifests"
+    info "  - Install all skills into .claude/skills/ for Claude Code"
+    printf "\n"
+
+    if ! npx --yes "bmad-method@$BMAD_VERSION" install \
+            --directory "$target_dir" \
+            -y \
+            --modules "$BMAD_MODULES" \
+            --tools "$BMAD_TOOLS" \
+            --custom-content "$MODULE_PATH"; then
+        fail "BMAD install failed"
+        info "Leaving temp clone in place for debugging: $MODULE_PATH"
+        exit 1
     fi
 
-    mcp_content="$mcp_content"'\n  }\n}'
+    printf "\n"
 
-    echo -e "$mcp_content" > .mcp.json
-    print_success "MCP configuration created"
+    # Sanity checks — verify teambuilder landed in the installed _bmad tree
+    # (note: module.yaml is installer metadata and is NOT copied into the installed
+    #  tree; we verify config.yaml + agents/ + skills/ which ARE copied)
+    [[ -f "_bmad/teambuilder/config.yaml" ]] || { fail "Post-install check failed: _bmad/teambuilder/config.yaml not found"; info "BMAD reported success but the teambuilder module was not installed."; exit 1; }
+    [[ -d "_bmad/teambuilder/agents" ]]      || { fail "Post-install check failed: _bmad/teambuilder/agents/ not found"; exit 1; }
+    [[ -d "_bmad/teambuilder/skills" ]]      || { fail "Post-install check failed: _bmad/teambuilder/skills/ not found"; exit 1; }
+    [[ -f "_bmad/_config/agent-manifest.csv" ]] || { fail "Post-install check failed: agent-manifest.csv not found"; exit 1; }
 
-    # Create docs folder for team knowledge base
-    print_step "Creating docs folder..."
-    mkdir -p docs
-    print_success "Docs folder ready (add team reference materials here)"
+    local tb_agents tb_skills
+    tb_agents="$(grep -c '"teambuilder"' "_bmad/_config/agent-manifest.csv" || true)"
+    tb_skills="$(grep -c '"teambuilder"' "_bmad/_config/skill-manifest.csv" || true)"
 
-    # Create .gitignore
-    print_step "Creating .gitignore..."
-    cat > .gitignore << 'EOF'
-# Dependencies
-node_modules/
+    ok "Installed BMAD $BMAD_VERSION + TeamBuilder module"
+    info "  Agents registered:  $tb_agents"
+    info "  Skills registered:  $tb_skills"
+    printf "\n"
+}
 
-# Local settings
-.claude/settings.local.json
+# -----------------------------------------------------------------------------
+# Write .mcp.json
+# -----------------------------------------------------------------------------
+write_mcp_config() {
+    if [[ $NO_MCP -eq 1 ]]; then
+        info "Skipping .mcp.json (--no-mcp specified)"
+        return
+    fi
 
-# Environment files
-.env
-.env.local
+    header "Configuring MCP Servers"
 
-# OS files
-.DS_Store
-Thumbs.db
+    if [[ -f ".mcp.json" ]]; then
+        warn ".mcp.json already exists — leaving it untouched"
+        info "If you want TeamBuilder's MCP defaults, back up .mcp.json and re-run."
+        return
+    fi
 
-# Playwright artifacts
-.playwright-mcp/
+    local memory_path="$(pwd)/_bmad/teambuilder/memory/general-knowledge.jsonl"
+    mkdir -p "$(dirname "$memory_path")"
+    touch "$memory_path"
 
-# Team memory files (project-specific, not shared)
-_bmad/teams/*/memory.jsonl
+    local playwright_block=""
+    if [[ $NO_PLAYWRIGHT -eq 0 ]]; then
+        playwright_block=',
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }'
+    fi
+
+    cat > .mcp.json <<EOF
+{
+  "mcpServers": {
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_FILE_PATH": "$memory_path"
+      }
+    }$playwright_block
+  }
+}
 EOF
-    print_success ".gitignore created"
 
-    # Initialize Git if requested
-    if [ "$init_git" = true ]; then
-        print_step "Initializing Git repository..."
-        git init
-        git add .
-        git commit -m "Initial commit: BMAD + TeamBuilder project"
-        print_success "Git repository initialized"
-    fi
-
-    # ===== STEP 6: Complete =====
-    print_header "Installation Complete!"
-
-    local folder_name=$(basename "$target_dir")
-    echo -e "  ${GREEN}+-------------------------------------------------------------+${NC}"
-    echo -e "  ${GREEN}|  Success! Your project is ready.                            |${NC}"
-    echo -e "  ${GREEN}|                                                             |${NC}"
-    echo -e "  ${GREEN}|  Next steps:                                                |${NC}"
-    echo -e "  ${GREEN}|    1. Open terminal in this folder                          |${NC}"
-    echo -e "  ${GREEN}|    2. Run: claude .                                         |${NC}"
-    echo -e "  ${GREEN}|    3. Type: /bmad-agent-teambuilder-teambuilder-guide       |${NC}"
-    echo -e "  ${GREEN}|                                                             |${NC}"
-    echo -e "  ${GREEN}|  TIP: You'll see many / commands - ignore them all.         |${NC}"
-    echo -e "  ${GREEN}|  The command above is the only one you need to start!       |${NC}"
-    echo -e "  ${GREEN}|                                                             |${NC}"
-    echo -e "  ${GREEN}|  Happy team building!                                       |${NC}"
-    echo -e "  ${GREEN}+-------------------------------------------------------------+${NC}"
-    echo ""
+    ok "Wrote .mcp.json"
+    info "  memory server   -> $memory_path"
+    [[ $NO_PLAYWRIGHT -eq 0 ]] && info "  playwright      -> @playwright/mcp@latest"
+    printf "\n"
 }
 
-# Run main
-main
+# -----------------------------------------------------------------------------
+# Docs folder and .gitignore
+# -----------------------------------------------------------------------------
+initialize_project_files() {
+    header "Finalizing Project Structure"
+
+    if [[ ! -d "docs" ]]; then
+        mkdir -p "docs"
+        ok "Created docs/ (team knowledge base)"
+    else
+        info "docs/ already exists — leaving alone"
+    fi
+
+    local tb_rules='
+# --- TeamBuilder / BMAD v6 ---
+# Team-specific memory files (per generated team, local-only)
+_bmad-output/teams/*/memory.jsonl
+_bmad-output/teams/*/session-context.md
+# BMAD output folder can grow large; track it selectively
+# _bmad-output/
+'
+
+    if [[ -f ".gitignore" ]]; then
+        if grep -q '_bmad-output/teams/\*/memory\.jsonl' .gitignore 2>/dev/null; then
+            info ".gitignore already has TeamBuilder rules"
+        else
+            printf '%s' "$tb_rules" >> .gitignore
+            ok "Appended TeamBuilder rules to .gitignore"
+        fi
+    else
+        printf '%s' "$tb_rules" > .gitignore
+        ok "Created .gitignore with TeamBuilder rules"
+    fi
+    printf "\n"
+}
+
+# -----------------------------------------------------------------------------
+# Success message
+# -----------------------------------------------------------------------------
+show_success() {
+    printf "\n"
+    printf "  ${C_GREEN}+---------------------------------------------------+${C_RESET}\n"
+    printf "  ${C_GREEN}|            Installation Complete!                 |${C_RESET}\n"
+    printf "  ${C_GREEN}+---------------------------------------------------+${C_RESET}\n\n"
+    printf "  ${C_CYAN}Next steps:${C_RESET}\n\n"
+    printf "  ${C_WHITE}1. Open this directory in Claude Code (CLI or desktop app)${C_RESET}\n"
+    printf "  ${C_WHITE}2. Restart Claude Code so it discovers the new .claude/skills/${C_RESET}\n"
+    printf "  ${C_WHITE}3. Invoke the TeamBuilder Guide:${C_RESET}\n\n"
+    printf "       ${C_YELLOW}/bmad-agent-team-guide${C_RESET}\n\n"
+    printf "  ${C_WHITE}4. Follow the guided discovery to build your first team.${C_RESET}\n\n"
+    printf "  ${C_CYAN}Available agents:${C_RESET}\n"
+    printf "    ${C_GRAY}/bmad-agent-team-guide        - Main entry point${C_RESET}\n"
+    printf "    ${C_GRAY}/bmad-agent-team-architect    - Structural designer${C_RESET}\n"
+    printf "    ${C_GRAY}/bmad-agent-persona-improver  - Persona quality specialist${C_RESET}\n"
+    printf "    ${C_GRAY}/bmad-agent-quality-guardian  - Validation reviewer${C_RESET}\n"
+    printf "    ${C_GRAY}/bmad-agent-tool-scout        - MCP/tool researcher${C_RESET}\n"
+    printf "    ${C_GRAY}/bmad-agent-memory-manager    - Cross-team memory consolidation${C_RESET}\n\n"
+    printf "  ${C_CYAN}Docs: https://github.com/dexusno/teambuilder${C_RESET}\n\n"
+}
+
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
+banner
+check_prerequisites
+check_not_already_installed
+fetch_teambuilder_source
+install_bmad
+write_mcp_config
+initialize_project_files
+show_success

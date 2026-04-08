@@ -1,103 +1,215 @@
-# Validation Rules for Generated Teams
-# These rules ensure quality across agents, workflows, and team composition
+# ============================================================================
+# TeamBuilder Validation Rules — v3.0 (BMAD v6 architecture)
+# ============================================================================
+#
+# This file drives `bmad-skill-validate-team` scoring for generated teams.
+#
+# v6 ARCHITECTURE ASSUMPTIONS (changed from v5):
+#
+#   1. Agent files are v6 skill-shaped, NOT XML:
+#      - User-facing agent = directory `agents/bmad-agent-*/` containing
+#        `SKILL.md` (with frontmatter `name` + `description`) AND
+#        `bmad-skill-manifest.yaml` (with `type: agent` + 9 persona fields).
+#      - Skill-only artifact = directory containing only `SKILL.md`
+#        (no `bmad-skill-manifest.yaml` with `type: agent`).
+#
+#   2. Workflow files are v6 skill-shaped, NOT a yaml triad:
+#      - Each workflow = directory `skills/bmad-skill-*/` containing
+#        `SKILL.md` + `workflow.md` (+ optional `template.md`).
+#      - The old v5 triad (`workflow.yaml` + `instructions.md` + `template.md`)
+#        no longer exists.
+#
+#   3. Installation is fully handled by BMAD:
+#      - `bmad-method install --custom-content {team-path}` auto-generates
+#        `agent-manifest.csv`, `skill-manifest.csv`, `files-manifest.csv`
+#        and installs into `.claude/skills/` automatically.
+#      - The old v5 steps (hand-edit manifests, drop stubs in
+#        `.claude/commands/`, register agents manually) are GONE. Any
+#        rule that checked for them has been removed.
+#
+#   4. Every generated team must itself be an installable custom module:
+#      - Must have its own `module.yaml` at the team root.
+#      - That `module.yaml` MUST set `code: teams-{team_name}` so BMAD
+#        installs the module at `_bmad/teams-{team_name}/` and the
+#        team's agents can later call `bmad-init --module=teams-{team_name}`
+#        to load config. A generated team that omits this prefix silently
+#        fails at runtime.
+#
+#   5. Every generated skill must reference `bmad-init` at the start of
+#      its on-activation steps, so module config is loaded before the
+#      skill does any work.
+#
+# Scoring weights and bands are UNCHANGED from v2:
+#   - Agent quality:   40%
+#   - Workflow quality: 30%
+#   - Team coherence:   30%
+# Quality bands:
+#   - 95-100: exceptional, install immediately
+#   - 85-94:  good, ready to use
+#   - 75-84:  acceptable, refinement recommended
+#   - 60-74:  needs work, refinement required
+#   - <60:    regenerate
+#
+# A well-formed v6 generated team should score 90+ on all three
+# dimensions when checked against this file.
+# ============================================================================
+
+version: 3.0
+architecture: v6
+scoring_weights:
+  agent_quality: 40
+  workflow_quality: 30
+  team_coherence: 30
 
 validation_rules:
 
-  # ============================================================================
-  # AGENT-LEVEL CHECKS
-  # ============================================================================
+  # ==========================================================================
+  # AGENT-LEVEL CHECKS  (dimension weight: 40%)
+  # ==========================================================================
 
   agent_checks:
 
-    # Role Clarity
+    # --- File shape / architecture compliance (v6) --------------------------
+    agent_structure:
+      - rule: "User-facing agent has both SKILL.md and bmad-skill-manifest.yaml"
+        check: "Directory `agents/bmad-agent-*/` contains both `SKILL.md` and `bmad-skill-manifest.yaml` where the manifest has `type: agent`"
+        severity: "critical"
+        score_impact: 25
+        fix_suggestion: "Add the missing file. User-facing agents are v6 skill-shaped: SKILL.md + bmad-skill-manifest.yaml"
+
+      - rule: "Skill-only artifact has only SKILL.md"
+        check: "Skill-only artifacts must NOT have a `bmad-skill-manifest.yaml` with `type: agent` (either no manifest, or one without that type)"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Remove the agent manifest from skill-only artifacts, or promote them to user-facing agents with a full manifest"
+
+      - rule: "SKILL.md frontmatter is valid"
+        check: "SKILL.md has YAML frontmatter with non-empty `name` and `description` fields"
+        severity: "critical"
+        score_impact: 25
+        fix_suggestion: "Add a YAML frontmatter block with `name:` and `description:` at the top of SKILL.md"
+
+      - rule: "SKILL.md frontmatter `name` matches directory name"
+        check: "The `name:` value in SKILL.md frontmatter is byte-identical to the containing directory name"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Rename either the directory or the `name:` field so they match exactly (BMAD's installer uses directory name as the canonical id)"
+
+      - rule: "SKILL.md description states when to use the skill"
+        check: "`description:` is non-empty, at least one sentence, and includes a 'Use when...' clause for skill discovery"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Rewrite the description to include a concrete 'Use when...' clause so BMAD's skill discovery can route to this skill"
+
+      - rule: "bmad-skill-manifest.yaml has all 9 required fields populated"
+        check: "Manifest contains non-empty `type`, `name`, `displayName`, `title`, `icon`, `capabilities`, `role`, `identity`, `communicationStyle`, `principles`, `module`"
+        severity: "critical"
+        score_impact: 25
+        fix_suggestion: "Populate every field in the 9-field manifest schema — empty strings and placeholders count as failing"
+
+      - rule: "Manifest `module:` uses the `teams-{team_name}` code"
+        check: "Every generated agent manifest has `module: teams-{team_name}` matching the generated team's module.yaml code"
+        severity: "critical"
+        score_impact: 20
+        fix_suggestion: "Set `module: teams-{team_name}` so agents can load their own module config via `bmad-init --module=teams-{team_name}` at runtime"
+
+      - rule: "On-activation step references bmad-init"
+        check: "SKILL.md `On Activation` section references `bmad-init` with `--module=teams-{team_name}` as its first step"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Add `bmad-init --module=teams-{team_name}` as the first activation step so config loads before any work runs"
+
+    # --- Naming conventions (v6) --------------------------------------------
+    agent_naming:
+      - rule: "User-facing agents use `bmad-agent-*` prefix"
+        check: "Directory and SKILL.md `name` both begin with `bmad-agent-`, lowercase, hyphens only, no underscores or spaces"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Rename to `bmad-agent-{kebab-case-name}` — lowercase, hyphens only"
+
+      - rule: "Skill-only artifacts use `bmad-skill-*` prefix"
+        check: "Skill-only directories and SKILL.md `name` both begin with `bmad-skill-`, lowercase, hyphens only"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Rename to `bmad-skill-{kebab-case-name}` — lowercase, hyphens only"
+
+    # --- Role clarity -------------------------------------------------------
     role_clarity:
       - rule: "Each agent has distinct, non-overlapping role"
-        check: "No two agents have >60% role description similarity"
+        check: "No two agents in the team have >60% role description similarity"
         severity: "critical"
         score_impact: 15
         fix_suggestion: "Redefine overlapping agent roles to be more distinct"
 
       - rule: "Role description is specific, not vague"
-        check: "Role contains specific capabilities, not generic phrases"
+        check: "`role:` contains specific capabilities, not generic phrases"
         severity: "high"
         score_impact: 10
         fix_suggestion: "Replace generic descriptions with specific capabilities"
 
-    # Persona Quality
+    # --- Persona quality ----------------------------------------------------
     persona_quality:
       - rule: "Identity has specific background"
-        check: "Identity includes concrete background, not 'experienced professional'"
+        check: "`identity:` includes a concrete background, not 'experienced professional'"
         severity: "high"
         score_impact: 12
         fix_suggestion: "Add specific background (e.g., 'Former X turned Y' with details)"
 
       - rule: "Communication style is distinctive"
-        check: "Communication style is not generic 'professional and clear'"
+        check: "`communicationStyle:` is not the generic 'professional and clear'"
         severity: "medium"
         score_impact: 8
         fix_suggestion: "Create unique communication patterns (formal/casual/technical/creative)"
 
       - rule: "Principles show clear values"
-        check: "Principles are not platitudes ('quality is important')"
+        check: "`principles:` are not platitudes ('quality is important')"
         severity: "medium"
         score_impact: 7
         fix_suggestion: "Express specific beliefs and priorities unique to this agent"
 
       - rule: "Agent is memorable"
-        check: "Persona has personality markers that make agent memorable"
+        check: "Persona has personality markers that make the agent memorable"
         severity: "medium"
         score_impact: 6
         fix_suggestion: "Add personality through specific details, phrases, or behaviors"
 
-    # Domain Expertise
+    # --- Domain expertise ---------------------------------------------------
     domain_expertise:
       - rule: "Uses domain-specific terminology"
-        check: "Persona includes terminology from target domain"
+        check: "Persona includes terminology from the target domain from discovery"
         severity: "high"
         score_impact: 10
         fix_suggestion: "Incorporate domain-specific terms from discovery"
 
       - rule: "Shows domain understanding"
-        check: "Identity or principles demonstrate domain knowledge"
+        check: "`identity:` or `principles:` demonstrate domain knowledge"
         severity: "high"
         score_impact: 9
         fix_suggestion: "Reference domain-specific challenges, practices, or context"
 
-    # Distinctness
+    # --- Distinctness across the team ---------------------------------------
     agent_distinctness:
       - rule: "Agents don't sound the same"
-        check: "Communication styles vary significantly across team"
+        check: "`communicationStyle:` varies significantly across the team"
         severity: "critical"
         score_impact: 15
         fix_suggestion: "Vary tone, formality, style across agents"
 
       - rule: "No duplicate personas"
-        check: "No two agents have >70% identity similarity"
+        check: "No two agents have >70% `identity:` similarity"
         severity: "critical"
         score_impact: 20
         fix_suggestion: "Rewrite similar agents to be truly distinct"
 
-    # Structural Requirements
-    agent_structure:
-      - rule: "All required fields present"
-        check: "Agent has role, identity, communication_style, principles"
-        severity: "critical"
-        score_impact: 25
-        fix_suggestion: "Add missing persona components"
-
-      - rule: "Valid XML structure"
-        check: "Agent file is well-formed XML"
-        severity: "critical"
-        score_impact: 30
-        fix_suggestion: "Fix XML syntax errors"
-
-      - rule: "Has at least one menu item"
-        check: "Agent has menu with at least one actionable item"
+    # --- Capabilities / menu coverage ---------------------------------------
+    agent_capabilities:
+      - rule: "Has at least one actionable capability"
+        check: "SKILL.md Capabilities table has at least one row beyond the standard MH/CH/SS/PM/DA entries"
         severity: "high"
         score_impact: 8
-        fix_suggestion: "Add menu items with workflow references"
+        fix_suggestion: "Add domain-specific capability rows that invoke the team's workflow skills"
 
-    # Pattern Similarity Check
+    # --- Pattern independence -----------------------------------------------
     pattern_similarity:
       - rule: "Not too similar to pattern examples"
         check: "Agent is <50% similar to any pattern library agent"
@@ -105,36 +217,56 @@ validation_rules:
         score_impact: 12
         fix_suggestion: "Generated agent should be inspired by patterns, not copied"
 
-  # ============================================================================
-  # WORKFLOW-LEVEL CHECKS
-  # ============================================================================
+  # ==========================================================================
+  # WORKFLOW-LEVEL CHECKS  (dimension weight: 30%)
+  # ==========================================================================
 
   workflow_checks:
 
-    # Completeness
+    # --- File shape / architecture compliance (v6) --------------------------
     workflow_completeness:
-      - rule: "Has all three required files"
-        check: "workflow.yaml, instructions.md, template.md all exist"
+      - rule: "Workflow skill directory has required files"
+        check: "Each `skills/bmad-skill-*/` directory contains `SKILL.md` AND `workflow.md`; `template.md` is optional (required only if the workflow produces a structured document)"
         severity: "critical"
         score_impact: 20
-        fix_suggestion: "Create missing workflow files"
+        fix_suggestion: "Add the missing `SKILL.md` and/or `workflow.md`. v6 workflows are NOT the old `workflow.yaml + instructions.md + template.md` triad"
 
-      - rule: "Variables are defined"
-        check: "workflow.yaml defines necessary variables"
+      - rule: "Workflow SKILL.md frontmatter is valid"
+        check: "Workflow `SKILL.md` has YAML frontmatter with non-empty `name` and `description`, and `name` matches the directory name exactly"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Add/repair frontmatter. `name:` must equal the containing directory name"
+
+      - rule: "Workflow description states when to use"
+        check: "`description:` is non-empty and includes a 'Use when...' clause for skill discovery"
         severity: "high"
         score_impact: 8
-        fix_suggestion: "Define all variables used in workflow"
+        fix_suggestion: "Rewrite the workflow description to include a concrete 'Use when...' clause"
 
-      - rule: "Output is specified"
-        check: "workflow.yaml specifies output files"
+      - rule: "Workflow references bmad-init on activation"
+        check: "Workflow SKILL.md On Activation references `bmad-init --module=teams-{team_name}` as the first step"
         severity: "high"
-        score_impact: 7
-        fix_suggestion: "Define output files and formats"
+        score_impact: 8
+        fix_suggestion: "Add `bmad-init --module=teams-{team_name}` as the first activation step so the team's config loads before the workflow runs"
 
-    # Actionability
+      - rule: "Has measurable outputs"
+        check: "`workflow.md` produces concrete artifacts (documents, decisions, saved files)"
+        severity: "medium"
+        score_impact: 6
+        fix_suggestion: "Define specific output documents or artifacts"
+
+    # --- Naming conventions (v6) --------------------------------------------
+    workflow_naming:
+      - rule: "Workflow uses `bmad-skill-*` prefix"
+        check: "Directory and `name:` both begin with `bmad-skill-`, lowercase, hyphens only"
+        severity: "critical"
+        score_impact: 15
+        fix_suggestion: "Rename to `bmad-skill-{kebab-case-name}` — lowercase, hyphens only"
+
+    # --- Actionability ------------------------------------------------------
     workflow_actionability:
       - rule: "Steps are specific, not vague"
-        check: "Instructions contain specific actions, not generic directives"
+        check: "`workflow.md` contains specific actions, not generic directives like 'gather information'"
         severity: "high"
         score_impact: 10
         fix_suggestion: "Replace 'gather information' with 'interview about X, Y, Z'"
@@ -145,16 +277,10 @@ validation_rules:
         score_impact: 6
         fix_suggestion: "Assign agents to workflow steps explicitly"
 
-      - rule: "Has measurable outputs"
-        check: "Workflow produces concrete artifacts (documents, decisions, etc.)"
-        severity: "medium"
-        score_impact: 6
-        fix_suggestion: "Define specific output documents or artifacts"
-
-    # Agent References
+    # --- Agent references ---------------------------------------------------
     workflow_agent_references:
       - rule: "References valid agent names"
-        check: "Workflow only references agents that exist in the team"
+        check: "`workflow.md` only references agent names that exist in the team's `agents/` directory"
         severity: "critical"
         score_impact: 15
         fix_suggestion: "Update workflow to reference actual team agent names"
@@ -165,7 +291,7 @@ validation_rules:
         score_impact: 7
         fix_suggestion: "Align workflow tasks with agent capabilities"
 
-    # Coherence
+    # --- Coherence ----------------------------------------------------------
     workflow_coherence:
       - rule: "Steps follow logical sequence"
         check: "Workflow steps build on each other logically"
@@ -179,25 +305,71 @@ validation_rules:
         score_impact: 5
         fix_suggestion: "Define agent interaction patterns (handoffs, reviews, etc.)"
 
-  # ============================================================================
-  # TEAM-LEVEL CHECKS
-  # ============================================================================
+  # ==========================================================================
+  # TEAM-LEVEL CHECKS  (dimension weight: 30%)
+  # ==========================================================================
 
   team_checks:
 
-    # Coverage
+    # --- Module installability (v6, CRITICAL) -------------------------------
+    team_module:
+      - rule: "Generated team has its own module.yaml"
+        check: "A `module.yaml` file exists at the generated team root for `--custom-content` install"
+        severity: "critical"
+        score_impact: 30
+        fix_suggestion: "Create `module.yaml` at the team root. Without it, BMAD's `--custom-content` flow cannot install the team"
+
+      - rule: "module.yaml `code:` uses the `teams-` prefix"
+        check: "`module.yaml` contains `code: teams-{team_name}` (using the actual kebab-case team name, e.g. `code: teams-research-team`)"
+        severity: "critical"
+        score_impact: 30
+        fix_suggestion: |
+          Set `code: teams-{team_name}` in the generated team's module.yaml.
+          BMAD's `bmad-init` discovers modules by literal directory name
+          match (`_bmad/{code}/config.yaml`). Without the `teams-` prefix,
+          `--custom-content` will install into the wrong location and
+          every agent in the team will silently fail to load config at
+          runtime, reporting `init_required`. This is non-negotiable.
+
+      - rule: "Each agent manifest `module:` matches team module code"
+        check: "Every `bmad-skill-manifest.yaml` in the team has `module: teams-{team_name}` matching `module.yaml` `code:`"
+        severity: "critical"
+        score_impact: 20
+        fix_suggestion: "Align every agent manifest's `module:` with the team's `module.yaml` `code:` value"
+
+      - rule: "Team config.yaml exists at team root"
+        check: "`config.yaml` exists at the generated team root"
+        severity: "high"
+        score_impact: 10
+        fix_suggestion: "Create `config.yaml` at team root with team metadata and the core inheritance stubs"
+
+    # --- Session-management skills ------------------------------------------
+    team_session_skills:
+      - rule: "Team has bmad-skill-save-session skill"
+        check: "`skills/bmad-skill-save-session/` exists with SKILL.md + workflow.md (copied from templates/team-skills/ and placeholder-replaced)"
+        severity: "high"
+        score_impact: 8
+        fix_suggestion: "Copy `templates/team-skills/bmad-skill-save-session/` into the team's skills/ directory and replace `{team_name}`, `{output_folder}`, `{project-root}` placeholders"
+
+      - rule: "Team has bmad-skill-memory-guide skill"
+        check: "`skills/bmad-skill-memory-guide/` exists with SKILL.md + reference.md (copied from templates/team-skills/ and placeholder-replaced)"
+        severity: "high"
+        score_impact: 8
+        fix_suggestion: "Copy `templates/team-skills/bmad-skill-memory-guide/` into the team's skills/ directory and replace placeholders"
+
+    # --- Coverage -----------------------------------------------------------
     team_coverage:
       - rule: "Has coordinator or decision-maker"
-        check: "At least one agent with coordination/leadership role"
+        check: "At least one agent with a coordination/leadership role"
         severity: "critical"
         score_impact: 15
-        fix_suggestion: "Add coordinator or primary decision-maker agent"
+        fix_suggestion: "Add a coordinator or primary decision-maker agent"
 
       - rule: "Has domain expert"
         check: "At least one agent with deep domain expertise"
         severity: "critical"
         score_impact: 15
-        fix_suggestion: "Add agent with specialized domain knowledge"
+        fix_suggestion: "Add an agent with specialized domain knowledge"
 
       - rule: "Key concerns addressed"
         check: "Team includes agents for each key concern from discovery"
@@ -211,7 +383,13 @@ validation_rules:
         score_impact: 7
         fix_suggestion: "Add missing functional roles"
 
-    # Team Size
+      - rule: "At least one user-facing agent"
+        check: "Team contains at least one `bmad-agent-*` with a full `bmad-skill-manifest.yaml` of `type: agent`"
+        severity: "critical"
+        score_impact: 20
+        fix_suggestion: "Promote at least one agent (typically the coordinator) to user-facing with a full manifest"
+
+    # --- Team size ----------------------------------------------------------
     team_size:
       - rule: "Team size is appropriate"
         check: "Team size matches scope (4-6 simple, 6-8 medium, 8-12 complex)"
@@ -220,35 +398,35 @@ validation_rules:
         fix_suggestion: "Adjust team size based on scope"
 
       - rule: "Not too small"
-        check: "Team has minimum 4 agents"
+        check: "Team has a minimum of 4 agents"
         severity: "high"
         score_impact: 10
         fix_suggestion: "Add agents to reach minimum viable team size"
 
       - rule: "Not too large"
-        check: "Team has maximum 12 agents"
+        check: "Team has a maximum of 12 agents"
         severity: "medium"
         score_impact: 6
         fix_suggestion: "Consider splitting into multiple focused teams"
 
-    # Collaboration Model
+    # --- Collaboration model ------------------------------------------------
     collaboration_model:
       - rule: "Clear collaboration structure"
-        check: "Team has defined collaboration pattern (formal/agile/consultative/etc.)"
+        check: "Team has a defined collaboration pattern (formal/agile/consultative/casual/flexible)"
         severity: "medium"
         score_impact: 6
         fix_suggestion: "Define how agents work together"
 
       - rule: "No isolated agents"
-        check: "Each agent has clear interaction points with team"
+        check: "Each agent has clear interaction points with the team"
         severity: "medium"
         score_impact: 5
-        fix_suggestion: "Define how isolated agents integrate with team"
+        fix_suggestion: "Define how isolated agents integrate with the team"
 
-    # Domain Alignment
+    # --- Domain alignment ---------------------------------------------------
     domain_alignment:
       - rule: "Aligned with discovered domain"
-        check: "Team composition matches domain classification from discovery"
+        check: "Team composition matches the domain classification from discovery"
         severity: "high"
         score_impact: 10
         fix_suggestion: "Adjust team to better match domain requirements"
@@ -259,7 +437,7 @@ validation_rules:
         score_impact: 9
         fix_suggestion: "Incorporate user's specific context into agent roles"
 
-    # Quality Indicators
+    # --- Quality indicators -------------------------------------------------
     team_quality:
       - rule: "Has distinctive team character"
         check: "Team feels cohesive yet distinct from generic teams"
@@ -274,12 +452,11 @@ validation_rules:
         fix_suggestion: "Ensure agents bring different perspectives and skills"
 
 # ============================================================================
-# QUALITY SCORING
+# QUALITY SCORING  (UNCHANGED from v2)
 # ============================================================================
 
 quality_scoring:
 
-  # Score calculation
   calculation: |
     base_score = 100
 
@@ -301,14 +478,15 @@ quality_scoring:
     if has_standout_personas:
       quality_score = min(100, quality_score + 5)
 
-  # Thresholds
+  # Thresholds (UNCHANGED from v2)
   thresholds:
-    excellent: 95    # Install immediately
-    good: 85         # Ready to use
-    acceptable: 75   # Refinement recommended
-    minimum: 60      # Refinement required
+    exceptional: 95    # 95-100: install immediately
+    good: 85           # 85-94:  ready to use
+    acceptable: 75     # 75-84:  refinement recommended
+    needs_work: 60     # 60-74:  refinement required
+                       # <60:    regenerate
 
-  # Severity weights
+  # Severity weights (UNCHANGED from v2)
   severity_multipliers:
     critical: 1.5
     high: 1.2
@@ -325,7 +503,11 @@ validation_report:
     - name: "Quality Score"
       content: |
         Overall Score: {{score}}/100
-        Rating: {{rating}}  # Excellent/Good/Acceptable/Needs Work
+        Rating: {{rating}}  # Exceptional/Good/Acceptable/Needs Work/Regenerate
+        Breakdown:
+          - Agent Quality:    {{agent_score}}/40
+          - Workflow Quality: {{workflow_score}}/30
+          - Team Coherence:   {{team_score}}/30
 
     - name: "Agent Quality"
       content: |
@@ -337,7 +519,7 @@ validation_report:
         Checks passed: {{workflow_checks_passed}}/{{workflow_checks_total}}
         Issues: {{workflow_issues_summary}}
 
-    - name: "Team Quality"
+    - name: "Team Coherence"
       content: |
         Checks passed: {{team_checks_passed}}/{{team_checks_total}}
         Issues: {{team_issues_summary}}
@@ -354,11 +536,12 @@ validation_report:
 
     - name: "Decision"
       content: |
-        Based on quality score:
-        - 95+: Excellent! Install immediately.
-        - 85-94: Good quality. Install or make minor refinements.
-        - 75-84: Acceptable. Refinement recommended before installation.
-        - <75: Needs work. Refinement required.
+        Based on overall quality score:
+        - 95-100: Exceptional — install immediately
+        - 85-94:  Good — ready to use
+        - 75-84:  Acceptable — refinement recommended
+        - 60-74:  Needs work — refinement required
+        - <60:    Regenerate recommended
 
 # ============================================================================
 # SPECIAL CHECKS
@@ -366,7 +549,7 @@ validation_report:
 
 special_checks:
 
-  # Check for common anti-patterns
+  # Common anti-patterns
   anti_patterns:
     - pattern: "All agents have 'professional' communication style"
       severity: "high"
@@ -387,6 +570,14 @@ special_checks:
     - pattern: "No agent has clear coordinator role"
       severity: "critical"
       fix: "Designate primary coordinator or decision-maker"
+
+    - pattern: "module.yaml missing `teams-` prefix"
+      severity: "critical"
+      fix: "Set `code: teams-{team_name}` — required for BMAD module discovery at runtime"
+
+    - pattern: "Agent manifest empty or stub-valued persona fields"
+      severity: "critical"
+      fix: "All 9 manifest fields must be fully populated; empty strings and placeholders count as failing"
 
   # Bonus quality indicators
   excellence_markers:
@@ -416,19 +607,26 @@ implementation_notes: |
   This validation system runs automatically after team generation.
 
   Process:
-  1. Load generated team files
+  1. Load generated team files (SKILL.md + bmad-skill-manifest.yaml for agents,
+     SKILL.md + workflow.md for workflows, module.yaml + config.yaml for team)
   2. Run all applicable checks
-  3. Calculate quality score
+  3. Calculate quality score across the three weighted dimensions
   4. Generate validation report
   5. Provide refinement suggestions
   6. Present to user with install/refine options
 
   Critical checks MUST pass for installation.
-  High-severity checks strongly recommended.
+  High-severity checks are strongly recommended.
   Medium/low checks are improvements.
 
-  User can override and install any team, but validation report
+  The user can override and install any team, but the validation report
   provides transparency on quality issues.
+
+  NOTE: BMAD handles all manifest registration, `.claude/skills/` installation,
+  and module discovery automatically via `bmad-method install --custom-content`.
+  There are no rules here for hand-edited `agent-manifest.csv`,
+  `.claude/commands/` stubs, or manual module registration — these v5-era
+  concerns no longer apply in v6.
 
 ---
 
@@ -437,29 +635,29 @@ implementation_notes: |
 When validate-team workflow runs:
 
 1. **Load team artifacts**
-   - All agent files
-   - All workflow files
-   - Team config
+   - `module.yaml` and `config.yaml` at team root
+   - All `agents/bmad-agent-*/SKILL.md` + `bmad-skill-manifest.yaml`
+   - All `skills/bmad-skill-*/SKILL.md` + `workflow.md` (+ `template.md`)
+   - Requirements document
 
-2. **Run agent checks**
-   - For each agent in team
+2. **Run agent checks**  (contributes to 40% agent-quality dimension)
+   - For each agent directory
    - Apply agent_checks rules
    - Record pass/fail and issues
 
-3. **Run workflow checks**
-   - For each workflow in team
+3. **Run workflow checks**  (contributes to 30% workflow-quality dimension)
+   - For each workflow skill directory
    - Apply workflow_checks rules
    - Record pass/fail and issues
 
-4. **Run team checks**
-   - Analyze team as whole
+4. **Run team checks**  (contributes to 30% team-coherence dimension)
+   - Analyze team as whole, including module.yaml installability
    - Apply team_checks rules
    - Record pass/fail and issues
 
 5. **Calculate score**
    - Start with base_score = 100
-   - Deduct points for failed checks
-   - Apply severity multipliers
+   - Deduct points for failed checks (severity-multiplied)
    - Add bonuses for excellence markers
    - Final score = max(0, min(100, score))
 

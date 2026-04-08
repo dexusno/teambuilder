@@ -1,5 +1,7 @@
 # Research / Intelligence Pattern - Collaboration
 
+> **v6 architecture** — examples below use BMAD v6.2.2 shape: `SKILL.md` + `bmad-skill-manifest.yaml` for agents, `SKILL.md` + `workflow.md` for skills.
+
 ## Style: Iterative and Synthesis-Focused
 
 **Research Cycles:**

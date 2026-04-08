@@ -1,547 +1,476 @@
-<#
+﻿<#
 .SYNOPSIS
-    TeamBuilder Project Installer for Windows
+    TeamBuilder v3 Project Installer for Windows (BMAD v6.2.2)
 .DESCRIPTION
-    Installs BMAD Method + TeamBuilder module with all prerequisites.
-    Creates a ready-to-use project for building AI agent teams.
-    Run this script from inside your project folder.
+    Installs BMAD Method v6 core + bmm module + the TeamBuilder custom module
+    into the CURRENT DIRECTORY, and configures Claude Code + Memory/Playwright MCP.
+
+    This is the BMAD v6 installer. It uses BMAD's native --custom-content flow
+    to register TeamBuilder as a first-class v6 custom module. No manual manifest
+    editing, no .claude/commands/ stubs, no file-triad workflows - BMAD auto-generates
+    everything from the TeamBuilder module's SKILL.md + bmad-skill-manifest.yaml files.
+
+    The installer:
+      1. Checks prerequisites (Node.js, npm, git)
+      2. Refuses to run if TeamBuilder is already installed (use update/doctor scripts)
+      3. Clones the teambuilder repo to a temp directory
+      4. Runs `npx bmad-method install --custom-content ...` to register TeamBuilder
+      5. Writes .mcp.json (Memory + optional Playwright MCP servers)
+      6. Creates docs/ and updates .gitignore
+      7. Reports success with next steps
+
+.PARAMETER Yes
+    Accept all defaults and skip interactive prompts.
+.PARAMETER NoMcp
+    Skip .mcp.json creation (user will configure MCP servers manually).
+.PARAMETER NoPlaywright
+    Skip Playwright MCP server in .mcp.json (keep Memory only).
+.PARAMETER Branch
+    Git branch to clone from the teambuilder repo. Default: main.
+.PARAMETER LocalSource
+    Path to a local teambuilder module directory (skips the git clone).
+    Used by maintainers testing changes before committing. Must point at a
+    directory that contains module.yaml.
 .EXAMPLE
     mkdir my-project
     cd my-project
-    .\install.ps1
+    .\install-v6.ps1
+.EXAMPLE
+    .\install.ps1 -Yes -NoPlaywright
+.EXAMPLE
+    # Maintainer flow: test a local checkout without pushing
+    .\install.ps1 -LocalSource D:\teambuilder-repo\teambuilder -Yes
 .LINK
     https://github.com/dexusno/teambuilder
 #>
 
+param(
+    [switch]$Yes,
+    [switch]$NoMcp,
+    [switch]$NoPlaywright,
+    [string]$Branch = "main",
+    [string]$LocalSource = ""
+)
+
 $ErrorActionPreference = "Stop"
 
-# Colors and formatting
+# =============================================================================
+# Configuration
+# =============================================================================
+
+$TEAMBUILDER_REPO = "https://github.com/dexusno/teambuilder.git"
+$TEAMBUILDER_MODULE_PATH = "teambuilder"     # Module directory within the cloned repo
+$BMAD_VERSION = "6.2.2"                      # Pinned stable version (channel: stable)
+$BMAD_MODULES = "bmm"                        # Default modules to install alongside teambuilder
+$BMAD_TOOLS = "claude-code"                  # Default IDE integration
+
+# =============================================================================
+# Console formatting
+# =============================================================================
+
 function Write-Header {
     param([string]$Text)
     Write-Host ""
-    Write-Host ("=" * 55) -ForegroundColor Cyan
+    Write-Host ("=" * 60) -ForegroundColor Cyan
     Write-Host "  $Text" -ForegroundColor Cyan
-    Write-Host ("=" * 55) -ForegroundColor Cyan
+    Write-Host ("=" * 60) -ForegroundColor Cyan
     Write-Host ""
 }
 
-function Write-Step {
-    param([string]$Text)
-    Write-Host "  -> $Text" -ForegroundColor Yellow
-}
+function Write-Step    { param([string]$t) Write-Host "  -> $t" -ForegroundColor Yellow }
+function Write-Success { param([string]$t) Write-Host "  [OK] $t" -ForegroundColor Green }
+function Write-Fail    { param([string]$t) Write-Host "  [X]  $t" -ForegroundColor Red }
+function Write-Warn    { param([string]$t) Write-Host "  [!]  $t" -ForegroundColor DarkYellow }
+function Write-Info    { param([string]$t) Write-Host "  $t" -ForegroundColor Gray }
 
-function Write-Success {
-    param([string]$Text)
-    Write-Host "  [OK] $Text" -ForegroundColor Green
-}
-
-function Write-Fail {
-    param([string]$Text)
-    Write-Host "  [X] $Text" -ForegroundColor Red
-}
-
-function Write-Info {
-    param([string]$Text)
-    Write-Host "  $Text" -ForegroundColor Gray
-}
-
-# Banner
 function Show-Banner {
     Write-Host ""
-    Write-Host "  +-------------------------------------------------+" -ForegroundColor Magenta
-    Write-Host "  |        TeamBuilder Project Installer            |" -ForegroundColor Magenta
-    Write-Host "  |        github.com/dexusno/teambuilder           |" -ForegroundColor Magenta
-    Write-Host "  +-------------------------------------------------+" -ForegroundColor Magenta
+    Write-Host "  +---------------------------------------------------+" -ForegroundColor Magenta
+    Write-Host "  |   TeamBuilder v3 Installer (BMAD v6.2.2)          |" -ForegroundColor Magenta
+    Write-Host "  |   github.com/dexusno/teambuilder                  |" -ForegroundColor Magenta
+    Write-Host "  +---------------------------------------------------+" -ForegroundColor Magenta
     Write-Host ""
 }
 
-# Check if command exists
 function Test-Command {
     param([string]$Command)
     $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
 }
 
-# Get command version
-function Get-CommandVersion {
-    param([string]$Command)
-    try {
-        switch ($Command) {
-            "node" { (node --version) -replace 'v', '' }
-            "npm" { npm --version }
-            "git" { (git --version) -replace 'git version ', '' }
-            "claude" { "installed" }
-            default { "unknown" }
-        }
-    } catch {
-        "unknown"
-    }
+function Confirm-Or-Exit {
+    param([string]$Prompt, [bool]$Default = $true)
+    if ($Yes) { return $Default }
+    $suffix = if ($Default) { "[Y/n]" } else { "[y/N]" }
+    $reply = Read-Host "  $Prompt $suffix"
+    if ([string]::IsNullOrWhiteSpace($reply)) { return $Default }
+    return ($reply -match '^[Yy]')
 }
 
-# Install via winget
-function Install-WithWinget {
-    param(
-        [string]$PackageId,
-        [string]$DisplayName
-    )
+# =============================================================================
+# Prerequisite checks
+# =============================================================================
 
-    Write-Step "Installing $DisplayName via winget..."
+function Test-Prerequisites {
+    Write-Header "Checking Prerequisites"
+    $missing = @()
 
-    try {
-        winget install $PackageId --accept-package-agreements --accept-source-agreements --silent
-        if ($LASTEXITCODE -eq 0) {
-            Write-Success "$DisplayName installed"
-            # Refresh PATH
-            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-            return $true
-        } else {
-            Write-Fail "Failed to install $DisplayName"
-            return $false
-        }
-    } catch {
-        Write-Fail "Error installing ${DisplayName}: $_"
-        return $false
-    }
-}
-
-# Main installation flow
-function Main {
-    # Initialize variables
-    $installClaudeCode = $false
-
-    Show-Banner
-
-    # ===== STEP 1: Check Claude Code =====
-    Write-Header "Step 1: Checking Claude Code"
-
-    if (Test-Command "claude") {
-        Write-Success "Claude Code found"
-    } else {
-        Write-Fail "Claude Code not found"
-        Write-Host ""
-        Write-Host "  Claude Code is required for this project." -ForegroundColor Yellow
-        Write-Host "  More info: https://claude.ai" -ForegroundColor Yellow
-        Write-Host ""
-        Write-Host "  1. I have Claude Code - install it now" -ForegroundColor White
-        Write-Host "  2. Exit" -ForegroundColor White
-        Write-Host ""
-
-        $choice = Read-Host "  Select option (1-2)"
-
-        if ($choice -ne "1") {
-            Write-Host ""
-            Write-Info "Visit https://claude.ai to learn more."
-            Write-Info "Run this installer again when ready."
-            Write-Host ""
-            exit 0
-        }
-
-        # User has account, will install Claude Code after Node.js
-        $installClaudeCode = $true
-    }
-
-    # ===== STEP 2: Check/Install Prerequisites =====
-    Write-Header "Step 2: Checking Prerequisites"
-
-    # Check winget
-    if (-not (Test-Command "winget")) {
-        Write-Fail "winget not found. Please install App Installer from Microsoft Store."
-        Write-Info "https://aka.ms/getwinget"
-        exit 1
-    }
-    Write-Success "winget available"
-
-    # Check/Install Node.js
     if (Test-Command "node") {
-        $nodeVersion = Get-CommandVersion "node"
-        Write-Success "Node.js v${nodeVersion}"
+        $nodeVersion = (node --version) -replace '^v',''
+        Write-Success "Node.js $nodeVersion"
+        $major = [int]($nodeVersion -split '\.')[0]
+        if ($major -lt 18) {
+            Write-Warn "Node.js >= 18 recommended (you have $nodeVersion)"
+        }
     } else {
         Write-Fail "Node.js not found"
-        Write-Host ""
-        $install = Read-Host "  Install Node.js? (Y/n)"
-        if ($install -eq "" -or $install -match "^[Yy]") {
-            if (-not (Install-WithWinget "OpenJS.NodeJS.LTS" "Node.js")) {
-                exit 1
-            }
-        } else {
-            Write-Info "Node.js is required. Exiting."
-            exit 1
-        }
+        $missing += "Node.js (https://nodejs.org/)"
     }
 
-    # Check/Install Git
+    if (Test-Command "npm") {
+        Write-Success "npm $(npm --version)"
+    } else {
+        Write-Fail "npm not found"
+        $missing += "npm (ships with Node.js)"
+    }
+
     if (Test-Command "git") {
-        $gitVersion = Get-CommandVersion "git"
-        Write-Success "Git v${gitVersion}"
+        $gitVersion = (git --version) -replace '^git version ',''
+        Write-Success "git $gitVersion"
     } else {
-        Write-Fail "Git not found"
+        Write-Fail "git not found"
+        $missing += "git (https://git-scm.com/)"
+    }
+
+    if (Test-Command "claude") {
+        Write-Success "Claude Code CLI detected (optional - desktop app works too)"
+    } else {
+        Write-Info "Claude Code CLI not in PATH (the desktop app works fine too)"
+    }
+
+    if ($missing.Count -gt 0) {
         Write-Host ""
-        $install = Read-Host "  Install Git? (Y/n)"
-        if ($install -eq "" -or $install -match "^[Yy]") {
-            if (-not (Install-WithWinget "Git.Git" "Git")) {
-                exit 1
-            }
-        } else {
-            Write-Info "Git is required. Exiting."
-            exit 1
-        }
-    }
-
-    # Install Claude Code if needed
-    if ($installClaudeCode) {
-        Write-Step "Installing Claude Code via npm..."
-        npm install -g @anthropic-ai/claude-code
-        if ($LASTEXITCODE -eq 0) {
-            Write-Success "Claude Code installed"
-        } else {
-            Write-Fail "Failed to install Claude Code"
-            Write-Info "Try manually: npm install -g @anthropic-ai/claude-code"
-            exit 1
-        }
-    }
-
-    Write-Success "All prerequisites satisfied"
-
-    # ===== STEP 3: Project Folder =====
-    Write-Header "Step 3: Project Folder"
-
-    $targetDir = Get-Location
-    $items = Get-ChildItem -Force | Where-Object { $_.Name -notmatch "^install\.(ps1|sh)$" }
-
-    if ($items.Count -eq 0) {
-        Write-Success "Using current directory: ${targetDir}"
-    } else {
-        Write-Info "Current directory is not empty."
-        $continue = Read-Host "  Continue installation here? (y/N)"
-        if ($continue -notmatch "^[Yy]") {
-            Write-Info "Installation cancelled. Create a new folder for your project and run again."
-            exit 0
-        }
-        Write-Success "Using current directory: ${targetDir}"
-    }
-
-    # ===== STEP 4: Main Menu =====
-    Write-Header "Step 4: Installation Options"
-
-    Write-Host "  1. Full Install (recommended)" -ForegroundColor White
-    Write-Host "  2. Custom Install" -ForegroundColor White
-    Write-Host "  3. Help / Documentation" -ForegroundColor White
-    Write-Host "  4. Exit" -ForegroundColor White
-    Write-Host ""
-
-    $menuChoice = Read-Host "  Select option (1-4)"
-
-    # Default options
-    $installMemoryMCP = $true
-    $installPlaywrightMCP = $true
-    $initGit = $false
-
-    switch ($menuChoice) {
-        "1" {
-            # Full install - use defaults
-        }
-        "2" {
-            # Custom install
-            Write-Host ""
-            Write-Host "  Select components (Y/n for each):" -ForegroundColor Cyan
-            Write-Host ""
-
-            $memoryChoice = Read-Host "  Install Memory MCP? (Y/n)"
-            $installMemoryMCP = ($memoryChoice -eq "" -or $memoryChoice -match "^[Yy]")
-
-            $playwrightChoice = Read-Host "  Install Playwright MCP? (Y/n)"
-            $installPlaywrightMCP = ($playwrightChoice -eq "" -or $playwrightChoice -match "^[Yy]")
-
-            $gitChoice = Read-Host "  Initialize Git repository? (y/N)"
-            $initGit = ($gitChoice -match "^[Yy]")
-        }
-        "3" {
-            Write-Host ""
-            Write-Host "  TeamBuilder creates AI agent teams using the BMAD Method." -ForegroundColor Cyan
-            Write-Host ""
-            Write-Host "  After installation:" -ForegroundColor White
-            Write-Host "    1. Open project: claude ." -ForegroundColor Gray
-            Write-Host "    2. Create team: /bmad-agent-teambuilder-teambuilder-guide" -ForegroundColor Gray
-            Write-Host ""
-            Write-Host "  Documentation: https://github.com/dexusno/teambuilder" -ForegroundColor Gray
-            Write-Host ""
-            exit 0
-        }
-        default {
-            Write-Info "Installation cancelled."
-            exit 0
-        }
-    }
-
-    # ===== STEP 5: Installation =====
-    Write-Header "Step 5: Installing"
-
-    # Install BMAD Method
-    Write-Step "Installing BMAD Method..."
-    npx bmad-method@latest install
-    if ($LASTEXITCODE -ne 0) {
-        Write-Fail "Failed to install BMAD Method"
+        Write-Fail "Missing required tools:"
+        foreach ($m in $missing) { Write-Host "    - $m" -ForegroundColor Red }
+        Write-Host ""
+        Write-Host "  Install them and re-run this script." -ForegroundColor Red
         exit 1
     }
 
-    # Verify BMAD installed
-    if (-not (Test-Path "_bmad")) {
-        Write-Fail "BMAD Method installation failed - _bmad folder not created"
-        exit 1
-    }
-    Write-Success "BMAD Method installed"
-
-    # Clone TeamBuilder module
-    Write-Step "Installing TeamBuilder module..."
-    $teambuilderDir = "_bmad\teambuilder"
-
-    if (Test-Path $teambuilderDir) {
-        Remove-Item -Recurse -Force $teambuilderDir
-    }
-
-    # Clone and check for errors
-    $cloneOutput = git clone --depth 1 https://github.com/dexusno/teambuilder.git temp-teambuilder 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Fail "Failed to clone TeamBuilder repository"
-        Write-Info "Error: ${cloneOutput}"
-        exit 1
-    }
-
-    # Verify and move
-    if (Test-Path "temp-teambuilder\teambuilder") {
-        Move-Item "temp-teambuilder\teambuilder" $teambuilderDir
-    } else {
-        Write-Fail "TeamBuilder module not found in cloned repository"
-        Remove-Item -Recurse -Force "temp-teambuilder" -ErrorAction SilentlyContinue
-        exit 1
-    }
-    Remove-Item -Recurse -Force "temp-teambuilder" -ErrorAction SilentlyContinue
-
-    # Verify TeamBuilder installed
-    if (-not (Test-Path $teambuilderDir)) {
-        Write-Fail "TeamBuilder installation failed"
-        exit 1
-    }
-    Write-Success "TeamBuilder module installed"
-
-    # Register TeamBuilder in manifests
-    Write-Step "Registering TeamBuilder in BMAD manifests..."
-
-    $agentManifest = "_bmad\_config\agent-manifest.csv"
-    $manifestEntries = "_bmad\teambuilder\agent-manifest-entries.csv"
-
-    if (-not (Test-Path $agentManifest)) {
-        Write-Fail "Agent manifest not found at ${agentManifest}"
-        Write-Info "BMAD may not have installed correctly"
-        exit 1
-    }
-
-    if (-not (Test-Path $manifestEntries)) {
-        Write-Fail "TeamBuilder manifest entries not found"
-        Write-Info "TeamBuilder module may be incomplete"
-        exit 1
-    }
-
-    $entries = Get-Content $manifestEntries
-    Add-Content -Path $agentManifest -Value $entries
-
-    # 2. Add teambuilder module entry to manifest.yaml
-    $mainManifest = "_bmad\_config\manifest.yaml"
-    if (Test-Path $mainManifest) {
-        $mContent = Get-Content $mainManifest -Raw
-        if ($mContent -notmatch "teambuilder") {
-            $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-            $mLines = Get-Content $mainManifest
-            $newLines = [System.Collections.ArrayList]::new()
-            foreach ($mLine in $mLines) {
-                if ($mLine -match "^ides:") {
-                    [void]$newLines.Add("  - name: teambuilder")
-                    [void]$newLines.Add("    version: `"2.0`"")
-                    [void]$newLines.Add("    installDate: $timestamp")
-                    [void]$newLines.Add("    lastUpdated: $timestamp")
-                    [void]$newLines.Add("    source: external")
-                    [void]$newLines.Add("    npmPackage: null")
-                    [void]$newLines.Add("    repoUrl: https://github.com/dexusno/teambuilder")
-                }
-                [void]$newLines.Add($mLine)
-            }
-            Set-Content -Path $mainManifest -Value $newLines
-        }
-    }
-
-    # 3. Register workflows in workflow-manifest.csv
-    $workflowManifest = "_bmad\_config\workflow-manifest.csv"
-    if (Test-Path $workflowManifest) {
-        $wfContent = Get-Content $workflowManifest -Raw
-        if ($wfContent -notmatch "teambuilder") {
-            $workflowEntries = @(
-                '"collaborative-generation","Three-agent collaboration workflow for high-quality team generation","teambuilder","_bmad/teambuilder/workflows/collaborative-generation/workflow.yaml"'
-                '"discover-team-needs","Discover user requirements through guided questions","teambuilder","_bmad/teambuilder/workflows/1-discovery/discover-team-needs/workflow.yaml"'
-                '"generate-team","Generate custom team with distinct personas and workflows","teambuilder","_bmad/teambuilder/workflows/2-generation/generate-team/workflow.yaml"'
-                '"validate-team","Validate generated team quality through scoring and assessment","teambuilder","_bmad/teambuilder/workflows/2-generation/validate-team/workflow.yaml"'
-                '"refine-team","Refine generated team through targeted improvements","teambuilder","_bmad/teambuilder/workflows/3-refinement/refine-team/workflow.yaml"'
-            )
-            Add-Content -Path $workflowManifest -Value ($workflowEntries -join "`r`n")
-        }
-    }
-
-    # 4. Create Claude Code command file (flat format, teambuilder-guide only)
-    $commandsDir = ".claude\commands"
-    if (-not (Test-Path $commandsDir)) {
-        New-Item -ItemType Directory -Path $commandsDir -Force | Out-Null
-    }
-    $commandContent = @"
----
-name: 'teambuilder-guide'
-description: 'Team Generation Guide'
-disable-model-invocation: true
----
-
-You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
-
-<agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from {project-root}/_bmad/teambuilder/agents/teambuilder-guide.md
-2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. FOLLOW every step in the <activation> section precisely
-4. DISPLAY the welcome/greeting as instructed
-5. PRESENT the numbered menu
-6. WAIT for user input before proceeding
-</agent-activation>
-"@
-    Set-Content -Path "$commandsDir\bmad-agent-teambuilder-teambuilder-guide.md" -Value $commandContent
-
-    # Memory Manager command stub
-    $memoryManagerContent = @"
----
-name: 'memory-manager'
-description: 'Knowledge Consolidation Curator'
-disable-model-invocation: true
----
-
-You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.
-
-<agent-activation CRITICAL="TRUE">
-1. LOAD the FULL agent file from {project-root}/_bmad/teambuilder/agents/memory-manager.md
-2. READ its entire contents - this contains the complete agent persona, menu, and instructions
-3. FOLLOW every step in the <activation> section precisely
-4. DISPLAY the welcome/greeting as instructed
-5. PRESENT the numbered menu
-6. WAIT for user input before proceeding
-</agent-activation>
-"@
-    Set-Content -Path "$commandsDir\bmad-agent-teambuilder-memory-manager.md" -Value $memoryManagerContent
-
-    # 5. Inject core config values into TeamBuilder config.yaml
-    $coreConfig = "_bmad\core\config.yaml"
-    $tbConfig = "_bmad\teambuilder\config.yaml"
-    if ((Test-Path $coreConfig) -and (Test-Path $tbConfig)) {
-        $coreLines = Get-Content $coreConfig
-        $coreVars = @{}
-        foreach ($cl in $coreLines) {
-            if ($cl -match "^(user_name|communication_language|document_output_language|output_folder):\s*(.+)$") {
-                $coreVars[$Matches[1]] = $Matches[2].Trim()
-            }
-        }
-        if ($coreVars.Count -gt 0) {
-            $tbContent = Get-Content $tbConfig -Raw
-            $headerLines = @(
-                "# Core Configuration (from BMAD core)"
-                "user_name: $($coreVars['user_name'])"
-                "communication_language: $($coreVars['communication_language'])"
-                "document_output_language: $($coreVars['document_output_language'])"
-                "output_folder: $($coreVars['output_folder'])"
-                ""
-            )
-            $header = ($headerLines -join "`r`n") + "`r`n"
-            Set-Content -Path $tbConfig -Value ($header + $tbContent) -NoNewline
-        }
-    }
-
-    Write-Success "TeamBuilder registered"
-
-    # Create .mcp.json
-    Write-Step "Creating MCP configuration..."
-
-    $mcpConfig = @{
-        mcpServers = @{}
-    }
-
-    if ($installMemoryMCP) {
-        $mcpConfig.mcpServers["memory"] = @{
-            command = "cmd"
-            args = @("/c", "npx", "-y", "@modelcontextprotocol/server-memory")
-        }
-    }
-
-    if ($installPlaywrightMCP) {
-        $mcpConfig.mcpServers["playwright"] = @{
-            command = "cmd"
-            args = @("/c", "npx", "-y", "@playwright/mcp")
-        }
-    }
-
-    $mcpConfig | ConvertTo-Json -Depth 4 | Set-Content ".mcp.json"
-    Write-Success "MCP configuration created"
-
-    # Create docs folder for team knowledge base
-    Write-Step "Creating docs folder..."
-    if (-not (Test-Path "docs")) {
-        New-Item -ItemType Directory -Path "docs" -Force | Out-Null
-    }
-    Write-Success "Docs folder ready (add team reference materials here)"
-
-    # Create .gitignore
-    Write-Step "Creating .gitignore..."
-    @"
-# Dependencies
-node_modules/
-
-# Local settings
-.claude/settings.local.json
-
-# Environment files
-.env
-.env.local
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Playwright artifacts
-.playwright-mcp/
-
-# Team memory files (project-specific, not shared)
-_bmad/teams/*/memory.jsonl
-"@ | Set-Content ".gitignore"
-    Write-Success ".gitignore created"
-
-    # Initialize Git if requested
-    if ($initGit) {
-        Write-Step "Initializing Git repository..."
-        git init
-        git add .
-        git commit -m "Initial commit: BMAD + TeamBuilder project"
-        Write-Success "Git repository initialized"
-    }
-
-    # ===== STEP 6: Complete =====
-    Write-Header "Installation Complete!"
-
-    $folderName = Split-Path $targetDir -Leaf
-    Write-Host "  +-------------------------------------------------------------+" -ForegroundColor Green
-    Write-Host "  |  Success! Your project is ready.                            |" -ForegroundColor Green
-    Write-Host "  |                                                             |" -ForegroundColor Green
-    Write-Host "  |  Next steps:                                                |" -ForegroundColor Green
-    Write-Host "  |    1. Open terminal in this folder                          |" -ForegroundColor Green
-    Write-Host "  |    2. Run: claude .                                         |" -ForegroundColor Green
-    Write-Host "  |    3. Type: /bmad-agent-teambuilder-teambuilder-guide       |" -ForegroundColor Green
-    Write-Host "  |                                                             |" -ForegroundColor Green
-    Write-Host "  |  TIP: You'll see many / commands - ignore them all.         |" -ForegroundColor Green
-    Write-Host "  |  The command above is the only one you need to start!       |" -ForegroundColor Green
-    Write-Host "  |                                                             |" -ForegroundColor Green
-    Write-Host "  |  Happy team building!                                       |" -ForegroundColor Green
-    Write-Host "  +-------------------------------------------------------------+" -ForegroundColor Green
     Write-Host ""
 }
 
-# Run main
-Main
+# =============================================================================
+# Refuse-if-exists guard
+# =============================================================================
+
+function Test-NotAlreadyInstalled {
+    Write-Header "Checking Target Directory"
+
+    $target = (Get-Location).Path
+    Write-Info "Target: $target"
+
+    if (Test-Path "_bmad\teambuilder") {
+        Write-Host ""
+        Write-Fail "TeamBuilder is already installed in this directory."
+        Write-Host ""
+        Write-Host "  Found: _bmad\teambuilder\" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "  To update TeamBuilder, use scripts\update-v6.ps1 (coming in Phase 6)." -ForegroundColor Yellow
+        Write-Host "  To diagnose issues,  use scripts\doctor-v6.ps1 (coming in Phase 6)." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "  If you want a fresh install, manually remove _bmad/ first (this will" -ForegroundColor Yellow
+        Write-Host "  delete your current BMAD installation including any generated teams!)." -ForegroundColor Yellow
+        Write-Host ""
+        exit 1
+    }
+
+    if (Test-Path "_bmad") {
+        Write-Warn "_bmad/ already exists (BMAD is installed, but TeamBuilder is not)"
+        Write-Info "This installer will ADD TeamBuilder to your existing BMAD installation."
+        Write-Info "Core and BMM modules will not be touched."
+        if (-not (Confirm-Or-Exit "Proceed?" $true)) {
+            Write-Info "Aborted."
+            exit 0
+        }
+    } else {
+        Write-Success "Clean directory - full BMAD + TeamBuilder install will proceed"
+    }
+
+    Write-Host ""
+}
+
+# =============================================================================
+# Clone teambuilder repo to temp
+# =============================================================================
+
+function Get-TeambuilderSource {
+    Write-Header "Fetching TeamBuilder Module Source"
+
+    # Maintainer flow: use a local directory instead of cloning
+    if (-not [string]::IsNullOrWhiteSpace($LocalSource)) {
+        Write-Step "Using local source: $LocalSource"
+        if (-not (Test-Path $LocalSource)) {
+            Write-Fail "LocalSource path does not exist: $LocalSource"
+            exit 1
+        }
+        $modulesYaml = Join-Path $LocalSource "module.yaml"
+        if (-not (Test-Path $modulesYaml)) {
+            Write-Fail "LocalSource does not contain module.yaml: $LocalSource"
+            Write-Info "LocalSource must point at a valid BMAD custom module directory."
+            exit 1
+        }
+        Write-Success "Using local TeamBuilder module source (no clone)"
+        Write-Host ""
+        return @{ TempBase = ""; ModulePath = (Resolve-Path $LocalSource).Path }
+    }
+
+    # Normal flow: clone from remote
+    $tempBase = Join-Path $env:TEMP ("teambuilder-install-" + [Guid]::NewGuid().ToString("N").Substring(0,8))
+    Write-Step "Cloning $TEAMBUILDER_REPO (branch: $Branch) to temp..."
+    Write-Info "Temp: $tempBase"
+
+    try {
+        & git clone --depth 1 --branch $Branch $TEAMBUILDER_REPO $tempBase 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "git clone failed (exit $LASTEXITCODE)" }
+    } catch {
+        Write-Fail "Failed to clone teambuilder repo: $_"
+        if (Test-Path $tempBase) { Remove-Item $tempBase -Recurse -Force -ErrorAction SilentlyContinue }
+        exit 1
+    }
+
+    $modulePath = Join-Path $tempBase $TEAMBUILDER_MODULE_PATH
+    if (-not (Test-Path $modulePath)) {
+        Write-Fail "Cloned repo does not contain '$TEAMBUILDER_MODULE_PATH/'"
+        Write-Info "The teambuilder repo layout may have changed."
+        Write-Info "Check https://github.com/dexusno/teambuilder for updates."
+        Remove-Item $tempBase -Recurse -Force -ErrorAction SilentlyContinue
+        exit 1
+    }
+
+    $modulesYaml = Join-Path $modulePath "module.yaml"
+    if (-not (Test-Path $modulesYaml)) {
+        Write-Fail "Module source is missing module.yaml (not a valid BMAD custom module)"
+        Remove-Item $tempBase -Recurse -Force -ErrorAction SilentlyContinue
+        exit 1
+    }
+
+    Write-Success "TeamBuilder module source ready"
+    Write-Host ""
+    return @{ TempBase = $tempBase; ModulePath = $modulePath }
+}
+
+# =============================================================================
+# Install BMAD + TeamBuilder via --custom-content
+# =============================================================================
+
+function Install-Bmad {
+    param([string]$ModulePath)
+
+    Write-Header "Installing BMAD $BMAD_VERSION + TeamBuilder"
+
+    Write-Step "Running: npx bmad-method@$BMAD_VERSION install -y --modules $BMAD_MODULES --tools $BMAD_TOOLS --custom-content `"$ModulePath`""
+    Write-Info "This will take a minute or two. BMAD will:"
+    Write-Info "  - Install core module"
+    Write-Info "  - Install $BMAD_MODULES module"
+    Write-Info "  - Copy teambuilder module from $ModulePath"
+    Write-Info "  - Auto-discover all SKILL.md files and generate manifests"
+    Write-Info "  - Install all skills into .claude/skills/ for Claude Code"
+    Write-Host ""
+
+    $targetDir = (Get-Location).Path
+    & cmd /c "npx --yes bmad-method@$BMAD_VERSION install --directory `"$targetDir`" -y --modules $BMAD_MODULES --tools $BMAD_TOOLS --custom-content `"$ModulePath`""
+    if ($LASTEXITCODE -ne 0) {
+        Write-Fail "BMAD install failed (exit $LASTEXITCODE)"
+        Write-Info "Leaving temp clone in place for debugging: $ModulePath"
+        exit 1
+    }
+
+    Write-Host ""
+
+    # Sanity checks - verify teambuilder landed in the installed _bmad tree
+    # (note: module.yaml is installer metadata and is NOT copied into the installed
+    #  tree; we verify config.yaml + agents/ + skills/ which ARE copied)
+    if (-not (Test-Path "_bmad\teambuilder\config.yaml")) {
+        Write-Fail "Post-install check failed: _bmad\teambuilder\config.yaml not found"
+        Write-Info "BMAD reported success but the teambuilder module was not installed."
+        exit 1
+    }
+    if (-not (Test-Path "_bmad\teambuilder\agents")) {
+        Write-Fail "Post-install check failed: _bmad\teambuilder\agents\ not found"
+        exit 1
+    }
+    if (-not (Test-Path "_bmad\teambuilder\skills")) {
+        Write-Fail "Post-install check failed: _bmad\teambuilder\skills\ not found"
+        exit 1
+    }
+    if (-not (Test-Path "_bmad\_config\agent-manifest.csv")) {
+        Write-Fail "Post-install check failed: agent-manifest.csv not found"
+        exit 1
+    }
+
+    # Count teambuilder entries in the manifest
+    $agentCsv = Get-Content "_bmad\_config\agent-manifest.csv"
+    $tbAgents = ($agentCsv | Select-String -Pattern '"teambuilder"').Count
+    $skillCsv = Get-Content "_bmad\_config\skill-manifest.csv"
+    $tbSkills = ($skillCsv | Select-String -Pattern '"teambuilder"').Count
+
+    Write-Success "Installed BMAD $BMAD_VERSION + TeamBuilder module"
+    Write-Info "  Agents registered:  $tbAgents"
+    Write-Info "  Skills registered:  $tbSkills"
+    Write-Host ""
+}
+
+# =============================================================================
+# Write .mcp.json
+# =============================================================================
+
+function Write-McpConfig {
+    if ($NoMcp) {
+        Write-Info "Skipping .mcp.json (-NoMcp specified)"
+        return
+    }
+
+    Write-Header "Configuring MCP Servers"
+
+    if (Test-Path ".mcp.json") {
+        Write-Warn ".mcp.json already exists - leaving it untouched"
+        Write-Info "If you want TeamBuilder's MCP defaults, back up .mcp.json and re-run."
+        return
+    }
+
+    $memoryPath = Join-Path (Get-Location).Path "_bmad\teambuilder\memory\general-knowledge.jsonl"
+    # Ensure the memory file exists (BMAD copied the empty seed already, but just in case)
+    $memoryDir = Split-Path $memoryPath -Parent
+    if (-not (Test-Path $memoryDir)) { New-Item -ItemType Directory -Path $memoryDir -Force | Out-Null }
+    if (-not (Test-Path $memoryPath)) { New-Item -ItemType File -Path $memoryPath -Force | Out-Null }
+
+    # Double backslashes for JSON escaping
+    $memoryPathJson = $memoryPath -replace '\\','\\'
+
+    $mcpServers = @{}
+    $mcpServers["memory"] = @{
+        command = "npx"
+        args = @("-y", "@modelcontextprotocol/server-memory")
+        env = @{ MEMORY_FILE_PATH = $memoryPath }
+    }
+
+    if (-not $NoPlaywright) {
+        $mcpServers["playwright"] = @{
+            command = "npx"
+            args = @("-y", "@playwright/mcp@latest")
+        }
+    }
+
+    $mcpJson = @{ mcpServers = $mcpServers } | ConvertTo-Json -Depth 10
+    Set-Content -Path ".mcp.json" -Value $mcpJson -Encoding UTF8
+
+    Write-Success "Wrote .mcp.json"
+    Write-Info "  memory server   -> $memoryPath"
+    if (-not $NoPlaywright) { Write-Info "  playwright      -> @playwright/mcp@latest" }
+    Write-Host ""
+}
+
+# =============================================================================
+# Docs folder and .gitignore
+# =============================================================================
+
+function Initialize-ProjectFiles {
+    Write-Header "Finalizing Project Structure"
+
+    if (-not (Test-Path "docs")) {
+        New-Item -ItemType Directory -Path "docs" | Out-Null
+        Write-Success "Created docs/ (team knowledge base)"
+    } else {
+        Write-Info "docs/ already exists - leaving alone"
+    }
+
+    $gitignorePath = ".gitignore"
+    $tbLines = @(
+        ""
+        "# --- TeamBuilder / BMAD v6 ---"
+        "# Team-specific memory files (per generated team, local-only)"
+        "_bmad-output/teams/*/memory.jsonl"
+        "_bmad-output/teams/*/session-context.md"
+        "# BMAD output folder can grow large; track it selectively"
+        "# _bmad-output/"
+        ""
+    )
+
+    if (Test-Path $gitignorePath) {
+        $existing = Get-Content $gitignorePath -Raw
+        if ($existing -notmatch '_bmad-output/teams/\*/memory\.jsonl') {
+            Add-Content -Path $gitignorePath -Value ($tbLines -join "`r`n")
+            Write-Success "Appended TeamBuilder rules to .gitignore"
+        } else {
+            Write-Info ".gitignore already has TeamBuilder rules"
+        }
+    } else {
+        Set-Content -Path $gitignorePath -Value ($tbLines -join "`r`n") -Encoding UTF8
+        Write-Success "Created .gitignore with TeamBuilder rules"
+    }
+    Write-Host ""
+}
+
+# =============================================================================
+# Cleanup + success
+# =============================================================================
+
+function Remove-TempClone {
+    param([string]$TempBase)
+    if ([string]::IsNullOrWhiteSpace($TempBase)) { return }  # LocalSource flow, nothing to clean
+    if (Test-Path $TempBase) {
+        try {
+            Remove-Item $TempBase -Recurse -Force -ErrorAction Stop
+            Write-Success "Cleaned up temp clone"
+        } catch {
+            Write-Warn "Could not remove temp clone at $TempBase (you may delete it manually)"
+        }
+    }
+}
+
+function Show-Success {
+    Write-Host ""
+    Write-Host "  +---------------------------------------------------+" -ForegroundColor Green
+    Write-Host "  |            Installation Complete!                 |" -ForegroundColor Green
+    Write-Host "  +---------------------------------------------------+" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  Next steps:" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  1. Open this directory in Claude Code (CLI or desktop app)" -ForegroundColor White
+    Write-Host "  2. Restart Claude Code so it discovers the new .claude/skills/" -ForegroundColor White
+    Write-Host "  3. Invoke the TeamBuilder Guide:" -ForegroundColor White
+    Write-Host ""
+    Write-Host "       /bmad-agent-team-guide" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  4. Follow the guided discovery to build your first team." -ForegroundColor White
+    Write-Host ""
+    Write-Host "  Available agents:" -ForegroundColor Cyan
+    Write-Host "    /bmad-agent-team-guide        - Main entry point" -ForegroundColor Gray
+    Write-Host "    /bmad-agent-team-architect    - Structural designer" -ForegroundColor Gray
+    Write-Host "    /bmad-agent-persona-improver  - Persona quality specialist" -ForegroundColor Gray
+    Write-Host "    /bmad-agent-quality-guardian  - Validation reviewer" -ForegroundColor Gray
+    Write-Host "    /bmad-agent-tool-scout        - MCP/tool researcher" -ForegroundColor Gray
+    Write-Host "    /bmad-agent-memory-manager    - Cross-team memory consolidation" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "  Docs: https://github.com/dexusno/teambuilder" -ForegroundColor Cyan
+    Write-Host ""
+}
+
+# =============================================================================
+# Main
+# =============================================================================
+
+Show-Banner
+Test-Prerequisites
+Test-NotAlreadyInstalled
+
+$source = Get-TeambuilderSource
+try {
+    Install-Bmad -ModulePath $source.ModulePath
+    Write-McpConfig
+    Initialize-ProjectFiles
+} finally {
+    Remove-TempClone -TempBase $source.TempBase
+}
+
+Show-Success

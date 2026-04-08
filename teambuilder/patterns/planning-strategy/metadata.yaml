@@ -2,7 +2,7 @@
 
 pattern_id: "planning-strategy"
 pattern_name: "Strategic Planning & Decision Support Team"
-version: "1.0"
+version: "3.0"
 
 pattern_type: "planning"
 primary_domain: "planning-strategy"
@@ -15,41 +15,48 @@ characteristics:
 
 use_when:
   - "Strategic planning initiatives"
-  - "Complex business decisions"
-  - "Project planning and design"
-  - "Stakeholder alignment needed"
+  - "Complex business decisions under uncertainty"
+  - "Roadmap and portfolio prioritization"
+  - "Stakeholder alignment on contested direction"
+  - "Risk-adjusted decision support"
 
 key_learnings:
   - name: "Multiple Perspectives"
-    description: "Vision, execution, risk, stakeholder views"
+    description: "Vision, execution, risk, stakeholder, and scenario views held simultaneously"
   - name: "Consultative Approach"
-    description: "Advisory not directive, user retains authority"
+    description: "Advisory not directive — user retains decision authority"
   - name: "Scenario Planning"
-    description: "Multiple options with trade-offs"
+    description: "Multiple options with explicit trade-offs, premortems, and decision matrices"
+  - name: "Risk-Aware by Default"
+    description: "Risk register and premortem baked into every meaningful decision"
 
 agent_structure:
-  - "Strategy Lead / Visionary"
-  - "Project Planner / Architect"
+  - "Strategic Planner / Visionary"
+  - "Stakeholder Liaison / Diplomat"
   - "Risk Analyst / Sentinel"
-  - "Stakeholder Manager / Diplomat"
-  - "Financial Analyst"
-  - "Implementation Lead"
+  - "Decision Facilitator"
+  - "Scenario Modeler"
+  - "Implementation Coordinator"
 
 workflow_characteristics:
-  - "Vision and goal setting"
-  - "Multi-option generation"
-  - "Risk assessment"
-  - "Stakeholder analysis"
-  - "Decision support"
+  - "Vision and OKR framing"
+  - "Multi-option generation via OST trees"
+  - "Premortem and risk register"
+  - "Stakeholder mapping and alignment"
+  - "Decision matrix synthesis"
+  - "Implementation readiness review"
 
 quality_indicators:
-  - "Strategic thinking"
-  - "Risk awareness"
+  - "Strategic framing (not just tactical)"
+  - "Explicit risk posture"
   - "Stakeholder sensitivity"
-  - "Trade-off analysis ability"
+  - "Trade-off transparency"
+  - "Decision traceability"
 
 tags:
   - "strategy"
   - "planning"
   - "consultative"
   - "decision-support"
+  - "risk-aware"
+  - "stakeholder-alignment"

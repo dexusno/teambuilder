@@ -1,5 +1,7 @@
 # ITIL / Domain Expert Pattern Overview
 
+> **v6 architecture** — examples below use BMAD v6.2.2 shape: `SKILL.md` + `bmad-skill-manifest.yaml` for agents, `SKILL.md` + `workflow.md` for skills.
+
 ## Pattern Purpose
 
 This pattern creates large, governance-focused teams for specialized domains requiring formal processes, cross-functional coordination, and comprehensive documentation. Originally designed for ITIL practice management, it applies to any domain where expertise, compliance, and stakeholder coordination are critical.
