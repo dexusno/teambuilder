@@ -125,11 +125,17 @@ C:\temp\teambuilder\scripts\install.ps1
 
 **Option B — One-liner** (pulls the installer directly from GitHub):
 
+First, create and enter your project folder (any empty or `bmm`-only directory works):
+
 ```powershell
 mkdir my-project
 cd my-project
-iwr https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 -OutFile install.ps1
-.\install.ps1
+```
+
+Then copy and paste this single line to download and run the installer:
+
+```powershell
+iwr https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.ps1 -OutFile install.ps1; .\install.ps1
 ```
 
 **Installer flags:**
@@ -160,12 +166,16 @@ bash /tmp/teambuilder/scripts/install.sh
 
 **Option B — One-liner:**
 
+First, create and enter your project folder:
+
 ```bash
-mkdir my-project
-cd my-project
-curl -fsSL https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh -o install.sh
-chmod +x install.sh
-./install.sh
+mkdir my-project && cd my-project
+```
+
+Then copy and paste this single line to download and run the installer:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dexusno/teambuilder/main/scripts/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 ```
 
 **Installer flags:**
