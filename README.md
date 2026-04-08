@@ -1,7 +1,7 @@
 # TeamBuilder v3 — AI Agent Team Generator for BMAD v6
 
-> **TeamBuilder v3.0 — built for BMAD Method v6.2.2**
-> A BMAD v6 custom module that generates tailored AI agent teams through guided discovery, paired generation with real-time quality feedback, and critical validation scoring.
+> **TeamBuilder v3.2.0 — built for BMAD Method v6.2.2**
+> A BMAD v6 custom module that generates tailored AI agent teams through guided discovery, paired generation with real-time quality feedback, and critical validation scoring. Includes compatibility guardrails (`doctor`, `update`, channels), runtime drift warning, and CI smoke tests.
 
 ---
 
@@ -622,7 +622,7 @@ bash /path/to/teambuilder/scripts/install.sh -y --local-source /path/to/teambuil
 
 v3.x is **not backward compatible** with v2.x — the v5 architecture and v6 architecture are fundamentally different. If you have v2-generated teams, you'll need to regenerate them with v3 for use on BMAD v6.
 
-v3.1 is fully backward compatible with v3.0 — `update.ps1` / `update.sh` will detect a v3.0 install, snapshot it, and upgrade in place to v3.1.
+v3.1 and v3.2 are fully backward compatible with v3.0 — `update.ps1` / `update.sh` will detect any v3.x install, snapshot it, and upgrade in place to the latest. See [CHANGELOG.md](CHANGELOG.md) for the full per-release diff.
 
 ---
 
@@ -675,4 +675,4 @@ By using TeamBuilder you acknowledge:
 
 ---
 
-_TeamBuilder v3.0 — built with care, run with caution, and always read the validation report._
+_TeamBuilder v3.2.0 — built with care, run with caution, and always read the validation report._
