@@ -1,6 +1,6 @@
 # TeamBuilder v3 — AI Agent Team Generator for BMAD v6
 
-> **TeamBuilder v3.2.1 — built for BMAD Method v6.2.2**
+> **TeamBuilder v3.2.2 — built for BMAD Method v6.2.2**
 > A BMAD v6 custom module that generates tailored AI agent teams through guided discovery, paired generation with real-time quality feedback, and critical validation scoring. Includes compatibility guardrails (`doctor`, `update`, channels), runtime drift warning, and CI smoke tests.
 
 ---
@@ -243,14 +243,9 @@ To create your first team:
    - Tool Scout will research MCP/CLI integrations (10–30 seconds)
    - Quality Guardian will score and report (10–20 seconds)
 7. **Review the validation report.** If the score is ≥85, install. If 75–84, refine. If <75, consider regenerating with better discovery answers.
-8. **Install your team** with the exact command the pipeline prints. It MUST include `--directory`, `-y`, `--modules`, AND `--tools` — without all four flags BMAD drops into an interactive TUI and blocks. The full form is:
-   ```powershell
-   # Windows (and Linux/macOS — same command shape)
-   npx bmad-method@6.2.2 install --directory "D:\path\to\your-project" -y --modules bmm --tools claude-code --custom-content "D:\path\to\your-project\_bmad-output\teams\your-team-name"
-   ```
-   Replace both paths with absolute paths. `--directory` is the project root (the directory that contains your existing `_bmad/`), `--custom-content` is the generated team under `_bmad-output/teams/`.
-9. **Restart Claude Code again.** Your team's agents will now be available as `/bmad-agent-*` slash commands.
-10. **Talk to one of your new agents.** They'll load their persona, greet you by name, and present a menu.
+8. **The team installs itself automatically.** TeamBuilder runs BMAD's `--custom-content` installer via a Bash tool call, copies the team into `_bmad/teams-{team-name}/`, registers every agent in the manifests, and lands every skill into `.claude/skills/`. No copy-paste required. If the install fails, the agent will tell you exactly what broke and point you at `scripts/doctor.*` for diagnosis.
+9. **Restart Claude Code** (the one manual step). Claude Code only scans `.claude/skills/` at startup, so a restart is required before you can invoke your new team's agents. Close and reopen the desktop app, or `Ctrl+C` and relaunch the CLI.
+10. **Talk to one of your new agents.** After restart, type `/bmad-agent-{name}` — they'll load their persona, greet you by name, and present a menu.
 
 **Before you stop work**, always run `[SS] Save Session` on the agent you're working with. This captures any tool learnings into Memory MCP and writes a session context file that the team will auto-load next time. See [Memory System](#memory-system) below.
 
@@ -351,7 +346,9 @@ This is enforced as a Critical-severity rule in `templates/validation-rules.yaml
 
 ### Installing a generated team
 
-Generated teams are installed exactly the same way as TeamBuilder itself, using BMAD's `--custom-content` flow. **You MUST use the fully-non-interactive command** — BMAD falls back to an interactive TUI that an LLM-driven agent cannot answer if any flag is missing:
+**TeamBuilder installs generated teams automatically** at the end of the generation pipeline. The team-guide agent invokes BMAD's `--custom-content` installer via a Bash tool call, verifies the post-install state, and reports success or failure. You do not need to run any install command yourself.
+
+**If you ever need to reinstall manually** (e.g., after cloning a team to a different project, or if an automatic install was interrupted), use this fully-non-interactive command — every flag is required, or BMAD drops into an interactive TUI that blocks automated callers:
 
 ```bash
 npx bmad-method@6.2.2 install \
@@ -374,7 +371,7 @@ npx bmad-method@6.2.2 install \
 
 Use **absolute paths** for both `--directory` and `--custom-content`. Relative paths are risky because BMAD may resolve them against a different CWD than you expect.
 
-BMAD treats the second install as a **quick-update** and adds the new module to the existing `_bmad/` install without touching `core`, `bmm`, or `teambuilder`. The generated team's agents and skills land in `.claude/skills/` automatically. Restart Claude Code to see them.
+BMAD treats the install as a **quick-update** and adds the new module to the existing `_bmad/` install without touching `core`, `bmm`, or `teambuilder`. The generated team's agents and skills land in `.claude/skills/` automatically. Restart Claude Code to see them.
 
 ### Invoking generated team agents
 
@@ -620,6 +617,7 @@ bash /path/to/teambuilder/scripts/install.sh -y --local-source /path/to/teambuil
 
 | Version | Date | Notes |
 |---|---|---|
+| **3.2.2** | 2026-04-09 | **Fully automatic team install (the actual fix).** v3.2.1 made the install command non-interactive, but the generate-team and collaborative-generation workflows still told the user to *copy-paste and run* the command themselves. That defeats TeamBuilder's core design promise: end-to-end automation with no manual install steps. v3.2.2 rewrites `bmad-skill-generate-team` Step 10 into a 6-sub-step automation protocol (10.1 through 10.6) that tells the agent to **run the install itself via its Bash tool**, verify the post-install state (team directory, manifest rows, `.claude/skills/` population), and report success or failure with specific evidence. `bmad-skill-collaborative-generation` Phase 4 "If INSTALL" now delegates to Step 10 instead of showing the command to the user. The README "First Team Quick Start" step 8 and "Installing a generated team" section are rewritten accordingly. The only remaining manual step is restarting Claude Code so it re-scans `.claude/skills/` — a client-side thing TeamBuilder cannot do for the user. Memory MCP `.mcp.json` patches are still shown (not auto-applied) because `.mcp.json` is user-space config. |
 | **3.2.1** | 2026-04-09 | **Hotfix: non-interactive install command.** The install command shown in `bmad-skill-generate-team`, `bmad-skill-collaborative-generation`, and three places in the README was missing `--directory`, `--modules bmm`, and `--tools claude-code` flags. Without them BMAD drops into an interactive clack TUI asking for the installation directory, which an LLM-driven team-guide agent cannot answer — it would hang forever. All five install-command templates now show the fully non-interactive form. The team-guide agent can now actually run the install via a Bash tool call without blocking on prompts. Reported by a real user who hit this on first team generation. No other code changes. |
 | **3.2.0** | 2026-04-08 | **Channels + runtime drift warning + CI smoke test (Phase 6b).** Added `-Channel` / `--channel` flag to `install.*` and `update.*` (`stable` default, `beta` and `nightly` opt-in via npm `next` dist-tag). Non-stable channels print a yellow warning and require confirmation. Added a runtime drift check to `bmad-agent-team-guide` activation that loads `compatibility.json`, compares the installed BMAD version, and warns the user (non-fatal) if the version is blocked, untested-in-range, or out-of-range. Added GitHub Actions smoke-test workflow `.github/workflows/smoke-test.yml` running install + compat-check + doctor + bmad status across `{ubuntu, windows} × {Node 18, 20, 22}` on every push, PR, and daily cron. |
 | **3.1.0** | 2026-04-08 | **Compatibility guardrails (Phase 6a).** Added `compatibility.json` (BMAD version matrix + structural invariants), `scripts/lib/compat-check.js` (zero-dependency Node engine), `scripts/doctor.{ps1,sh}` (read-only diagnostics), `scripts/update.{ps1,sh}` (safe in-place update with snapshot + rollback). Update never touches `_bmad/teams-*/`. All 7 Phase 6a tests pass: doctor on healthy install, doctor JSON output, doctor on corrupted install detects failure, update succeeds and re-validates, backup snapshot preservation, refusal on non-installed targets, cleanup. |
@@ -682,4 +680,4 @@ By using TeamBuilder you acknowledge:
 
 ---
 
-_TeamBuilder v3.2.1 — built with care, run with caution, and always read the validation report._
+_TeamBuilder v3.2.2 — built with care, run with caution, and always read the validation report._

@@ -363,48 +363,111 @@ Document:
 - Quality self-check results
 - Next steps (validation)
 
-## Step 10 — Installation Instructions
+## Step 10 — Installation (AUTOMATIC — the agent runs this, not the user)
 
-Generate the user-facing install command in `TEAM_README.md`. **Use this exact fully-non-interactive form — nothing shorter.** BMAD's installer will drop into an interactive TUI (asking for the installation directory) if ANY of these flags are missing. The LLM can be asked to run the install via a Bash tool call, but only if the command is fully non-interactive; otherwise the TUI blocks and the agent cannot answer the prompts.
+**CRITICAL: Do not show the install command to the user and wait for them to run it. Run it yourself via the `Bash` tool. The whole point of TeamBuilder is end-to-end automation — the user should not have to copy-paste anything.**
 
-**Windows:**
+### Step 10.1 — Write the install command into `TEAM_README.md`
+
+For documentation purposes (so users can re-install manually if they ever need to), put the complete non-interactive install command in the generated `TEAM_README.md`. Mark it as "for reference only — the team was already installed automatically at generation time":
+
+```markdown
+## How this team was installed
+
+TeamBuilder installed this team automatically at generation time by running:
+
+    npx bmad-method@6.2.2 install --directory "<project-root>" -y --modules bmm --tools claude-code --custom-content "<team-path>"
+
+You do not need to run this yourself. If you ever need to reinstall (e.g., after cloning this team to a different project), use the command above with your own absolute paths.
+```
+
+### Step 10.2 — Resolve the absolute paths
+
+You MUST use absolute paths for both `--directory` and `--custom-content`. Resolve them **before** building the Bash command:
+
+- `{absolute_project_root}` = the directory that already contains `_bmad/` (the user's existing project root). This is typically the parent of `{output_folder}`, e.g. if `{output_folder}` is `D:\Invest\_bmad-output`, the project root is `D:\Invest`. On Windows use backslashes; on Unix use forward slashes. Always verify by checking that `{absolute_project_root}/_bmad/_config/manifest.yaml` exists.
+- `{absolute_team_path}` = `{absolute_project_root}/_bmad-output/teams/{team_name}/` (or wherever the team was actually generated). Verify by checking that `{absolute_team_path}/module.yaml` exists.
+
+If either path cannot be resolved or verified, STOP and report the error to the user. Do not guess.
+
+### Step 10.3 — Announce and run the install
+
+Tell the user what you are about to do, so they have visibility into the automation:
+
+> "Generation complete. Now installing the team into your BMAD project. This takes about 30 seconds — BMAD will copy the team into `_bmad/teams-{team_name}/`, register the agents, and install the skills into `.claude/skills/`."
+
+Then invoke the `Bash` tool with this **exact** command structure (not shorter, not different — every flag matters):
+
+**Windows** (the Bash tool in Claude Code runs PowerShell-style commands on Windows):
 
 ```powershell
-npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-generated-team}"
+npx --yes bmad-method@6.2.2 install --directory "{absolute_project_root}" -y --modules bmm --tools claude-code --custom-content "{absolute_team_path}"
 ```
 
 **Linux / macOS:**
 
 ```bash
-npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-generated-team}"
+npx --yes bmad-method@6.2.2 install --directory "{absolute_project_root}" -y --modules bmm --tools claude-code --custom-content "{absolute_team_path}"
 ```
 
-**Flag-by-flag reasoning — do not drop any of these:**
+**Every flag is required. Do not drop any of these:**
 
 | Flag | Purpose | Without it |
 |---|---|---|
-| `--directory "{project-root}"` | Tells BMAD which directory to install into. | BMAD prompts interactively for the directory and blocks. |
-| `-y` | Accepts all defaults, skips confirmations. | BMAD prompts for module selection, tool selection, overwrite confirmations, etc. |
+| `--directory "{project-root}"` | Tells BMAD which project to install into. | BMAD prompts interactively for the directory and your Bash tool call hangs forever. |
+| `-y` | Accepts all defaults, skips confirmations. | BMAD prompts for module selection, tool selection, overwrite confirmations. |
 | `--modules bmm` | Re-affirms the bmm module so the existing install is preserved on quick-update. | BMAD may prompt "which modules?" depending on context. |
 | `--tools claude-code` | Re-affirms Claude Code as the IDE target. | BMAD may prompt "which IDE?" and block. |
-| `--custom-content "{team-path}"` | The actual work: install the generated team as a new custom module. | Nothing to install. |
-| `@6.2.2` | Pin BMAD version. | `@latest` would drift over time. |
+| `--custom-content "{team-path}"` | The actual install target. | Nothing to install. |
+| `@6.2.2` | Pins BMAD version. | `@latest` would drift over time and could silently break. |
+| `--yes` (as the first arg to `npx`) | Tells `npx` to proceed without asking to install `bmad-method` if not cached. | `npx` prompts "OK to install?". |
 
-**Absolute paths only.** Relative paths like `./my-team` may resolve against the wrong base directory when BMAD is invoked from a shell with a different CWD. Always resolve `{absolute-path-to-project-root}` and `{absolute-path-to-generated-team}` before building the command string.
+### Step 10.4 — Verify the install succeeded
 
-This is the **same** `--custom-content` flow that installed TeamBuilder itself. BMAD will automatically:
-- Copy the team into `_bmad/teams-{team_name}/`
-- Register every agent in the BMAD agent manifest
-- Install every skill into `.claude/skills/`
-- List the team as a custom module in `manifest.yaml`
+After the Bash call completes, immediately verify the result **before** telling the user the install worked:
 
-**You do NOT manually edit** `agent-manifest.csv`, `manifest.yaml`, or create `.claude/commands/` stubs. That's all v5-era plumbing that BMAD v6 handles automatically via `--custom-content`.
+1. Check `{absolute_project_root}/_bmad/teams-{team_name}/config.yaml` exists — this is the team's module directory landing in the BMAD install root.
+2. Check `{absolute_project_root}/_bmad/_config/agent-manifest.csv` contains rows referencing `teams-{team_name}` as the module — grep for the team's module code.
+3. Check `{absolute_project_root}/.claude/skills/bmad-agent-{main-entry-point-agent}/SKILL.md` exists — at least the main entry-point agent should have landed in `.claude/skills/`.
 
-**Can the team-guide agent run the install automatically?** Yes, via a `Bash` tool call — but **only if you use the full non-interactive command above**. If you run a shorter form (e.g. just `--custom-content <path> -y` without `--directory`), BMAD will drop into the interactive TUI and block forever because the agent cannot type answers into the clack prompts.
+If any of these checks fail, do NOT report success. Instead, show the Bash output from the install and tell the user: "Install command returned successfully but the expected files are not in place. Run `scripts/doctor.ps1` (or `doctor.sh`) from the project root to diagnose, and feel free to paste the output into a new Claude Code session so I can help troubleshoot."
 
-Also instruct the user to:
-1. Configure `.mcp.json` so the memory server points at `{output_folder}/teams/{team-name}/memory.jsonl` (so the new team has its own persistent memory)
-2. **Restart Claude Code** so new skills are discovered (`.claude/skills/` is read on startup)
+### Step 10.5 — Success report
+
+If verification passes, report to the user with specific evidence:
+
+> "✅ Installation complete.
+>
+> - Team module installed at: `{project_root}/_bmad/teams-{team_name}/`
+> - `{N}` agents registered in `agent-manifest.csv`
+> - `{N}` skills installed into `.claude/skills/`
+> - `bmad status` should now list `teams-{team_name} 1.0.0 ✓` as a Custom Module alongside `teambuilder`.
+>
+> **One thing you need to do yourself:** restart Claude Code so the desktop app / CLI re-scans `.claude/skills/`. After restart, type `/bmad-agent-{main-entry-point-agent}` to meet your new team."
+
+Do NOT tell the user to "run `npx bmad-method install ...`". That step is done. The only remaining user action is the Claude Code restart, which is a client-side thing TeamBuilder cannot do for them.
+
+### Step 10.6 — If the user wants Memory MCP configured
+
+If the team benefits from persistent memory (most do), also either:
+- Automatically patch `{absolute_project_root}/.mcp.json` to add a memory server entry pointing at `{output_folder}/teams/{team_name}/memory.jsonl`, OR
+- Tell the user the exact patch to apply if you're unsure about modifying their `.mcp.json` (which may already have entries you shouldn't disturb).
+
+Default to **showing the patch, not applying it**, because `.mcp.json` is user-space config and may have credentials or custom entries. Present the patch clearly:
+
+> "To give this team persistent memory, add this entry under `mcpServers` in `{project_root}/.mcp.json`:
+>
+> ```json
+> \"memory-{team-name}\": {
+>   \"command\": \"npx\",
+>   \"args\": [\"-y\", \"@modelcontextprotocol/server-memory\"],
+>   \"env\": {
+>     \"MEMORY_FILE_PATH\": \"{absolute-team-path}/memory.jsonl\"
+>   }
+> }
+> ```
+>
+> This is in `TOOL_RECOMMENDATIONS.md` if you need to reference it later."
 
 ## Step 11 — Hand Off to Validation
 

@@ -173,32 +173,36 @@ Team Architect presents structure and composition; Quality Guardian presents the
 
 **If INSTALL:**
 
-1. Give the user (or run via a `Bash` tool call if the user has authorized it) the **fully non-interactive install command**. Every single flag is required — BMAD drops into an interactive clack TUI if any of them is missing, and an LLM agent cannot answer clack prompts:
+**CRITICAL: Do not show the install command and wait for the user to run it. Run it yourself. TeamBuilder's core promise is end-to-end automation — the user should never copy-paste install commands.**
 
-   **Windows:**
-   ```powershell
-   npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-team}"
+The actual install is delegated to `bmad-skill-generate-team` Step 10, which:
+
+1. Resolves the absolute `{project_root}` and `{team_path}` (verifying they exist).
+2. Announces to the user that it's installing.
+3. Invokes the `Bash` tool with the complete non-interactive command:
    ```
-
-   **Linux / macOS:**
-   ```bash
-   npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-team}"
+   npx --yes bmad-method@6.2.2 install --directory "{project_root}" -y --modules bmm --tools claude-code --custom-content "{team_path}"
    ```
+4. Verifies the post-install state:
+   - `{project_root}/_bmad/teams-{team_name}/config.yaml` exists
+   - `agent-manifest.csv` has rows for the new module
+   - `.claude/skills/bmad-agent-{entry-point}` landed in the IDE
+5. Reports success or failure with specific evidence. On failure, points the user at `scripts/doctor.*`.
 
-   Replace `{absolute-path-to-project-root}` with the user's actual project root (the directory that already contains `_bmad/`) — not the generated team path. Replace `{absolute-path-to-team}` with the generated team's absolute path, typically `{output_folder}/teams/{team-name}/`.
+See `bmad-skill-generate-team/workflow.md` Step 10 for the full automation protocol (Steps 10.1 – 10.6). Do NOT re-show the install command to the user in Phase 4 — the install has already happened.
 
-   **Common mistake to avoid:** running `npx bmad-method install --custom-content "<team-path>" -y` without `--directory`. BMAD will prompt for the installation directory and block forever if a non-interactive caller cannot answer.
+**After the automatic install succeeds, tell the user:**
 
-   This is the same `--custom-content` flow that installed TeamBuilder itself. BMAD will:
-   - Copy the team into `_bmad/teams-{team-name}/`
-   - Auto-generate manifest entries for every agent and skill
-   - Install all skills into `.claude/skills/`
-   - Update `manifest.yaml` to list the generated team as a custom module
+1. **One-line confirmation**: "✅ Team installed at `{project_root}/_bmad/teams-{team_name}/`. All {N} agents and {N} skills registered."
+2. **The one manual step**: "Restart Claude Code so it re-scans `.claude/skills/`. After restart, type `/bmad-agent-{main-entry-point-agent}` to meet your new team."
+3. **Optional Memory MCP patch** (see Step 10.6 in generate-team): show the `.mcp.json` snippet for the memory server pointing at the team's `memory.jsonl`. Default to showing the patch, not applying it, because `.mcp.json` is user-space config.
+4. **Pointers to the generated docs**: mention that `TEAM_README.md`, `VALIDATION_REPORT.md`, and `TOOL_RECOMMENDATIONS.md` are in `{team_path}` for reference.
 
-2. Confirm `.mcp.json` is configured to point the memory server at `{output_folder}/teams/{team-name}/memory.jsonl` so the new team has its own persistent memory.
-3. Tell the user to **restart Claude Code** so it picks up the new skills directory (`.claude/skills/` is read on startup).
-4. List the new agent slash-invocations they'll see (one per `bmad-agent-*` in the generated team).
-5. Mention that the team has its own `bmad-skill-save-session` and `bmad-skill-memory-guide` (copied from TeamBuilder's templates) for cross-session continuity.
+**The team includes:**
+- One copy of `bmad-skill-save-session` (copied from TeamBuilder's `templates/_team-skills/` at generation time and placeholder-resolved)
+- One copy of `bmad-skill-memory-guide` (same origin)
+
+These give the team cross-session continuity from day one — no further setup needed.
 
 **If REFINE:** route to `bmad-skill-refine-team`. Focus on Quality Guardian's priority issues. Re-validate after refinement. Up to 3 iterations.
 

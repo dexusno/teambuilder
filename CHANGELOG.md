@@ -8,6 +8,66 @@ The full per-commit history is on GitHub: https://github.com/dexusno/teambuilder
 
 ---
 
+## [3.2.2] — 2026-04-09
+
+**Fully automatic team install — the actual fix.**
+
+### Why this release exists
+
+v3.2.1 made the install command non-interactive (added `--directory`, `--modules`, `--tools`, `-y` flags) but **stopped one step short** of what TeamBuilder's design promise actually requires. The generate-team and collaborative-generation workflows still told the user: *"Here's the install command, run it yourself."*
+
+That defeats the whole point of TeamBuilder, which is supposed to be **end-to-end automation** — the user describes what they need, TeamBuilder generates the team, validates the team, and **installs the team**. No copy-paste, no manual commands, no "now go run this in your terminal." The user reported this politely and directly: *"Everything that needs to be installed, must be so automatically. The user must not need to do any manual installing. That's the whole point of teambuilder."*
+
+They're right. v3.2.2 closes the gap.
+
+### Changed
+
+- **`teambuilder/skills/bmad-skill-generate-team/workflow.md` Step 10** completely rewritten into a six-sub-step automation protocol:
+  - **Step 10.1** — Write the install command into `TEAM_README.md` **as documentation only**, explicitly marked "for reference — the team was already installed automatically at generation time."
+  - **Step 10.2** — Resolve absolute `{project_root}` (directory containing `_bmad/`) and `{team_path}` (generated team under `_bmad-output/teams/`), verifying both exist before proceeding.
+  - **Step 10.3** — Announce to the user what's about to happen (visibility into the automation), then invoke the `Bash` tool with the complete non-interactive `npx bmad-method@6.2.2 install` command.
+  - **Step 10.4** — Verify the post-install state: check for `_bmad/teams-{name}/config.yaml`, grep `agent-manifest.csv` for team rows, check `.claude/skills/` for the main entry-point agent. Do NOT report success before verification passes.
+  - **Step 10.5** — Success report with specific evidence (team path, agent count, skill count, `bmad status` confirmation). Tell the user the ONE remaining manual step: restart Claude Code (client-side thing TeamBuilder cannot do for them).
+  - **Step 10.6** — Memory MCP `.mcp.json` patch is **shown, not auto-applied**, because `.mcp.json` is user-space config that may contain credentials or custom entries TeamBuilder shouldn't touch.
+
+- **`teambuilder/skills/bmad-skill-collaborative-generation/workflow.md` Phase 4 Step 2 "If INSTALL"** rewritten to **delegate to `bmad-skill-generate-team` Step 10** rather than showing the install command to the user. Removes the duplicated command shown in Phase 4 that could drift out of sync with Step 10.
+
+- **`README.md` "First Team — Quick Start"** step 8 is now: "The team installs itself automatically. TeamBuilder runs BMAD's `--custom-content` installer via a Bash tool call, copies the team into `_bmad/teams-{team-name}/`, registers every agent in the manifests, and lands every skill into `.claude/skills/`. No copy-paste required." The only user action is step 9 (restart Claude Code).
+
+- **`README.md` "Installing a generated team"** section updated: leading paragraph now says TeamBuilder installs generated teams automatically; the manual command is preserved below as "if you ever need to reinstall manually" (e.g., after cloning a team to a different project).
+
+### Fixed
+
+- The gap between the v3.2.1 fix (non-interactive command) and the actual user-facing promise (no copy-paste). v3.2.1 was a necessary prerequisite; v3.2.2 is the delivered feature.
+
+### Not changed
+
+- `scripts/install.ps1` / `scripts/install.sh` — already work correctly, no changes.
+- `scripts/doctor.{ps1,sh}` and `scripts/update.{ps1,sh}` — already correct.
+- The five example pattern libraries — no changes.
+- Validation rules — no changes.
+- Version compatibility matrix — no changes (still tested against BMAD 6.2.2).
+
+### User-facing impact
+
+When you now say "create a new team" to the team-guide agent, the full flow is:
+
+1. Discovery (10 questions)
+2. Paired generation (architect + persona-improver)
+3. Quality validation (0–100 score)
+4. User decision: install / refine / regenerate
+5. **If install**: agent runs `npx bmad-method@6.2.2 install ...` via Bash tool, verifies the result, reports success
+6. Agent tells you: "Restart Claude Code to see your new agents."
+7. You restart Claude Code, invoke `/bmad-agent-{name}`, your team greets you.
+
+Zero copy-paste. Zero manual install steps. The only thing the user types is "restart Claude Code" (which is a client-side thing no tool can do for them anyway).
+
+### Reported by
+
+The same user who reported the v3.2.1 hang, after v3.2.1 fixed the hang but still showed the command to them for manual execution. Their correction: *"Everything that needs to be installed, must be so automatically. The user must not need to do any manual installing. That's the whole point of teambuilder."* Absolutely right.
+
+---
+
 ## [3.2.1] — 2026-04-09
 
 **Hotfix: non-interactive install command.**
@@ -215,6 +275,7 @@ v3.0 is **not backward compatible** with v2.x. The v5 architecture and the v6 ar
 
 ---
 
+[3.2.2]: https://github.com/dexusno/teambuilder/releases/tag/v3.2.2
 [3.2.1]: https://github.com/dexusno/teambuilder/releases/tag/v3.2.1
 [3.2.0]: https://github.com/dexusno/teambuilder/releases/tag/v3.2.0
 [3.1.0]: https://github.com/dexusno/teambuilder/releases/tag/v3.1.0
