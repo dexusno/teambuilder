@@ -93,10 +93,11 @@ Persona Improver does **not** critique workflows in this step (not their domain)
 - `{output_folder}/teams/{team-name}/TEAM_README.md` — team overview, what each agent does, when to use which workflow, install instructions
 - `{output_folder}/teams/{team-name}/module.yaml` — module manifest so the generated team itself becomes installable as a BMAD custom module
 
-The `module.yaml` enables the user to later install the generated team into any BMAD project via:
+The `module.yaml` enables the user to later install the generated team into any BMAD project via the standard fully-non-interactive install command:
 ```
-npx bmad-method install --custom-content {absolute-path-to-team}
+npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-team}"
 ```
+(See `bmad-skill-generate-team/workflow.md` Step 10 for the flag-by-flag reasoning. Do NOT omit any flag — BMAD drops into an interactive TUI if any of `--directory`, `-y`, `--modules`, or `--tools` is missing, and an LLM-driven agent cannot answer interactive prompts.)
 
 ### Step 5 — Tool Scout Research
 **Agent:** `bmad-agent-tool-scout`
@@ -171,17 +172,31 @@ Team Architect presents structure and composition; Quality Guardian presents the
 ### Step 2 — Handle Decision
 
 **If INSTALL:**
-1. Tell the user the install command:
+
+1. Give the user (or run via a `Bash` tool call if the user has authorized it) the **fully non-interactive install command**. Every single flag is required — BMAD drops into an interactive clack TUI if any of them is missing, and an LLM agent cannot answer clack prompts:
+
+   **Windows:**
+   ```powershell
+   npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-team}"
    ```
-   npx bmad-method install --custom-content "{absolute-path-to-{output_folder}/teams/{team-name}}" -y
+
+   **Linux / macOS:**
+   ```bash
+   npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-team}"
    ```
+
+   Replace `{absolute-path-to-project-root}` with the user's actual project root (the directory that already contains `_bmad/`) — not the generated team path. Replace `{absolute-path-to-team}` with the generated team's absolute path, typically `{output_folder}/teams/{team-name}/`.
+
+   **Common mistake to avoid:** running `npx bmad-method install --custom-content "<team-path>" -y` without `--directory`. BMAD will prompt for the installation directory and block forever if a non-interactive caller cannot answer.
+
    This is the same `--custom-content` flow that installed TeamBuilder itself. BMAD will:
-   - Copy the team into `_bmad/teams-{team-name}/` (or merge into existing `_bmad/`)
+   - Copy the team into `_bmad/teams-{team-name}/`
    - Auto-generate manifest entries for every agent and skill
    - Install all skills into `.claude/skills/`
    - Update `manifest.yaml` to list the generated team as a custom module
+
 2. Confirm `.mcp.json` is configured to point the memory server at `{output_folder}/teams/{team-name}/memory.jsonl` so the new team has its own persistent memory.
-3. Tell the user to **restart Claude Code** so it picks up the new skills directory.
+3. Tell the user to **restart Claude Code** so it picks up the new skills directory (`.claude/skills/` is read on startup).
 4. List the new agent slash-invocations they'll see (one per `bmad-agent-*` in the generated team).
 5. Mention that the team has its own `bmad-skill-save-session` and `bmad-skill-memory-guide` (copied from TeamBuilder's templates) for cross-session continuity.
 

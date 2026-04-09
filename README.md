@@ -1,6 +1,6 @@
 # TeamBuilder v3 — AI Agent Team Generator for BMAD v6
 
-> **TeamBuilder v3.2.0 — built for BMAD Method v6.2.2**
+> **TeamBuilder v3.2.1 — built for BMAD Method v6.2.2**
 > A BMAD v6 custom module that generates tailored AI agent teams through guided discovery, paired generation with real-time quality feedback, and critical validation scoring. Includes compatibility guardrails (`doctor`, `update`, channels), runtime drift warning, and CI smoke tests.
 
 ---
@@ -243,10 +243,12 @@ To create your first team:
    - Tool Scout will research MCP/CLI integrations (10–30 seconds)
    - Quality Guardian will score and report (10–20 seconds)
 7. **Review the validation report.** If the score is ≥85, install. If 75–84, refine. If <75, consider regenerating with better discovery answers.
-8. **Install your team** with the exact command the pipeline prints (something like):
+8. **Install your team** with the exact command the pipeline prints. It MUST include `--directory`, `-y`, `--modules`, AND `--tools` — without all four flags BMAD drops into an interactive TUI and blocks. The full form is:
+   ```powershell
+   # Windows (and Linux/macOS — same command shape)
+   npx bmad-method@6.2.2 install --directory "D:\path\to\your-project" -y --modules bmm --tools claude-code --custom-content "D:\path\to\your-project\_bmad-output\teams\your-team-name"
    ```
-   npx bmad-method install --custom-content "D:\path\to\your-project\_bmad-output\teams\your-team-name" -y
-   ```
+   Replace both paths with absolute paths. `--directory` is the project root (the directory that contains your existing `_bmad/`), `--custom-content` is the generated team under `_bmad-output/teams/`.
 9. **Restart Claude Code again.** Your team's agents will now be available as `/bmad-agent-*` slash commands.
 10. **Talk to one of your new agents.** They'll load their persona, greet you by name, and present a menu.
 
@@ -349,11 +351,28 @@ This is enforced as a Critical-severity rule in `templates/validation-rules.yaml
 
 ### Installing a generated team
 
-Generated teams are installed exactly the same way as TeamBuilder itself:
+Generated teams are installed exactly the same way as TeamBuilder itself, using BMAD's `--custom-content` flow. **You MUST use the fully-non-interactive command** — BMAD falls back to an interactive TUI that an LLM-driven agent cannot answer if any flag is missing:
 
 ```bash
-npx bmad-method install --custom-content "<absolute-path-to-generated-team>" -y
+npx bmad-method@6.2.2 install \
+  --directory "<absolute-path-to-project-root>" \
+  -y \
+  --modules bmm \
+  --tools claude-code \
+  --custom-content "<absolute-path-to-generated-team>"
 ```
+
+**Flag-by-flag**, all required:
+
+| Flag | Without it |
+|---|---|
+| `--directory "<project-root>"` | BMAD prompts "Installation directory:" and blocks |
+| `-y` | BMAD prompts for module and tool confirmations |
+| `--modules bmm` | BMAD may prompt "which modules?" on quick-update |
+| `--tools claude-code` | BMAD may prompt "which IDE?" on quick-update |
+| `--custom-content "<team-path>"` | The actual install target |
+
+Use **absolute paths** for both `--directory` and `--custom-content`. Relative paths are risky because BMAD may resolve them against a different CWD than you expect.
 
 BMAD treats the second install as a **quick-update** and adds the new module to the existing `_bmad/` install without touching `core`, `bmm`, or `teambuilder`. The generated team's agents and skills land in `.claude/skills/` automatically. Restart Claude Code to see them.
 
@@ -532,7 +551,7 @@ Check that `_bmad/teambuilder/config.yaml` exists and is readable. If it's missi
 The generated team's `module.yaml` is missing the `code: teams-{name}` prefix. Edit `_bmad/teams-{name}/module.yaml` and add `code: teams-<exact-directory-name>` at the top. Restart Claude Code. If that doesn't fix it, regenerate the team (TeamBuilder's validation-rules.yaml flags this as a Critical issue — it should have been caught).
 
 **`bmad status` doesn't list a generated team.**
-The team was generated but not installed. Run `npx bmad-method install --custom-content "<absolute-path-to-team>" -y` from the project root.
+The team was generated but not installed. Run the fully non-interactive install command from the project root: `npx bmad-method@6.2.2 install --directory "<project-root>" -y --modules bmm --tools claude-code --custom-content "<team-path>"`. If you omit `--directory` or `-y` or `--modules` or `--tools`, BMAD drops into an interactive TUI and will block a non-interactive caller.
 
 **Memory MCP isn't persisting anything.**
 Check `.mcp.json` — the `memory` server's `MEMORY_FILE_PATH` env var should point at an absolute path. Check that the file exists and is writable. Test by manually running: `echo '{}' >> <memory-file-path>`.
@@ -601,6 +620,7 @@ bash /path/to/teambuilder/scripts/install.sh -y --local-source /path/to/teambuil
 
 | Version | Date | Notes |
 |---|---|---|
+| **3.2.1** | 2026-04-09 | **Hotfix: non-interactive install command.** The install command shown in `bmad-skill-generate-team`, `bmad-skill-collaborative-generation`, and three places in the README was missing `--directory`, `--modules bmm`, and `--tools claude-code` flags. Without them BMAD drops into an interactive clack TUI asking for the installation directory, which an LLM-driven team-guide agent cannot answer — it would hang forever. All five install-command templates now show the fully non-interactive form. The team-guide agent can now actually run the install via a Bash tool call without blocking on prompts. Reported by a real user who hit this on first team generation. No other code changes. |
 | **3.2.0** | 2026-04-08 | **Channels + runtime drift warning + CI smoke test (Phase 6b).** Added `-Channel` / `--channel` flag to `install.*` and `update.*` (`stable` default, `beta` and `nightly` opt-in via npm `next` dist-tag). Non-stable channels print a yellow warning and require confirmation. Added a runtime drift check to `bmad-agent-team-guide` activation that loads `compatibility.json`, compares the installed BMAD version, and warns the user (non-fatal) if the version is blocked, untested-in-range, or out-of-range. Added GitHub Actions smoke-test workflow `.github/workflows/smoke-test.yml` running install + compat-check + doctor + bmad status across `{ubuntu, windows} × {Node 18, 20, 22}` on every push, PR, and daily cron. |
 | **3.1.0** | 2026-04-08 | **Compatibility guardrails (Phase 6a).** Added `compatibility.json` (BMAD version matrix + structural invariants), `scripts/lib/compat-check.js` (zero-dependency Node engine), `scripts/doctor.{ps1,sh}` (read-only diagnostics), `scripts/update.{ps1,sh}` (safe in-place update with snapshot + rollback). Update never touches `_bmad/teams-*/`. All 7 Phase 6a tests pass: doctor on healthy install, doctor JSON output, doctor on corrupted install detects failure, update succeeds and re-validates, backup snapshot preservation, refusal on non-installed targets, cleanup. |
 | **3.0.0** | 2026-04-08 | **Full port to BMAD v6.2.2 architecture.** SKILL.md + bmad-skill-manifest.yaml replace v5 XML agent files. 42+ validation rules rewritten for v6. 6 pattern libraries rewritten (~55,000 words of v6-shape examples). Team-skills templates become first-class skills in generated teams. Installer rewritten to use BMAD's `--custom-content` flow (no more manual manifest editing, no more `.claude/commands/` stubs). The critical `teams-{name}` module code convention for generated teams. |
@@ -662,4 +682,4 @@ By using TeamBuilder you acknowledge:
 
 ---
 
-_TeamBuilder v3.2.0 — built with care, run with caution, and always read the validation report._
+_TeamBuilder v3.2.1 — built with care, run with caution, and always read the validation report._

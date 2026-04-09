@@ -365,11 +365,32 @@ Document:
 
 ## Step 10 — Installation Instructions
 
-Generate the user-facing install command in `TEAM_README.md`:
+Generate the user-facing install command in `TEAM_README.md`. **Use this exact fully-non-interactive form — nothing shorter.** BMAD's installer will drop into an interactive TUI (asking for the installation directory) if ANY of these flags are missing. The LLM can be asked to run the install via a Bash tool call, but only if the command is fully non-interactive; otherwise the TUI blocks and the agent cannot answer the prompts.
 
+**Windows:**
+
+```powershell
+npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-generated-team}"
 ```
-npx bmad-method install --custom-content "{absolute-path-to-team}" -y
+
+**Linux / macOS:**
+
+```bash
+npx bmad-method@6.2.2 install --directory "{absolute-path-to-project-root}" -y --modules bmm --tools claude-code --custom-content "{absolute-path-to-generated-team}"
 ```
+
+**Flag-by-flag reasoning — do not drop any of these:**
+
+| Flag | Purpose | Without it |
+|---|---|---|
+| `--directory "{project-root}"` | Tells BMAD which directory to install into. | BMAD prompts interactively for the directory and blocks. |
+| `-y` | Accepts all defaults, skips confirmations. | BMAD prompts for module selection, tool selection, overwrite confirmations, etc. |
+| `--modules bmm` | Re-affirms the bmm module so the existing install is preserved on quick-update. | BMAD may prompt "which modules?" depending on context. |
+| `--tools claude-code` | Re-affirms Claude Code as the IDE target. | BMAD may prompt "which IDE?" and block. |
+| `--custom-content "{team-path}"` | The actual work: install the generated team as a new custom module. | Nothing to install. |
+| `@6.2.2` | Pin BMAD version. | `@latest` would drift over time. |
+
+**Absolute paths only.** Relative paths like `./my-team` may resolve against the wrong base directory when BMAD is invoked from a shell with a different CWD. Always resolve `{absolute-path-to-project-root}` and `{absolute-path-to-generated-team}` before building the command string.
 
 This is the **same** `--custom-content` flow that installed TeamBuilder itself. BMAD will automatically:
 - Copy the team into `_bmad/teams-{team_name}/`
@@ -379,9 +400,11 @@ This is the **same** `--custom-content` flow that installed TeamBuilder itself. 
 
 **You do NOT manually edit** `agent-manifest.csv`, `manifest.yaml`, or create `.claude/commands/` stubs. That's all v5-era plumbing that BMAD v6 handles automatically via `--custom-content`.
 
+**Can the team-guide agent run the install automatically?** Yes, via a `Bash` tool call — but **only if you use the full non-interactive command above**. If you run a shorter form (e.g. just `--custom-content <path> -y` without `--directory`), BMAD will drop into the interactive TUI and block forever because the agent cannot type answers into the clack prompts.
+
 Also instruct the user to:
 1. Configure `.mcp.json` so the memory server points at `{output_folder}/teams/{team-name}/memory.jsonl` (so the new team has its own persistent memory)
-2. Restart Claude Code so new skills are discovered
+2. **Restart Claude Code** so new skills are discovered (`.claude/skills/` is read on startup)
 
 ## Step 11 — Hand Off to Validation
 

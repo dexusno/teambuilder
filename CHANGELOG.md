@@ -8,6 +8,41 @@ The full per-commit history is on GitHub: https://github.com/dexusno/teambuilder
 
 ---
 
+## [3.2.1] — 2026-04-09
+
+**Hotfix: non-interactive install command.**
+
+### Fixed
+- **Install command missing critical flags.** `bmad-skill-generate-team/workflow.md` Step 10, `bmad-skill-collaborative-generation/workflow.md` Phase 2 Step 4 and Phase 4 Step 2 "If INSTALL", and three places in `README.md` all showed the install command as:
+  ```
+  npx bmad-method install --custom-content "<team-path>" -y
+  ```
+  This is **incomplete**. Without `--directory`, `--modules`, and `--tools`, BMAD's installer drops into an interactive clack TUI asking for the installation directory, module selection, and tool selection. An LLM-driven team-guide agent running the install via a Bash tool call cannot answer these prompts — it hangs until timeout.
+
+  All five install-command templates now show the fully non-interactive form:
+  ```
+  npx bmad-method@6.2.2 install \
+    --directory "<absolute-path-to-project-root>" \
+    -y \
+    --modules bmm \
+    --tools claude-code \
+    --custom-content "<absolute-path-to-team>"
+  ```
+  With an explicit flag-by-flag table explaining what each flag does and what happens if it's omitted. Emphasis on **absolute paths only** for both `--directory` and `--custom-content`.
+
+### Impact
+- Users who generated a team with v3.2.0 and tried to have the team-guide agent install it via Bash were blocked on the interactive TUI. This is a regression from Phase 1 testing where I verified the flag set worked — the v3.0 port correctly used all flags in the `install.ps1` / `install.sh` scripts, but the install-command template in the generated `TEAM_README.md` (produced by `bmad-skill-generate-team`) was a shortened form that didn't match.
+
+### Discovered by
+- Real user running their first end-to-end team generation. Reported with exact error (BMAD prompting for installation directory), enabling this fix.
+
+### Not affected
+- `scripts/install.ps1` and `scripts/install.sh` (the TeamBuilder installers themselves) — those already use the full flag set and work correctly.
+- The Phase 4 smoke test (hand-crafted fake team) — it used the correct flags and passed 28/28.
+- Users who copy-pasted the install command from the TEAM_README manually to a terminal — the interactive TUI would prompt them for the missing values and they'd just press Enter. Only agent-driven automated installs hit the block.
+
+---
+
 ## [3.2.0] — 2026-04-08
 
 **Phase 6b — Channels, runtime drift warning, CI smoke test.**
@@ -180,6 +215,7 @@ v3.0 is **not backward compatible** with v2.x. The v5 architecture and the v6 ar
 
 ---
 
+[3.2.1]: https://github.com/dexusno/teambuilder/releases/tag/v3.2.1
 [3.2.0]: https://github.com/dexusno/teambuilder/releases/tag/v3.2.0
 [3.1.0]: https://github.com/dexusno/teambuilder/releases/tag/v3.1.0
 [3.0.0]: https://github.com/dexusno/teambuilder/releases/tag/v3.0.0
